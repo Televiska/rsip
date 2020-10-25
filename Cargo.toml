@@ -1,0 +1,12 @@
+[package]
+name = "rsip"
+version = "0.1.0"
+authors = ["Filippos Vasilakis <vasilakisfil@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+libsip = { git = "https://github.com/ByteHeathen/libsip", branch = "master" }
+uuid = { version = "0.8.1", features = ["v4"] }
+md5 = "0.7.0"
+bytes = "0.5.4"
+nom = { version = "6.0.0-alpha1" }
