@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Organization(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for Organization {
 impl From<String> for Organization {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for Organization {
+    fn into(self) -> Header {
+        Header::Organization(self)
     }
 }
 

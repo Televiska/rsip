@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct MimeVersion(pub f32);
 
@@ -18,6 +20,12 @@ impl Into<f32> for MimeVersion {
 impl From<f32> for MimeVersion {
     fn from(from: f32) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for MimeVersion {
+    fn into(self) -> Header {
+        Header::MimeVersion(self)
     }
 }
 

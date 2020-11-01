@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Require(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for Require {
 impl From<String> for Require {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for Require {
+    fn into(self) -> Header {
+        Header::Require(self)
     }
 }
 

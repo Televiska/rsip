@@ -244,3 +244,9 @@ impl From<u16> for StatusCode {
         }
     }
 }
+
+impl Default for StatusCode {
+    fn default() -> Self {
+        Self::OK
+    }
+}

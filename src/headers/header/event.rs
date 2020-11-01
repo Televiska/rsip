@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Event {
     Custom(String),
@@ -14,6 +16,12 @@ impl Into<String> for Event {
 impl From<String> for Event {
     fn from(from: String) -> Self {
         Self::Custom(from)
+    }
+}
+
+impl Into<Header> for Event {
+    fn into(self) -> Header {
+        Header::Event(self)
     }
 }
 

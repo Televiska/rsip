@@ -1,4 +1,4 @@
-use crate::common::Language;
+use crate::{common::Language, headers::Header};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ContentLanguage(pub Language);
@@ -6,6 +6,12 @@ pub struct ContentLanguage(pub Language);
 impl From<Language> for ContentLanguage {
     fn from(from: Language) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for ContentLanguage {
+    fn into(self) -> Header {
+        Header::ContentLanguage(self)
     }
 }
 

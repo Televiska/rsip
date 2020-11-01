@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Accept(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for Accept {
 impl From<String> for Accept {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for Accept {
+    fn into(self) -> Header {
+        Header::Accept(self)
     }
 }
 

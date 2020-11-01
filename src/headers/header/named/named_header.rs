@@ -20,6 +20,10 @@ impl<T: NamedParamTrait> NamedHeader<T> {
     pub fn params_mut(&mut self) -> &mut NamedParams<T> {
         &mut self.params
     }
+
+    pub fn add_param(&mut self, param: T) {
+        self.params.push(param)
+    }
 }
 
 impl<T: NamedParamTrait> Default for NamedHeader<T> {

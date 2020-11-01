@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ProxyAuthenticate(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for ProxyAuthenticate {
 impl From<String> for ProxyAuthenticate {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for ProxyAuthenticate {
+    fn into(self) -> Header {
+        Header::ProxyAuthenticate(self)
     }
 }
 

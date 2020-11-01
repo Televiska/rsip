@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MinExpires(pub u32);
 
@@ -10,6 +12,12 @@ impl Default for MinExpires {
 impl Into<u32> for MinExpires {
     fn into(self) -> u32 {
         self.0
+    }
+}
+
+impl Into<Header> for MinExpires {
+    fn into(self) -> Header {
+        Header::MinExpires(self)
     }
 }
 

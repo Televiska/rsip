@@ -25,7 +25,7 @@ impl From<libsip::Transport> for Transport {
     fn from(from: libsip::Transport) -> Transport {
         match from {
             libsip::Transport::Udp => Self::Udp,
-            libsip::Transport::Tcp => Self::Tcp
+            libsip::Transport::Tcp => Self::Tcp,
         }
     }
 }

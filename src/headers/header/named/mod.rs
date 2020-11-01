@@ -5,7 +5,7 @@ mod named_params;
 
 pub use contact_param::{ContactParam, GenValue};
 pub use named_header::NamedHeader;
-pub use named_param::NamedParam;
+pub use named_param::{NamedParam, Tag};
 pub use named_params::NamedParams;
 
 pub trait NamedParamTrait:

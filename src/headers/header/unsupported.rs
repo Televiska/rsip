@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Unsupported(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for Unsupported {
 impl From<String> for Unsupported {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for Unsupported {
+    fn into(self) -> Header {
+        Header::Unsupported(self)
     }
 }
 

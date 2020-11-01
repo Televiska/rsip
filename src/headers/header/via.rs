@@ -1,10 +1,43 @@
-use crate::common::{uri::Uri, Transport, Version};
+use crate::{
+    common::{
+        uri::{Branch, HostWithPort, Param, Uri},
+        Transport, Version,
+    },
+    headers::Header,
+};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Via {
     pub version: Version,
     pub transport: Transport,
     pub uri: Uri,
+}
+
+impl Via {
+    pub fn branch(&self) -> Option<&Branch> {
+        self.uri.params.iter().find_map(|param| match param {
+            Param::Branch(branch) => Some(branch),
+            _ => None,
+        })
+    }
+
+    pub fn received(&self) -> Option<&HostWithPort> {
+        self.uri.params.iter().find_map(|param| match param {
+            Param::Received(received) => Some(received),
+            _ => None,
+        })
+    }
+
+    pub fn rport(&self) -> Option<u16> {
+        self.uri
+            .params
+            .iter()
+            .find_map(|param| match param {
+                Param::RPort(rport) => Some(*rport),
+                _ => None,
+            })
+            .flatten()
+    }
 }
 
 impl Default for Via {
@@ -14,6 +47,12 @@ impl Default for Via {
             transport: Default::default(),
             uri: Default::default(),
         }
+    }
+}
+
+impl Into<Header> for Via {
+    fn into(self) -> Header {
+        Header::Via(self)
     }
 }
 

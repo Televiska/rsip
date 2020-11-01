@@ -1,4 +1,4 @@
-use crate::common::Method;
+use crate::{common::Method, headers::Header};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct CSeq {
@@ -12,6 +12,12 @@ impl Default for CSeq {
             seq: 1,
             method: Method::Register,
         }
+    }
+}
+
+impl Into<Header> for CSeq {
+    fn into(self) -> Header {
+        Header::CSeq(self)
     }
 }
 

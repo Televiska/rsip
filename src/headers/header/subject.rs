@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Subject(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for Subject {
 impl From<String> for Subject {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for Subject {
+    fn into(self) -> Header {
+        Header::Subject(self)
     }
 }
 

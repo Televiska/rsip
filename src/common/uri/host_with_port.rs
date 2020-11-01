@@ -8,6 +8,24 @@ pub enum HostWithPort {
     IpAddr(IpAddr),
 }
 
+impl HostWithPort {
+    pub fn domain(self) -> String {
+        match self {
+            Self::Domain(domain) => domain.host,
+            Self::SocketAddr(socket_addr) => socket_addr.ip().to_string(),
+            Self::IpAddr(ip_addr) => ip_addr.to_string(),
+        }
+    }
+
+    pub fn port(self) -> u16 {
+        match self {
+            Self::Domain(domain) => domain.port.unwrap_or(5060),
+            Self::SocketAddr(socket_addr) => socket_addr.port(),
+            Self::IpAddr(_) => 5060,
+        }
+    }
+}
+
 impl Default for HostWithPort {
     fn default() -> Self {
         Self::SocketAddr(SocketAddr::localhost(5060))

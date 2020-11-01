@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ContentDisposition(pub String);
 
@@ -10,6 +12,12 @@ impl Into<String> for ContentDisposition {
 impl From<String> for ContentDisposition {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for ContentDisposition {
+    fn into(self) -> Header {
+        Header::ContentDisposition(self)
     }
 }
 

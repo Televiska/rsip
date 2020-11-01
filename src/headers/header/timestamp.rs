@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Timestamp(pub u32);
 
@@ -10,6 +12,12 @@ impl Default for Timestamp {
 impl Into<u32> for Timestamp {
     fn into(self) -> u32 {
         self.0
+    }
+}
+
+impl Into<Header> for Timestamp {
+    fn into(self) -> Header {
+        Header::Timestamp(self)
     }
 }
 

@@ -3,6 +3,7 @@ use uuid::Uuid;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Param {
+    //TODO: possibly useless param
     Transport(Transport),
     Branch(Branch),
     Received(HostWithPort),
@@ -28,7 +29,8 @@ impl From<libsip::uri::UriParam> for Param {
             libsip::uri::UriParam::Transport(transport) => Self::Transport(transport.into()),
             libsip::uri::UriParam::Branch(branch) => Self::Branch(branch.into()),
             libsip::uri::UriParam::Received(received) => Self::Received(received.into()),
-            _ => panic!(""),
+            libsip::uri::UriParam::RPort(rport) => Self::RPort(rport),
+            libsip::uri::UriParam::Other(key, value) => Self::Other(key, value),
         }
     }
 }

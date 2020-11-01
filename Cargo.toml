@@ -5,8 +5,10 @@ authors = ["Filippos Vasilakis <vasilakisfil@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-libsip = { git = "https://github.com/ByteHeathen/libsip", branch = "master" }
+libsip = { git = "https://github.com/vasilakisfil/libsip", branch = "feat/auth-fixes" }
 uuid = { version = "0.8.1", features = ["v4"] }
 md5 = "0.7.0"
 bytes = "0.5.4"
 nom = { version = "6.0.0-alpha1" }
+log = "0.4.11"
+base64 = "0.13.0"

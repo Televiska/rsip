@@ -1,7 +1,13 @@
-use crate::common;
+use crate::{common, headers::Header};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ContentEncoding(pub common::ContentType);
+
+impl Into<Header> for ContentEncoding {
+    fn into(self) -> Header {
+        Header::ContentEncoding(self)
+    }
+}
 
 impl From<libsip::headers::ContentType> for ContentEncoding {
     fn from(from: libsip::headers::ContentType) -> Self {

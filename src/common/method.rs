@@ -22,6 +22,12 @@ impl Default for Method {
     }
 }
 
+impl std::fmt::Display for Method {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Into::<libsip::core::Method>::into(self.clone()))
+    }
+}
+
 impl Into<libsip::core::Method> for Method {
     fn into(self) -> libsip::core::Method {
         match self {

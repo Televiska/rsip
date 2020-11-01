@@ -39,4 +39,3 @@ impl From<libsip::uri::UriAuth> for Auth {
         }
     }
 }
-

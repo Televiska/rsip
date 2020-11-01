@@ -48,9 +48,20 @@ impl Into<String> for GenValue {
 }
 
 impl From<String> for GenValue {
-    fn from(from: String) -> Self {
+    fn from(mut from: String) -> Self {
         if from.starts_with('\"') && from.ends_with('\"') {
-            Self::QuotedValue(from)
+            Self::QuotedValue(from.drain(1..=(from.len() - 2)).collect())
+        } else {
+            Self::Value(from)
+        }
+    }
+}
+
+impl From<&str> for GenValue {
+    fn from(from: &str) -> Self {
+        let from: String = from.into();
+        if from.starts_with('\"') && from.ends_with('\"') {
+            Self::QuotedValue(from[1..=(from.len() - 2)].into())
         } else {
             Self::Value(from)
         }

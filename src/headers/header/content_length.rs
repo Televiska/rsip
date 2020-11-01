@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ContentLength(pub u32);
 
@@ -10,6 +12,12 @@ impl Default for ContentLength {
 impl Into<u32> for ContentLength {
     fn into(self) -> u32 {
         self.0
+    }
+}
+
+impl Into<Header> for ContentLength {
+    fn into(self) -> Header {
+        Header::ContentLength(self)
     }
 }
 

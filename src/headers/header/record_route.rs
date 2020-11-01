@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct RecordRoute(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for RecordRoute {
 impl From<String> for RecordRoute {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for RecordRoute {
+    fn into(self) -> Header {
+        Header::RecordRoute(self)
     }
 }
 

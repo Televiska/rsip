@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct XFsSendingMessage(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for XFsSendingMessage {
 impl From<String> for XFsSendingMessage {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for XFsSendingMessage {
+    fn into(self) -> Header {
+        Header::XFsSendingMessage(self)
     }
 }
 

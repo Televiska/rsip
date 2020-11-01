@@ -1,7 +1,9 @@
 //TODO: this needs some love
 
-use crate::common::{
-    auth::{Algorithm, Qop, Error},
+use crate::{
+    common::auth::{Algorithm, Qop},
+    headers::Header,
+    Error,
 };
 use std::{
     collections::HashMap,
@@ -47,15 +49,15 @@ impl Authorization {
     pub fn verify_for(&self, password: String) -> Result<bool, Error> {
         let response = match &self.response {
             Some(response) => response,
-            None => return Err("missing part: response".into()),
+            None => return Err(Error::InvalidParam("missing part: response".into())),
         };
         let cnonce = match &self.cnonce {
             Some(cnonce) => cnonce,
-            None => return Err("missing part: cnonce".into()),
+            None => return Err(Error::InvalidParam("missing part: cnonce".into())),
         };
         let nc = match self.nc {
             Some(nc) => nc,
-            None => return Err("missing part: nc".into()),
+            None => return Err(Error::InvalidParam("missing part: nc".into())),
         };
 
         let ha1 = md5::compute(&format!("{}:{}:{}", self.username, self.realm, password));
@@ -67,6 +69,12 @@ impl Authorization {
         let digest = format!("{:x}", md5::compute(digest));
 
         Ok(digest == *response)
+    }
+}
+
+impl Into<Header> for Authorization {
+    fn into(self) -> Header {
+        Header::Authorization(self)
     }
 }
 
@@ -122,7 +130,10 @@ impl TryFrom<libsip::headers::AuthHeader> for Authorization {
             cnonce: get_from(&map, "cnonce").ok(),
             nc: get_from(&map, "nc")
                 .ok()
-                .map(|s| s.parse::<u32>().map_err(|e| e.to_string()))
+                .map(|s| {
+                    s.parse::<u32>()
+                        .map_err(|_| Error::InvalidParam("nc cast to u32".into()))
+                })
                 .transpose()?,
         })
     }
@@ -131,14 +142,14 @@ impl TryFrom<libsip::headers::AuthHeader> for Authorization {
 fn get_from(map: &HashMap<String, String>, part: &str) -> Result<String, Error> {
     Ok(map
         .get(part)
-        .ok_or_else(|| format!("missing part: {}", Into::<String>::into(part)))?
+        .ok_or_else(|| {
+            Error::InvalidParam(format!("missing part: {}", Into::<String>::into(part)))
+        })?
         .to_string())
 }
-
 
 impl Into<libsip::headers::Header> for Authorization {
     fn into(self) -> libsip::headers::Header {
         libsip::headers::Header::Authorization(self.into())
     }
 }
-

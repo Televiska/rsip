@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Supported(Vec<String>);
 
@@ -10,6 +12,12 @@ impl Into<Vec<String>> for Supported {
 impl From<Vec<String>> for Supported {
     fn from(from: Vec<String>) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for Supported {
+    fn into(self) -> Header {
+        Header::Supported(self)
     }
 }
 

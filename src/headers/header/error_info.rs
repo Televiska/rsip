@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ErrorInfo(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for ErrorInfo {
 impl From<String> for ErrorInfo {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for ErrorInfo {
+    fn into(self) -> Header {
+        Header::ErrorInfo(self)
     }
 }
 

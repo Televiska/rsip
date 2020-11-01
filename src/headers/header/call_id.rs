@@ -1,3 +1,4 @@
+use crate::headers::Header;
 use uuid::Uuid;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -20,6 +21,12 @@ impl Into<String> for CallId {
 impl From<String> for CallId {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for CallId {
+    fn into(self) -> Header {
+        Header::CallId(self)
     }
 }
 

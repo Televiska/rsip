@@ -1,6 +1,9 @@
 //TODO: this needs some love
 
-use crate::common::auth::{Algorithm, Qop};
+use crate::{
+    common::auth::{Algorithm, Qop},
+    headers::Header,
+};
 use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -21,14 +24,20 @@ pub struct WwwAuthenticate {
 impl WwwAuthenticate {
     pub fn new(realm: String, nonce: String) -> Self {
         Self {
-            domain: Some(realm.clone()),
+            domain: None,
             realm,
-            nonce,
+            nonce: base64::encode(nonce),
             opaque: None,
             stale: false,
             algorithm: Algorithm::default(),
             qop: Some(Qop::Auth),
         }
+    }
+}
+
+impl Into<Header> for WwwAuthenticate {
+    fn into(self) -> Header {
+        Header::WwwAuthenticate(self)
     }
 }
 
@@ -62,4 +71,3 @@ impl Into<libsip::headers::Header> for WwwAuthenticate {
         libsip::headers::Header::WwwAuthenticate(self.into())
     }
 }
-

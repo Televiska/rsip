@@ -1,7 +1,8 @@
 use crate::{
     common::{Method, Uri, Version},
-    headers::Headers,
-    SipMessage,
+    error::Header as ErrorHeader,
+    headers::{self, Header, Headers},
+    Error, SipMessage,
 };
 use bytes::Bytes;
 use nom::error::VerboseError;
@@ -44,6 +45,14 @@ impl Request {
     pub fn body_mut(&mut self) -> &mut Vec<u8> {
         &mut self.body
     }
+
+    pub fn authorization_header(&self) -> Result<&headers::Authorization, Error> {
+        header!(
+            self.headers().iter(),
+            Header::Authorization,
+            Error::MissingHeader(ErrorHeader::Authorization)
+        )
+    }
 }
 
 impl TryFrom<libsip::core::SipMessage> for Request {
@@ -85,6 +94,16 @@ impl TryFrom<SipMessage> for Request {
                 Err("Can't convert a models::SipMessage::Response into Request !")
             }
         }
+    }
+}
+
+impl std::fmt::Display for Request {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            Into::<libsip::core::SipMessage>::into(self.clone())
+        )
     }
 }
 

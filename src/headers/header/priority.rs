@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Priority(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for Priority {
 impl From<String> for Priority {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for Priority {
+    fn into(self) -> Header {
+        Header::Priority(self)
     }
 }
 

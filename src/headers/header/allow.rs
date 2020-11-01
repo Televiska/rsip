@@ -1,4 +1,4 @@
-use crate::common::Method;
+use crate::{common::Method, headers::Header};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Allow(pub Vec<Method>);
@@ -12,6 +12,12 @@ impl Into<Vec<Method>> for Allow {
 impl From<Vec<Method>> for Allow {
     fn from(from: Vec<Method>) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for Allow {
+    fn into(self) -> Header {
+        Header::Allow(self)
     }
 }
 

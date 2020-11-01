@@ -1,7 +1,13 @@
-use crate::common;
+use crate::{common, headers::Header};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct AcceptEncoding(pub common::ContentType);
+
+impl Into<Header> for AcceptEncoding {
+    fn into(self) -> Header {
+        Header::AcceptEncoding(self)
+    }
+}
 
 impl From<libsip::headers::ContentType> for AcceptEncoding {
     fn from(from: libsip::headers::ContentType) -> Self {

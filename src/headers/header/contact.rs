@@ -1,11 +1,51 @@
+use crate::headers::Header;
 use crate::headers::{ContactParam, NamedHeader};
+use crate::Error;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Contact(pub NamedHeader<ContactParam>);
 
+impl Contact {
+    pub fn expires(&self) -> Result<Option<u32>, Error> {
+        self.0
+            .params
+            .iter()
+            .find(|param| match param {
+                ContactParam::Custom(key, _) if key == "expires" => true,
+                _ => false,
+            })
+            .map(|param| param.value())
+            .flatten()
+            .map(|s| {
+                s.parse::<u32>()
+                    .map_err(|_| Error::InvalidParam("expire failed to cast to u32".into()))
+            })
+            .transpose()
+    }
+
+    pub fn sip_instance(&self) -> Option<String> {
+        self.0
+            .params
+            .iter()
+            .find(|param| match param {
+                ContactParam::Custom(key, _) if key == "+sip.instance" => true,
+                _ => false,
+            })
+            .map(|param| param.value())
+            .flatten()
+            .map(Into::into)
+    }
+}
+
 impl From<NamedHeader<ContactParam>> for Contact {
     fn from(named: NamedHeader<ContactParam>) -> Self {
         Self(named)
+    }
+}
+
+impl Into<Header> for Contact {
+    fn into(self) -> Header {
+        Header::Contact(self)
     }
 }
 

@@ -1,16 +1,25 @@
+use crate::headers::Header;
+
+//TODO: make all inner fields as public
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct UserAgent(String);
+pub struct UserAgent(pub String);
 
 //TODO: this should compiled-configured
 impl Default for UserAgent {
     fn default() -> Self {
-        UserAgent("televiska".into())
+        UserAgent("rsip".into())
     }
 }
 
 impl Into<String> for UserAgent {
     fn into(self) -> String {
         self.0
+    }
+}
+
+impl Into<Header> for UserAgent {
+    fn into(self) -> Header {
+        Header::UserAgent(self)
     }
 }
 

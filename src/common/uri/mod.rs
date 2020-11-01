@@ -12,38 +12,25 @@ pub use schema::Schema;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Uri {
-    pub schema: Schema,
+    pub schema: Option<Schema>,
     pub host_with_port: HostWithPort,
     pub auth: Option<Auth>,
     pub params: Vec<Param>,
 }
 
-/*
-pub trait TestsUriExt {
-    fn localhost() -> Uri;
-    fn localhost_with_port(port: u16) -> Uri;
+impl Uri {
+    pub fn username(&self) -> Option<String> {
+        self.auth.as_ref().map(|auth| auth.username.clone())
+    }
+
+    pub fn domain(&self) -> String {
+        self.host_with_port.clone().domain()
+    }
+
+    pub fn port(&self) -> u16 {
+        self.host_with_port.clone().port()
+    }
 }
-
-impl TestsUriExt for Uri {
-    fn localhost() -> Self {
-        use std::net::{IpAddr, Ipv4Addr};
-
-        Self {
-            host_with_port: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)).into(),
-            ..Default::default()
-        }
-    }
-
-    fn localhost_with_port(port: u16) -> Self {
-        use crate::common::SocketAddrExt;
-        use std::net::SocketAddr;
-
-        Self {
-            host_with_port: SocketAddr::localhost(port).into(),
-            ..Default::default()
-        }
-    }
-}*/
 
 impl Default for Uri {
     fn default() -> Self {
@@ -56,10 +43,16 @@ impl Default for Uri {
     }
 }
 
+impl std::fmt::Display for Uri {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Into::<libsip::uri::Uri>::into(self.clone()))
+    }
+}
+
 impl Into<libsip::uri::Uri> for Uri {
     fn into(self) -> libsip::uri::Uri {
         libsip::uri::Uri {
-            schema: Some(self.schema.into()),
+            schema: self.schema.map(Into::into),
             host: self.host_with_port.into(),
             auth: self.auth.map(|a| a.into()),
             parameters: self
@@ -74,7 +67,7 @@ impl Into<libsip::uri::Uri> for Uri {
 impl From<libsip::uri::Uri> for Uri {
     fn from(from: libsip::uri::Uri) -> Self {
         Self {
-            schema: from.schema.map(|s| s.into()).unwrap_or_default(),
+            schema: from.schema.map(Into::into),
             host_with_port: from.host.into(),
             auth: from.auth.map(|a| a.into()),
             params: from

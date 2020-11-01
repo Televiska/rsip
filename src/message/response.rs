@@ -2,11 +2,11 @@ use crate::{
     common::{StatusCode, Version},
     Headers, SipMessage,
 };
-use std::convert::TryFrom;
-use nom::error::VerboseError;
 use bytes::Bytes;
+use nom::error::VerboseError;
+use std::convert::TryFrom;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct Response {
     pub code: StatusCode,
     pub version: Version,
@@ -80,6 +80,16 @@ impl TryFrom<libsip::core::SipMessage> for Response {
     }
 }
 
+impl std::fmt::Display for Response {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            Into::<libsip::core::SipMessage>::into(self.clone())
+        )
+    }
+}
+
 impl Into<libsip::core::SipMessage> for Response {
     fn into(self) -> libsip::core::SipMessage {
         let mut headers = libsip::headers::Headers::new();
@@ -105,8 +115,8 @@ impl TryFrom<Bytes> for Response {
     fn try_from(bytes: Bytes) -> Result<Self, Self::Error> {
         use std::convert::TryInto;
 
-        let (_, sip_message) =
-            libsip::parse_message::<VerboseError<&[u8]>>(&bytes.to_vec()).map_err(|e| e.to_string())?;
+        let (_, sip_message) = libsip::parse_message::<VerboseError<&[u8]>>(&bytes.to_vec())
+            .map_err(|e| e.to_string())?;
 
         Ok(sip_message.try_into()?)
     }

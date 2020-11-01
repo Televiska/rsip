@@ -36,7 +36,7 @@ pub struct Tag(String);
 
 impl Default for Tag {
     fn default() -> Self {
-        Self("arandomtag".into())
+        Self(format!("viska-{}", uuid::Uuid::new_v4()))
     }
 }
 

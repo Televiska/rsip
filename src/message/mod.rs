@@ -1,13 +1,15 @@
 #[macro_use]
 mod macros;
-mod sip_message;
+mod debug_ext;
+mod expires_ext;
+mod headers_ext;
 mod request;
 mod response;
-mod headers_ext;
-mod expires_ext;
+mod sip_message;
 
-pub use sip_message::SipMessage;
+pub use debug_ext::DebugExt;
+pub use expires_ext::ExpiresExt;
+pub use headers_ext::HeadersExt;
 pub use request::Request;
 pub use response::Response;
-pub use headers_ext::HeadersExt;
-pub use expires_ext::ExpiresExt;
+pub use sip_message::SipMessage;

@@ -4,48 +4,48 @@ mod accept_language;
 mod alert_info;
 mod allow;
 mod authentication_info;
+mod authorization;
 mod call_id;
+mod call_info;
 mod contact;
+mod content_disposition;
 mod content_encoding;
 mod content_language;
 mod content_length;
 mod content_type;
 mod cseq;
+mod date;
 mod error_info;
 mod event;
 mod expires;
 mod from;
-mod max_forwards;
-mod named;
-mod reply_to;
-mod to;
-mod user_agent;
-mod via;
-mod authorization;
-mod www_authenticate;
-mod call_info;
 mod in_reply_to;
-mod content_disposition;
-mod date;
-mod min_expires;
+mod max_forwards;
 mod mime_version;
+mod min_expires;
+pub mod named;
 mod organization;
+mod priority;
 mod proxy_authenticate;
 mod proxy_authorization;
 mod proxy_require;
+mod record_route;
+mod reply_to;
+mod require;
 mod retry_after;
 mod route;
+mod server;
 mod subject;
 mod subscription_state;
-mod record_route;
-mod server;
 mod supported;
 mod timestamp;
+mod to;
 mod unsupported;
+mod user_agent;
+mod via;
 mod warning;
-mod priority;
+mod www_authenticate;
 mod x_fs_sending_message;
-mod require;
 
 pub use accept::Accept;
 pub use accept_encoding::AcceptEncoding;
@@ -53,48 +53,48 @@ pub use accept_language::AcceptLanguage;
 pub use alert_info::AlertInfo;
 pub use allow::Allow;
 pub use authentication_info::AuthenticationInfo;
+pub use authorization::Authorization;
 pub use call_id::CallId;
+pub use call_info::CallInfo;
 pub use contact::Contact;
+pub use content_disposition::ContentDisposition;
 pub use content_encoding::ContentEncoding;
 pub use content_language::ContentLanguage;
 pub use content_length::ContentLength;
 pub use content_type::ContentType;
 pub use cseq::CSeq;
+pub use date::Date;
 pub use error_info::ErrorInfo;
 pub use event::Event;
 pub use expires::Expires;
 pub use from::From;
-pub use max_forwards::MaxForwards;
-pub use named::{ContactParam, GenValue, NamedHeader, NamedParam, NamedParams};
-pub use reply_to::ReplyTo;
-pub use to::To;
-pub use user_agent::UserAgent;
-pub use via::Via;
-pub use authorization::Authorization;
-pub use www_authenticate::WwwAuthenticate;
-pub use call_info::CallInfo;
 pub use in_reply_to::InReplyTo;
-pub use content_disposition::ContentDisposition;
-pub use date::Date;
-pub use min_expires::MinExpires;
+pub use max_forwards::MaxForwards;
 pub use mime_version::MimeVersion;
+pub use min_expires::MinExpires;
+pub use named::{ContactParam, GenValue, NamedHeader, NamedParam, NamedParams};
 pub use organization::Organization;
+pub use priority::Priority;
 pub use proxy_authenticate::ProxyAuthenticate;
 pub use proxy_authorization::ProxyAuthorization;
 pub use proxy_require::ProxyRequire;
+pub use record_route::RecordRoute;
+pub use reply_to::ReplyTo;
+pub use require::Require;
 pub use retry_after::RetryAfter;
 pub use route::Route;
+pub use server::Server;
 pub use subject::Subject;
 pub use subscription_state::SubscriptionState;
-pub use record_route::RecordRoute;
-pub use server::Server;
 pub use supported::Supported;
 pub use timestamp::Timestamp;
+pub use to::To;
 pub use unsupported::Unsupported;
+pub use user_agent::UserAgent;
+pub use via::Via;
 pub use warning::Warning;
-pub use priority::Priority;
+pub use www_authenticate::WwwAuthenticate;
 pub use x_fs_sending_message::XFsSendingMessage;
-pub use require::Require;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Header {
@@ -146,6 +146,12 @@ pub enum Header {
     WwwAuthenticate(WwwAuthenticate),
     XFsSendingMessage(XFsSendingMessage),
     Other(String, String),
+}
+
+impl std::fmt::Display for Header {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Into::<libsip::Header>::into(self.clone()))
+    }
 }
 
 impl Into<libsip::Header> for Header {

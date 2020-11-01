@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ProxyRequire(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for ProxyRequire {
 impl From<String> for ProxyRequire {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for ProxyRequire {
+    fn into(self) -> Header {
+        Header::ProxyRequire(self)
     }
 }
 

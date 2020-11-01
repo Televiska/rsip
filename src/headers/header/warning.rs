@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Warning(String);
 
@@ -10,6 +12,12 @@ impl Into<String> for Warning {
 impl From<String> for Warning {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for Warning {
+    fn into(self) -> Header {
+        Header::Warning(self)
     }
 }
 

@@ -78,6 +78,16 @@ impl TryFrom<libsip::SipMessage> for SipMessage {
     }
 }
 
+impl std::fmt::Display for SipMessage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            Into::<libsip::core::SipMessage>::into(self.clone())
+        )
+    }
+}
+
 impl Into<libsip::SipMessage> for SipMessage {
     fn into(self) -> libsip::SipMessage {
         match self {

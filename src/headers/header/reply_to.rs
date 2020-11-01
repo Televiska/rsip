@@ -1,4 +1,4 @@
-use crate::headers::{NamedHeader, NamedParam};
+use crate::headers::{Header, NamedHeader, NamedParam};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ReplyTo(pub NamedHeader<NamedParam>);
@@ -6,6 +6,12 @@ pub struct ReplyTo(pub NamedHeader<NamedParam>);
 impl std::convert::From<NamedHeader<NamedParam>> for ReplyTo {
     fn from(named: NamedHeader<NamedParam>) -> Self {
         Self(named)
+    }
+}
+
+impl Into<Header> for ReplyTo {
+    fn into(self) -> Header {
+        Header::ReplyTo(self)
     }
 }
 

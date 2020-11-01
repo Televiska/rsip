@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MaxForwards(pub u32);
 
@@ -10,6 +12,12 @@ impl Default for MaxForwards {
 impl Into<u32> for MaxForwards {
     fn into(self) -> u32 {
         self.0
+    }
+}
+
+impl Into<Header> for MaxForwards {
+    fn into(self) -> Header {
+        Header::MaxForwards(self)
     }
 }
 

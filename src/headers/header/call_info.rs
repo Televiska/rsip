@@ -1,3 +1,5 @@
+use crate::headers::Header;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct CallInfo(pub String);
 
@@ -10,6 +12,12 @@ impl Into<String> for CallInfo {
 impl From<String> for CallInfo {
     fn from(from: String) -> Self {
         Self(from)
+    }
+}
+
+impl Into<Header> for CallInfo {
+    fn into(self) -> Header {
+        Header::CallInfo(self)
     }
 }
 

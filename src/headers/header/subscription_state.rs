@@ -1,3 +1,4 @@
+use crate::headers::Header;
 use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -31,6 +32,12 @@ pub struct Terminated {
 pub struct Other {
     state: String,
     parameters: HashMap<String, Option<String>>,
+}
+
+impl Into<Header> for SubscriptionState {
+    fn into(self) -> Header {
+        Header::SubscriptionState(self)
+    }
 }
 
 impl Into<libsip::headers::SubscriptionState> for Active {
@@ -84,12 +91,20 @@ impl Into<libsip::headers::SubscriptionState> for SubscriptionState {
 impl From<libsip::headers::SubscriptionState> for SubscriptionState {
     fn from(from: libsip::headers::SubscriptionState) -> Self {
         match from {
-            libsip::headers::SubscriptionState::Active { expires, parameters } => {
-                Self::Active(Active { expires, parameters })
-            }
-            libsip::headers::SubscriptionState::Pending { expires, parameters } => {
-                Self::Pending(Pending { expires, parameters })
-            }
+            libsip::headers::SubscriptionState::Active {
+                expires,
+                parameters,
+            } => Self::Active(Active {
+                expires,
+                parameters,
+            }),
+            libsip::headers::SubscriptionState::Pending {
+                expires,
+                parameters,
+            } => Self::Pending(Pending {
+                expires,
+                parameters,
+            }),
             libsip::headers::SubscriptionState::Terminated {
                 retry_after,
                 reason,
