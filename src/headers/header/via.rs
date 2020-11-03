@@ -50,6 +50,15 @@ impl Default for Via {
     }
 }
 
+impl From<Uri> for Via {
+    fn from(uri: Uri) -> Self {
+        Self {
+            uri,
+            ..Default::default()
+        }
+    }
+}
+
 impl Into<Header> for Via {
     fn into(self) -> Header {
         Header::Via(self)

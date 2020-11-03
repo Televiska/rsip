@@ -1,4 +1,4 @@
-use crate::headers::{named::Tag, Header, NamedHeader, NamedParam};
+use crate::{common::Uri, headers::{named::Tag, Header, NamedHeader, NamedParam}};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct To(pub NamedHeader<NamedParam>);
@@ -15,6 +15,12 @@ impl To {
 impl From<NamedHeader<NamedParam>> for To {
     fn from(named: NamedHeader<NamedParam>) -> Self {
         Self(named)
+    }
+}
+
+impl From<Uri> for To {
+    fn from(uri: Uri) -> Self {
+        Self(uri.into())
     }
 }
 

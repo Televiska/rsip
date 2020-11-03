@@ -16,12 +16,6 @@ pub enum Method {
     Update,
 }
 
-impl Default for Method {
-    fn default() -> Method {
-        Method::Register
-    }
-}
-
 impl std::fmt::Display for Method {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", Into::<libsip::core::Method>::into(self.clone()))

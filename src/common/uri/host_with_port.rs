@@ -50,6 +50,13 @@ impl From<Domain> for HostWithPort {
     }
 }
 
+impl std::fmt::Display for HostWithPort {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Into::<libsip::uri::Domain>::into(self.clone()))
+    }
+}
+
+
 impl Into<libsip::uri::Domain> for HostWithPort {
     fn into(self) -> libsip::uri::Domain {
         use crate::common::IpAddrLibsipExt;

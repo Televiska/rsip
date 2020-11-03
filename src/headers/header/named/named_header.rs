@@ -8,6 +8,16 @@ pub struct NamedHeader<T: NamedParamTrait> {
     pub params: NamedParams<T>,
 }
 
+impl<T: NamedParamTrait> From<Uri> for NamedHeader<T> {
+    fn from(uri: Uri) -> Self {
+        Self {
+            uri,
+            display_name: Default::default(),
+            params: Default::default()
+        }
+    }
+}
+
 impl<T: NamedParamTrait> NamedHeader<T> {
     pub fn username(&self) -> Option<String> {
         self.uri.auth.as_ref().map(|a| a.username.clone())

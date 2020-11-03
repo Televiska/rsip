@@ -1,4 +1,4 @@
-use crate::headers::{named::Tag, Header, NamedHeader, NamedParam};
+use crate::{common::Uri, headers::{named::Tag, Header, NamedHeader, NamedParam}};
 
 //TODO: maybe NamedHeader could become a trait instead
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -10,6 +10,12 @@ impl From {
             NamedParam::Tag(tag) => Some(tag),
             _ => None,
         })
+    }
+}
+
+impl std::convert::From<Uri> for From {
+    fn from(uri: Uri) -> Self {
+        Self(uri.into())
     }
 }
 

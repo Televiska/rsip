@@ -1,6 +1,8 @@
-use crate::headers::Header;
-use crate::headers::{ContactParam, NamedHeader};
-use crate::Error;
+use crate::{
+    common::Uri,
+    headers::{ContactParam, Header, NamedHeader},
+    Error,
+};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Contact(pub NamedHeader<ContactParam>);
@@ -40,6 +42,12 @@ impl Contact {
 impl From<NamedHeader<ContactParam>> for Contact {
     fn from(named: NamedHeader<ContactParam>) -> Self {
         Self(named)
+    }
+}
+
+impl From<Uri> for Contact {
+    fn from(uri: Uri) -> Self {
+        Self(uri.into())
     }
 }
 
