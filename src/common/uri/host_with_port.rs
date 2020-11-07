@@ -56,7 +56,6 @@ impl std::fmt::Display for HostWithPort {
     }
 }
 
-
 impl Into<libsip::uri::Domain> for HostWithPort {
     fn into(self) -> libsip::uri::Domain {
         use crate::common::IpAddrLibsipExt;

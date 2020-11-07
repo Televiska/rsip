@@ -1,4 +1,7 @@
-use crate::{common::Uri, headers::{named::Tag, Header, NamedHeader, NamedParam}};
+use crate::{
+    common::Uri,
+    headers::{named::Tag, Header, NamedHeader, NamedParam},
+};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct To(pub NamedHeader<NamedParam>);

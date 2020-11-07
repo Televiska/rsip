@@ -1,4 +1,7 @@
-use crate::{common::Uri, headers::{named::Tag, Header, NamedHeader, NamedParam}};
+use crate::{
+    common::Uri,
+    headers::{named::Tag, Header, NamedHeader, NamedParam},
+};
 
 //TODO: maybe NamedHeader could become a trait instead
 #[derive(Debug, PartialEq, Eq, Clone)]

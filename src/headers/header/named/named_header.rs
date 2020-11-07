@@ -13,7 +13,7 @@ impl<T: NamedParamTrait> From<Uri> for NamedHeader<T> {
         Self {
             uri,
             display_name: Default::default(),
-            params: Default::default()
+            params: Default::default(),
         }
     }
 }
