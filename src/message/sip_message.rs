@@ -12,19 +12,11 @@ pub enum SipMessage {
 
 impl SipMessage {
     pub fn is_request(&self) -> bool {
-        if let Self::Request(_) = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Self::Request(_))
     }
 
     pub fn is_response(&self) -> bool {
-        if let Self::Response(_) = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Self::Response(_))
     }
 
     pub fn version(&self) -> &Version {

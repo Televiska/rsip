@@ -17,10 +17,7 @@ impl ExpiresExt for Request {
                 .0
                 .params
                 .iter()
-                .find(|param| match param {
-                    ContactParam::Custom(key, _) if key == "expires" => true,
-                    _ => false,
-                })
+                .find(|param| matches!(param, ContactParam::Custom(key, _) if key == "expires"))
                 .map(|param| param.value())
                 .flatten()
                 .map(|s| {
@@ -56,10 +53,7 @@ impl ExpiresExt for Response {
                 .0
                 .params
                 .iter()
-                .find(|param| match param {
-                    ContactParam::Custom(key, _) if key == "expires" => true,
-                    _ => false,
-                })
+                .find(|param| matches!(param, ContactParam::Custom(key, _) if key == "expires"))
                 .map(|param| param.value())
                 .flatten()
                 .map(|s| {
@@ -90,39 +84,23 @@ impl ExpiresExt for Response {
 
 impl ExpiresExt for SipMessage {
     fn contact_header_expires(&self) -> Result<Option<u32>, Error> {
-        match header_opt!(self.headers().iter(), Header::Contact) {
-            Some(contact) => contact
-                .0
-                .params
-                .iter()
-                .find(|param| match param {
-                    ContactParam::Custom(key, _) if key == "expires" => true,
-                    _ => false,
-                })
-                .map(|param| param.value())
-                .flatten()
-                .map(|s| {
-                    s.parse::<u32>()
-                        .map_err(|_| Error::InvalidParam("expire failed to cast to u32".into()))
-                })
-                .transpose(),
-            None => Ok(None),
+        match self {
+            Self::Request(request) => request.contact_header_expires(),
+            Self::Response(response) => response.contact_header_expires(),
         }
     }
 
     fn expires_header(&self) -> Result<&Expires, Error> {
-        header!(
-            self.headers().iter(),
-            Header::Expires,
-            Error::MissingHeader(ErrorHeader::Expires)
-        )
+        match self {
+            Self::Request(request) => request.expires_header(),
+            Self::Response(response) => response.expires_header(),
+        }
     }
 
     fn min_expires_header(&self) -> Result<&MinExpires, Error> {
-        header!(
-            self.headers().iter(),
-            Header::MinExpires,
-            Error::MissingHeader(ErrorHeader::MinExpires)
-        )
+        match self {
+            Self::Request(request) => request.min_expires_header(),
+            Self::Response(response) => response.min_expires_header(),
+        }
     }
 }

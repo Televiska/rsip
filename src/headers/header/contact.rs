@@ -12,10 +12,7 @@ impl Contact {
         self.0
             .params
             .iter()
-            .find(|param| match param {
-                ContactParam::Custom(key, _) if key == "expires" => true,
-                _ => false,
-            })
+            .find(|param| matches!(param, ContactParam::Custom(key, _) if key == "expires"))
             .map(|param| param.value())
             .flatten()
             .map(|s| {
@@ -29,10 +26,7 @@ impl Contact {
         self.0
             .params
             .iter()
-            .find(|param| match param {
-                ContactParam::Custom(key, _) if key == "+sip.instance" => true,
-                _ => false,
-            })
+            .find(|param| matches!(param, ContactParam::Custom(key, _) if key == "+sip.instance"))
             .map(|param| param.value())
             .flatten()
             .map(Into::into)
