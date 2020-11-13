@@ -1,8 +1,7 @@
 use crate::{
     common::{Method, Uri, Version},
-    error::Header as ErrorHeader,
     headers::{self, Header, Headers},
-    Error, SipMessage,
+    SipMessage,
 };
 use bytes::Bytes;
 use nom::error::VerboseError;
@@ -46,12 +45,8 @@ impl Request {
         &mut self.body
     }
 
-    pub fn authorization_header(&self) -> Result<&headers::Authorization, Error> {
-        header!(
-            self.headers().iter(),
-            Header::Authorization,
-            Error::MissingHeader(ErrorHeader::Authorization)
-        )
+    pub fn authorization_header(&self) -> Option<&headers::Authorization> {
+        header_opt!(self.headers().iter(), Header::Authorization)
     }
 }
 
