@@ -14,7 +14,7 @@ pub use ip_addr::{IpAddrExt, IpAddrLibsipExt};
 pub use language::Language;
 pub use method::Method;
 pub use socket_addr::{SocketAddrExt, SocketAddrLibsipExt};
-pub use status_code::StatusCode;
+pub use status_code::{StatusCode, StatusCodeKind};
 pub use transport::Transport;
 pub use uri::Uri;
 pub use version::Version;

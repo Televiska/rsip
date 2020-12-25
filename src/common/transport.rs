@@ -1,6 +1,6 @@
 //use crate::common::uri::Param;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Transport {
     Udp,
     Tcp,

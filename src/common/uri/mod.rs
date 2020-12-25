@@ -30,6 +30,13 @@ impl Uri {
     pub fn port(&self) -> u16 {
         self.host_with_port.clone().port()
     }
+
+    pub fn branch(&self) -> Option<&Branch> {
+        self.params.iter().find_map(|param| match param {
+            Param::Branch(branch) => Some(branch),
+            _ => None,
+        })
+    }
 }
 
 impl Default for Uri {

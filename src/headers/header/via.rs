@@ -51,7 +51,11 @@ impl Default for Via {
 }
 
 impl From<Uri> for Via {
-    fn from(uri: Uri) -> Self {
+    fn from(mut uri: Uri) -> Self {
+        if uri.branch().is_none() {
+            uri.params.push(Param::Branch(Branch::default()))
+        }
+
         Self {
             uri,
             ..Default::default()

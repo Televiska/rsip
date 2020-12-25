@@ -11,6 +11,12 @@ impl Headers {
         self.0.push(h)
     }
 
+    pub fn unique_push(&mut self, h: Header) {
+        self.0
+            .retain(|s| std::mem::discriminant(s) != std::mem::discriminant(&h));
+        self.push(h);
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &Header> {
         self.0.iter()
     }

@@ -1,7 +1,7 @@
 //written by hand so prone to error!
 //we should create a macro that auto-generates these codes!
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone, Copy)]
 pub enum StatusCode {
     Trying,
     Ringing,
@@ -77,6 +77,32 @@ pub enum StatusCode {
     NotAcceptableGlobal,
     Unwanted,
     Other(u16),
+}
+
+#[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone, Copy)]
+pub enum StatusCodeKind {
+    Provisional,
+    Successful,
+    Redirection,
+    RequestFailure,
+    ServerFailure,
+    GlobalFailure,
+    Other,
+}
+
+impl StatusCode {
+    pub fn kind(&self) -> StatusCodeKind {
+        let code = Into::<u16>::into(*self);
+        match code {
+            code if code >= 100 && code < 200 => StatusCodeKind::Provisional,
+            code if code >= 200 && code < 300 => StatusCodeKind::Successful,
+            code if code >= 300 && code < 400 => StatusCodeKind::Redirection,
+            code if code >= 400 && code < 500 => StatusCodeKind::RequestFailure,
+            code if code >= 500 && code < 600 => StatusCodeKind::ServerFailure,
+            code if code >= 600 && code < 700 => StatusCodeKind::GlobalFailure,
+            _ => StatusCodeKind::Other,
+        }
+    }
 }
 
 impl Into<u16> for StatusCode {
@@ -248,5 +274,11 @@ impl From<u16> for StatusCode {
 impl Default for StatusCode {
     fn default() -> Self {
         Self::OK
+    }
+}
+
+impl std::fmt::Display for StatusCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Into::<u16>::into(*self))
     }
 }

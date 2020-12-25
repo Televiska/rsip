@@ -20,6 +20,13 @@ impl<T: NamedParamTrait> NamedParams<T> {
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
         self.0.iter_mut()
     }
+
+    pub fn retain<F>(&mut self, f: F)
+    where
+        F: FnMut(&T) -> bool,
+    {
+        self.0.retain(f)
+    }
 }
 
 impl<T: NamedParamTrait> IntoIterator for NamedParams<T> {

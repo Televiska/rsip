@@ -13,6 +13,14 @@ impl To {
             _ => None,
         })
     }
+
+    pub fn with_tag(&mut self, tag: impl Into<Tag>) {
+        self.0
+            .params
+            .retain(|param| !matches!(param, NamedParam::Tag(_)));
+
+        self.0.params.push(NamedParam::Tag(tag.into()));
+    }
 }
 
 impl From<NamedHeader<NamedParam>> for To {
