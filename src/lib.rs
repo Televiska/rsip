@@ -5,4 +5,4 @@ pub mod message;
 
 pub use error::Error;
 pub use headers::{Header, Headers};
-pub use message::{Request, Response, SipMessage};
+pub use message::{macros, Request, Response, SipMessage};

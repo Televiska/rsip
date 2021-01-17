@@ -1,6 +1,6 @@
 use crate::{
     common::Uri,
-    headers::{named::Tag, Header, NamedHeader, NamedParam},
+    headers::{named::Tag, Header, NamedHeader, NamedParam, NamedParams},
 };
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -20,6 +20,21 @@ impl To {
             .retain(|param| !matches!(param, NamedParam::Tag(_)));
 
         self.0.params.push(NamedParam::Tag(tag.into()));
+    }
+
+    pub fn with_display_name(mut self, display_name: Option<String>) -> Self {
+        self.0.display_name = display_name;
+        self
+    }
+
+    pub fn with_uri(mut self, uri: Uri) -> Self {
+        self.0.uri = uri;
+        self
+    }
+
+    pub fn with_params(mut self, params: NamedParams<NamedParam>) -> Self {
+        self.0.params = params;
+        self
     }
 }
 

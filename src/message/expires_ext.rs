@@ -13,18 +13,7 @@ pub trait ExpiresExt {
 impl ExpiresExt for Request {
     fn contact_header_expires(&self) -> Result<Option<u32>, Error> {
         match header_opt!(self.headers().iter(), Header::Contact) {
-            Some(contact) => contact
-                .0
-                .params
-                .iter()
-                .find(|param| matches!(param, ContactParam::Custom(key, _) if key == "expires"))
-                .map(|param| param.value())
-                .flatten()
-                .map(|s| {
-                    s.parse::<u32>()
-                        .map_err(|_| Error::InvalidParam("expire failed to cast to u32".into()))
-                })
-                .transpose(),
+            Some(contact) => contact.expires(),
             None => Ok(None),
         }
     }

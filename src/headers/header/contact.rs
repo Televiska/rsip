@@ -3,6 +3,7 @@ use crate::{
     headers::{ContactParam, Header, NamedHeader},
     Error,
 };
+use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Contact(pub NamedHeader<ContactParam>);
@@ -84,5 +85,25 @@ impl From<libsip::headers::ContactHeader> for Contact {
 impl Into<libsip::headers::Header> for Contact {
     fn into(self) -> libsip::headers::Header {
         libsip::headers::Header::Contact(Into::<libsip::headers::ContactHeader>::into(self))
+    }
+}
+
+impl TryFrom<String> for Contact {
+    type Error = crate::Error;
+
+    fn try_from(string: String) -> Result<Self, Self::Error> {
+        use libsip::headers::parse::parse_contact_header;
+        use nom::error::VerboseError;
+
+        let libsip_header = parse_contact_header::<VerboseError<&[u8]>>(
+            format!("Contact: {}\r\n", string).as_bytes(),
+        )?
+        .1;
+        match libsip_header {
+            libsip::headers::Header::Contact(contact) => Ok(contact.into()),
+            _ => Err(crate::Error::ParseError(
+                "got different libsip header!".into(),
+            )),
+        }
     }
 }

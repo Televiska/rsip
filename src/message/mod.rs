@@ -1,5 +1,5 @@
 #[macro_use]
-mod macros;
+pub mod macros;
 mod debug_ext;
 mod expires_ext;
 mod headers_ext;

@@ -1,6 +1,7 @@
 //use crate::common::uri::Param;
 //use std::convert::TryFrom;
 
+//TODO: host should be dns type for better safety
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Domain {
     pub host: String,

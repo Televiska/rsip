@@ -28,6 +28,13 @@ impl Headers {
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Header> {
         self.0.iter_mut()
     }
+
+    pub fn retain<F>(&mut self, f: F)
+    where
+        F: FnMut(&Header) -> bool,
+    {
+        self.0.retain(f)
+    }
 }
 
 impl IntoIterator for Headers {

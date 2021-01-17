@@ -1,6 +1,6 @@
 use crate::{
     common::Uri,
-    headers::{named::Tag, Header, NamedHeader, NamedParam},
+    headers::{named::Tag, Header, NamedHeader, NamedParam, NamedParams},
 };
 
 //TODO: maybe NamedHeader could become a trait instead
@@ -13,6 +13,21 @@ impl From {
             NamedParam::Tag(tag) => Some(tag),
             _ => None,
         })
+    }
+
+    pub fn with_display_name(mut self, display_name: Option<String>) -> Self {
+        self.0.display_name = display_name;
+        self
+    }
+
+    pub fn with_uri(mut self, uri: Uri) -> Self {
+        self.0.uri = uri;
+        self
+    }
+
+    pub fn with_params(mut self, params: NamedParams<NamedParam>) -> Self {
+        self.0.params = params;
+        self
     }
 }
 

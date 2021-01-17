@@ -8,12 +8,26 @@ pub enum HostWithPort {
     IpAddr(IpAddr),
 }
 
-impl HostWithPort {
-    pub fn domain(self) -> String {
+pub enum DomainType {
+    Domain(String),
+    Ip(IpAddr),
+}
+
+impl std::fmt::Display for DomainType {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::Domain(domain) => domain.host,
-            Self::SocketAddr(socket_addr) => socket_addr.ip().to_string(),
-            Self::IpAddr(ip_addr) => ip_addr.to_string(),
+            Self::Ip(ip_addr) => write!(f, "{}", ip_addr),
+            Self::Domain(host) => write!(f, "{}", host),
+        }
+    }
+}
+
+impl HostWithPort {
+    pub fn domain(self) -> DomainType {
+        match self {
+            Self::Domain(domain) => DomainType::Domain(domain.host),
+            Self::SocketAddr(socket_addr) => DomainType::Ip(socket_addr.ip()),
+            Self::IpAddr(ip_addr) => DomainType::Ip(ip_addr),
         }
     }
 
@@ -47,6 +61,13 @@ impl From<SocketAddr> for HostWithPort {
 impl From<Domain> for HostWithPort {
     fn from(domain: Domain) -> Self {
         Self::Domain(domain)
+    }
+}
+
+//TODO: String should be a dns type for better safety
+impl From<String> for HostWithPort {
+    fn from(host: String) -> Self {
+        Self::Domain(Domain { host, port: None })
     }
 }
 

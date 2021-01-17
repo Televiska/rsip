@@ -38,6 +38,11 @@ impl Via {
             })
             .flatten()
     }
+
+    pub fn with_uri(mut self, uri: Uri) -> Self {
+        self.uri = uri;
+        self
+    }
 }
 
 impl Default for Via {

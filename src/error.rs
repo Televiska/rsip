@@ -1,18 +1,26 @@
 #![allow(dead_code)]
 
+use nom::error::VerboseError;
 use std::{error::Error as StdError, fmt};
 
 #[derive(Debug)]
 pub enum Error {
     MissingHeader(Header),
     InvalidParam(String),
+    //TODO: needs fixing
+    ParseError(String),
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::MissingHeader(header) => write!(f, "Libsip error: missing header: {:?}", header),
-            Self::InvalidParam(inner) => write!(f, "Libsip error: invalid header param: {}", inner),
+            Self::MissingHeader(header) => write!(f, "rsip error: missing header: {:?}", header),
+            Self::InvalidParam(inner) => write!(f, "rsip error: invalid header param: {}", inner),
+            Self::ParseError(inner) => write!(
+                f,
+                "rsip error: could not parse header through libsip: {}",
+                inner
+            ),
         }
     }
 }
@@ -68,4 +76,10 @@ pub enum Header {
     Priority,
     WwwAuthenticate,
     XFsSendingMessage,
+}
+
+impl From<nom::Err<VerboseError<&[u8]>>> for Error {
+    fn from(error: nom::Err<VerboseError<&[u8]>>) -> Self {
+        Self::ParseError(error.to_string())
+    }
 }

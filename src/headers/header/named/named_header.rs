@@ -23,6 +23,21 @@ impl<T: NamedParamTrait> NamedHeader<T> {
         self.uri.auth.as_ref().map(|a| a.username.clone())
     }
 
+    pub fn with_display_name(mut self, display_name: Option<String>) -> Self {
+        self.display_name = display_name;
+        self
+    }
+
+    pub fn with_uri(mut self, uri: Uri) -> Self {
+        self.uri = uri;
+        self
+    }
+
+    pub fn with_params(mut self, params: NamedParams<T>) -> Self {
+        self.params = params;
+        self
+    }
+
     pub fn uri_mut(&mut self) -> &mut Uri {
         &mut self.uri
     }

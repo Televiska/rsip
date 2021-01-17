@@ -24,7 +24,7 @@ impl Uri {
     }
 
     pub fn domain(&self) -> String {
-        self.host_with_port.clone().domain()
+        self.host_with_port.clone().domain().to_string()
     }
 
     pub fn port(&self) -> u16 {
@@ -44,7 +44,7 @@ impl Default for Uri {
         Self {
             schema: Default::default(),
             host_with_port: Default::default(),
-            auth: Default::default(),
+            auth: None,
             params: Default::default(),
         }
     }

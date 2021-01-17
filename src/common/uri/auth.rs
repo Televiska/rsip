@@ -7,7 +7,7 @@ pub struct Auth {
 impl Default for Auth {
     fn default() -> Self {
         Self {
-            username: "foo@example.com".into(),
+            username: "foo".into(),
             password: Some("123123123".into()),
         }
     }
