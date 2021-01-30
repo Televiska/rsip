@@ -107,3 +107,20 @@ impl TryFrom<String> for Contact {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn try_from_string() {
+        //let contact_str = format!("sip:38761902@192.168.1.223:5066;+sip.instance=\"<urn:uuid:1e020c2b-46f6-4867-9d11-65547b8967fa>\"");
+        //let contact = Contact::try_from(contact_str);
+        use libsip::headers::parse::parse_contact_header;
+        use nom::error::VerboseError;
+        let contact_str = format!("{}", "Contact: sip:guy@example.com +sip.instance=\"<urn:uuid:1e020c2b-46f6-4867-9d11-65547b8967fa>\"\r\n");
+        let res = parse_contact_header::<VerboseError<&[u8]>>(contact_str.as_bytes());
+
+        assert!(res.is_ok());
+    }
+}

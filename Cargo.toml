@@ -5,7 +5,7 @@ authors = ["Filippos Vasilakis <vasilakisfil@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-libsip = { git = "https://github.com/vasilakisfil/libsip", branch = "feat/auth-fixes" }
+libsip = { git = "https://github.com/vasilakisfil/libsip", branch = "feat/compatibility-fixes" }
 uuid = { version = "0.8.1", features = ["v4"] }
 md5 = "0.7.0"
 bytes = "0.5.4"
