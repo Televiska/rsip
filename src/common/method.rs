@@ -16,6 +16,27 @@ pub enum Method {
     Update,
 }
 
+impl Method {
+    pub fn all() -> Vec<Self> {
+        vec![
+            Self::Invite,
+            Self::Ack,
+            Self::Bye,
+            Self::Cancel,
+            Self::Register,
+            Self::Options,
+            Self::PRack,
+            Self::Subscribe,
+            Self::Notify,
+            Self::Publish,
+            Self::Info,
+            Self::Refer,
+            Self::Message,
+            Self::Update,
+        ]
+    }
+}
+
 impl std::fmt::Display for Method {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", Into::<libsip::core::Method>::into(self.clone()))

@@ -1,7 +1,7 @@
 use crate::headers::Header;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Accept(String);
+pub struct Accept(pub String);
 
 impl Into<String> for Accept {
     fn into(self) -> String {
