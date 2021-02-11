@@ -50,6 +50,39 @@ impl Default for Uri {
     }
 }
 
+impl From<HostWithPort> for Uri {
+    fn from(host_with_port: HostWithPort) -> Self {
+        Self {
+            schema: Default::default(),
+            host_with_port,
+            auth: None,
+            params: Default::default(),
+        }
+    }
+}
+
+impl From<std::net::SocketAddr> for Uri {
+    fn from(socket_addr: std::net::SocketAddr) -> Self {
+        Self {
+            schema: Default::default(),
+            host_with_port: socket_addr.into(),
+            auth: None,
+            params: Default::default(),
+        }
+    }
+}
+
+impl From<std::net::IpAddr> for Uri {
+    fn from(ip_addr: std::net::IpAddr) -> Self {
+        Self {
+            schema: Default::default(),
+            host_with_port: ip_addr.into(),
+            auth: None,
+            params: Default::default(),
+        }
+    }
+}
+
 impl std::fmt::Display for Uri {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", Into::<libsip::uri::Uri>::into(self.clone()))
