@@ -1,28 +1,5 @@
 use crate::headers::Header;
+use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader};
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(HasValue, Display, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
 pub struct Require(String);
-
-impl Into<String> for Require {
-    fn into(self) -> String {
-        self.0
-    }
-}
-
-impl From<String> for Require {
-    fn from(from: String) -> Self {
-        Self(from)
-    }
-}
-
-impl Into<Header> for Require {
-    fn into(self) -> Header {
-        Header::Require(self)
-    }
-}
-
-impl Into<libsip::headers::Header> for Require {
-    fn into(self) -> libsip::headers::Header {
-        libsip::headers::Header::Require(self.into())
-    }
-}

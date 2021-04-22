@@ -1,86 +1,91 @@
+use crate::Error;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Method {
-    Invite,
     Ack,
     Bye,
     Cancel,
-    Register,
+    Info,
+    Invite,
+    Message,
+    Notify,
     Options,
     PRack,
-    Subscribe,
-    Notify,
     Publish,
-    Info,
     Refer,
-    Message,
+    Register,
+    Subscribe,
     Update,
 }
 
 impl Method {
     pub fn all() -> Vec<Self> {
         vec![
-            Self::Invite,
             Self::Ack,
             Self::Bye,
             Self::Cancel,
-            Self::Register,
+            Self::Info,
+            Self::Invite,
+            Self::Message,
+            Self::Notify,
             Self::Options,
             Self::PRack,
-            Self::Subscribe,
-            Self::Notify,
             Self::Publish,
-            Self::Info,
             Self::Refer,
-            Self::Message,
+            Self::Register,
+            Self::Subscribe,
             Self::Update,
         ]
+    }
+
+    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+        use std::str::from_utf8;
+
+        match from_utf8(tokenizer.value)? {
+            part if part.eq_ignore_ascii_case("ACK") => Ok(Self::Ack),
+            part if part.eq_ignore_ascii_case("BYE") => Ok(Self::Bye),
+            part if part.eq_ignore_ascii_case("CANCEL") => Ok(Self::Cancel),
+            part if part.eq_ignore_ascii_case("INFO") => Ok(Self::Info),
+            part if part.eq_ignore_ascii_case("INVITE") => Ok(Self::Invite),
+            part if part.eq_ignore_ascii_case("MESSAGE") => Ok(Self::Message),
+            part if part.eq_ignore_ascii_case("NOTIFY") => Ok(Self::Notify),
+            part if part.eq_ignore_ascii_case("OPTIONS") => Ok(Self::Options),
+            part if part.eq_ignore_ascii_case("PRACK") => Ok(Self::PRack),
+            part if part.eq_ignore_ascii_case("PUBLISH") => Ok(Self::Publish),
+            part if part.eq_ignore_ascii_case("REFER") => Ok(Self::Refer),
+            part if part.eq_ignore_ascii_case("REGISTER") => Ok(Self::Register),
+            part if part.eq_ignore_ascii_case("SUBSCRIBE") => Ok(Self::Subscribe),
+            part if part.eq_ignore_ascii_case("UPDATE") => Ok(Self::Update),
+            part => Err(Error::ParseError(format!("Invalid method `{}`", part))),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Tokenizer<'a> {
+    pub value: &'a [u8],
+}
+
+impl<'a> From<&'a [u8]> for Tokenizer<'a> {
+    fn from(value: &'a [u8]) -> Self {
+        Self { value }
+    }
+}
+
+impl<'a> Tokenizer<'a> {
+    //works for request line
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), Error> {
+        use crate::parser_utils::opt_sp;
+        use nom::{bytes::complete::take_until, sequence::tuple};
+
+        let (rem, (method, _)) = tuple((take_until(" "), opt_sp))(part)?;
+
+        Ok((rem, method.into()))
     }
 }
 
 impl std::fmt::Display for Method {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", Into::<libsip::core::Method>::into(self.clone()))
-    }
-}
-
-impl Into<libsip::core::Method> for Method {
-    fn into(self) -> libsip::core::Method {
-        match self {
-            Self::Invite => libsip::core::Method::Invite,
-            Self::Ack => libsip::core::Method::Ack,
-            Self::Bye => libsip::core::Method::Bye,
-            Self::Cancel => libsip::core::Method::Cancel,
-            Self::Register => libsip::core::Method::Register,
-            Self::Options => libsip::core::Method::Options,
-            Self::PRack => libsip::core::Method::PRack,
-            Self::Subscribe => libsip::core::Method::Subscribe,
-            Self::Notify => libsip::core::Method::Notify,
-            Self::Publish => libsip::core::Method::Publish,
-            Self::Info => libsip::core::Method::Info,
-            Self::Refer => libsip::core::Method::Refer,
-            Self::Message => libsip::core::Method::Message,
-            Self::Update => libsip::core::Method::Update,
-        }
-    }
-}
-
-impl From<libsip::core::Method> for Method {
-    fn from(from: libsip::core::Method) -> Method {
-        match from {
-            libsip::core::Method::Invite => Self::Invite,
-            libsip::core::Method::Ack => Self::Ack,
-            libsip::core::Method::Bye => Self::Bye,
-            libsip::core::Method::Cancel => Self::Cancel,
-            libsip::core::Method::Register => Self::Register,
-            libsip::core::Method::Options => Self::Options,
-            libsip::core::Method::PRack => Self::PRack,
-            libsip::core::Method::Subscribe => Self::Subscribe,
-            libsip::core::Method::Notify => Self::Notify,
-            libsip::core::Method::Publish => Self::Publish,
-            libsip::core::Method::Info => Self::Info,
-            libsip::core::Method::Refer => Self::Refer,
-            libsip::core::Method::Message => Self::Message,
-            libsip::core::Method::Update => Self::Update,
-        }
+        write!(f, "{:?}", self)
     }
 }

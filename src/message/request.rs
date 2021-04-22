@@ -1,10 +1,10 @@
 use crate::{
     common::{Method, Uri, Version},
-    headers::{self, Header, Headers},
+    headers::Headers,
     SipMessage,
 };
-use bytes::Bytes;
-use nom::error::VerboseError;
+//use bytes::Bytes;
+//use nom::error::VerboseError;
 use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -45,39 +45,25 @@ impl Request {
         &mut self.body
     }
 
-    pub fn authorization_header(&self) -> Option<&headers::Authorization> {
-        header_opt!(self.headers().iter(), Header::Authorization)
-    }
+    /*
+    pub fn parse(part: &[u8]) -> Result<Self, Error> {
+        Ok(Self(String::from_utf8(parse(part)?.to_vec()).map_err(
+            |e| Error::Utf8Error(crate::error::Header::Accept, e.to_string()),
+        )?))
+    }*/
 }
 
-impl TryFrom<libsip::core::SipMessage> for Request {
-    type Error = &'static str;
+/*
+fn parse<'a>(part: &'a [u8]) -> Result<&'a [u8], Error> {
+    use nom::{
+        character::complete::space1,
+        sequence::tuple,
+        bytes::complete::{tag, take_until},
+        sequence::delimited,
+    };
 
-    fn try_from(sip_message: libsip::core::SipMessage) -> Result<Self, Self::Error> {
-        match sip_message {
-            libsip::core::SipMessage::Request {
-                method,
-                uri,
-                version,
-                headers,
-                body,
-            } => Ok(Self {
-                method: method.into(),
-                uri: uri.into(),
-                version: version.into(),
-                headers: headers
-                    .into_iter()
-                    .map(Into::into)
-                    .collect::<Vec<_>>()
-                    .into(),
-                body,
-            }),
-            libsip::core::SipMessage::Response { .. } => {
-                Err("Can't convert a SipMessage::Response into Request !")
-            }
-        }
-    }
-}
+    Ok(delimited(tuple((tag("Accept:"), space1)), take_until("\r\n"), tag("\r\n"))(part)?.1)
+}*/
 
 impl TryFrom<SipMessage> for Request {
     type Error = &'static str;
@@ -92,6 +78,7 @@ impl TryFrom<SipMessage> for Request {
     }
 }
 
+/*
 impl std::fmt::Display for Request {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -100,22 +87,9 @@ impl std::fmt::Display for Request {
             Into::<libsip::core::SipMessage>::into(self.clone())
         )
     }
-}
+}*/
 
-impl Into<libsip::core::SipMessage> for Request {
-    fn into(self) -> libsip::core::SipMessage {
-        let mut headers = libsip::headers::Headers::new();
-        headers.extend(self.headers.into_iter().map(Into::into).collect::<Vec<_>>());
-        libsip::core::SipMessage::Request {
-            method: self.method.into(),
-            uri: self.uri.into(),
-            version: self.version.into(),
-            headers,
-            body: self.body,
-        }
-    }
-}
-
+/*
 impl TryFrom<Bytes> for Request {
     type Error = String;
 
@@ -133,4 +107,4 @@ impl Into<Bytes> for Request {
     fn into(self) -> Bytes {
         crate::SipMessage::from(self).into()
     }
-}
+}*/

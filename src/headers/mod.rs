@@ -1,5 +1,5 @@
 mod header;
-pub use header::named;
+//pub use header::named;
 pub use header::Header;
 pub use header::*;
 
@@ -63,22 +63,11 @@ impl Into<Vec<Header>> for Headers {
         self.0
     }
 }
-
+/*
 impl std::fmt::Display for Headers {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use libsip::core::message::display_headers_and_body;
         display_headers_and_body(f, &Into::<libsip::Headers>::into(self.clone()), &[])
     }
 }
-
-impl Into<Vec<libsip::headers::Header>> for Headers {
-    fn into(self) -> Vec<libsip::headers::Header> {
-        self.0.into_iter().map(Into::into).collect::<_>()
-    }
-}
-
-impl Into<libsip::headers::Headers> for Headers {
-    fn into(self) -> libsip::headers::Headers {
-        libsip::headers::Headers(self.into())
-    }
-}
+*/
