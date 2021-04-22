@@ -1,3 +1,5 @@
+use crate::Error;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Version {
     V1,
@@ -11,21 +13,38 @@ impl Default for Version {
     }
 }
 
-impl Into<libsip::Version> for Version {
-    fn into(self) -> libsip::Version {
-        match self {
-            Self::V1 => libsip::Version::new(1, 0),
-            Self::V2 => libsip::Version::new(2, 0),
+impl Version {
+    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+        use nom::{bytes::complete::tag, character::complete::digit1, sequence::tuple};
+        let (_, (_, major, _, _)) =
+            tuple((tag("SIP/"), digit1, tag("."), digit1))(tokenizer.value)?;
+
+        match major {
+            b"1" => Ok(Self::V1),
+            b"2" => Ok(Self::V2),
+            _ => Err(Error::ParseError("Unrecognized SIP version".into())),
         }
     }
 }
 
-impl From<libsip::Version> for Version {
-    fn from(from: libsip::Version) -> Self {
-        match from.to_string().as_str() {
-            "SIP/1.0" => Self::V1,
-            "SIP/2.0" => Self::V2,
-            _ => panic!("can't convert sane version from libsip!"),
-        }
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Tokenizer<'a> {
+    pub value: &'a [u8],
+}
+
+impl<'a> From<&'a [u8]> for Tokenizer<'a> {
+    fn from(value: &'a [u8]) -> Self {
+        Self { value }
+    }
+}
+
+impl<'a> Tokenizer<'a> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), Error> {
+        use crate::parser_utils::opt_sp;
+        use nom::{bytes::complete::take_until, sequence::tuple};
+
+        let (rem, (version, _)) = tuple((take_until(" "), opt_sp))(part)?;
+
+        Ok((rem, version.into()))
     }
 }

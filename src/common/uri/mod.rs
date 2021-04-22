@@ -1,34 +1,35 @@
-mod auth;
-mod domain;
-mod host_with_port;
-mod param;
-mod schema;
+pub mod auth;
+pub mod host_with_port;
+pub mod param;
+pub mod schema;
 
 pub use auth::Auth;
-pub use domain::Domain;
-pub use host_with_port::HostWithPort;
+pub use host_with_port::{Domain, Host, HostWithPort, Port};
 pub use param::{Branch, Param};
 pub use schema::Schema;
+
+use crate::Error;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Uri {
     pub schema: Option<Schema>,
-    pub host_with_port: HostWithPort,
     pub auth: Option<Auth>,
+    pub host_with_port: HostWithPort,
     pub params: Vec<Param>,
+    pub headers: crate::Headers,
 }
 
 impl Uri {
-    pub fn username(&self) -> Option<String> {
-        self.auth.as_ref().map(|auth| auth.username.clone())
+    pub fn username(&self) -> Option<&str> {
+        self.auth.as_ref().map(|auth| auth.username.as_ref())
     }
 
-    pub fn domain(&self) -> String {
-        self.host_with_port.clone().domain().to_string()
+    pub fn host(&self) -> &Host {
+        &self.host_with_port.host
     }
 
-    pub fn port(&self) -> u16 {
-        self.host_with_port.clone().port()
+    pub fn port(&self) -> Option<&Port> {
+        self.host_with_port.port.as_ref()
     }
 
     pub fn branch(&self) -> Option<&Branch> {
@@ -36,6 +37,46 @@ impl Uri {
             Param::Branch(branch) => Some(branch),
             _ => None,
         })
+    }
+
+    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+        Ok(Self {
+            schema: tokenizer.schema.map(Schema::parse).transpose()?,
+            auth: tokenizer.auth.map(Auth::parse).transpose()?,
+            host_with_port: HostWithPort::parse(tokenizer.host_with_port)?,
+            params: Default::default(),
+            headers: Default::default(),
+        })
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Tokenizer<'a> {
+    pub schema: Option<schema::Tokenizer<'a>>,
+    pub auth: Option<auth::Tokenizer<'a>>,
+    pub host_with_port: host_with_port::Tokenizer<'a>,
+    pub params: Option<Vec<&'a [u8]>>,
+    pub headers: Option<Vec<&'a [u8]>>,
+}
+
+impl<'a> Tokenizer<'a> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), Error> {
+        use nom::combinator::opt;
+
+        let (rem, schema) = opt(schema::Tokenizer::tokenize)(part)?;
+        let (rem, auth) = opt(auth::Tokenizer::tokenize)(rem)?;
+        let (rem, host_with_port) = host_with_port::Tokenizer::tokenize(rem)?;
+
+        Ok((
+            rem,
+            Self {
+                schema,
+                auth,
+                host_with_port,
+                params: None,
+                headers: None,
+            },
+        ))
     }
 }
 
@@ -46,6 +87,7 @@ impl Default for Uri {
             host_with_port: Default::default(),
             auth: None,
             params: Default::default(),
+            headers: Default::default(),
         }
     }
 }
@@ -57,6 +99,7 @@ impl From<HostWithPort> for Uri {
             host_with_port,
             auth: None,
             params: Default::default(),
+            headers: Default::default(),
         }
     }
 }
@@ -68,6 +111,7 @@ impl From<std::net::SocketAddr> for Uri {
             host_with_port: socket_addr.into(),
             auth: None,
             params: Default::default(),
+            headers: Default::default(),
         }
     }
 }
@@ -79,42 +123,14 @@ impl From<std::net::IpAddr> for Uri {
             host_with_port: ip_addr.into(),
             auth: None,
             params: Default::default(),
+            headers: Default::default(),
         }
     }
 }
 
+/*
 impl std::fmt::Display for Uri {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", Into::<libsip::uri::Uri>::into(self.clone()))
     }
-}
-
-impl Into<libsip::uri::Uri> for Uri {
-    fn into(self) -> libsip::uri::Uri {
-        libsip::uri::Uri {
-            schema: self.schema.map(Into::into),
-            host: self.host_with_port.into(),
-            auth: self.auth.map(|a| a.into()),
-            parameters: self
-                .params
-                .into_iter()
-                .map(|p| p.into())
-                .collect::<Vec<_>>(),
-        }
-    }
-}
-
-impl From<libsip::uri::Uri> for Uri {
-    fn from(from: libsip::uri::Uri) -> Self {
-        Self {
-            schema: from.schema.map(Into::into),
-            host_with_port: from.host.into(),
-            auth: from.auth.map(|a| a.into()),
-            params: from
-                .parameters
-                .into_iter()
-                .map(|p| p.into())
-                .collect::<Vec<_>>(),
-        }
-    }
-}
+}*/

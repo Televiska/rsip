@@ -1,28 +1,5 @@
 use crate::headers::Header;
+use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader};
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(HasValue, Display, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
 pub struct ErrorInfo(String);
-
-impl Into<String> for ErrorInfo {
-    fn into(self) -> String {
-        self.0
-    }
-}
-
-impl From<String> for ErrorInfo {
-    fn from(from: String) -> Self {
-        Self(from)
-    }
-}
-
-impl Into<Header> for ErrorInfo {
-    fn into(self) -> Header {
-        Header::ErrorInfo(self)
-    }
-}
-
-impl Into<libsip::headers::Header> for ErrorInfo {
-    fn into(self) -> libsip::headers::Header {
-        libsip::headers::Header::ErrorInfo(self.into())
-    }
-}

@@ -4,11 +4,16 @@ version = "0.1.0"
 authors = ["Filippos Vasilakis <vasilakisfil@gmail.com>"]
 edition = "2018"
 
+[workspace]
+members = [
+    "macros",
+]
+
 [dependencies]
-libsip = { git = "https://github.com/vasilakisfil/libsip", branch = "feat/compatibility-fixes" }
 uuid = { version = "0.8.1", features = ["v4"] }
 md5 = "0.7.0"
 bytes = "0.5.4"
-nom = { version = "6.0.0-alpha1" }
 log = "0.4.11"
 base64 = "0.13.0"
+nom = { version = "6.1.2", features = ["alloc", "regexp"] }
+macros = { path = "./macros" }

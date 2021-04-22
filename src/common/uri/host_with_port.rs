@@ -1,103 +1,132 @@
-use crate::common::{uri::Domain, SocketAddrExt};
-use std::net::{IpAddr, SocketAddr};
+use crate::Error;
+use macros::{Display, FromIntoInner, FromStr, HasValue};
+use nom::error::VerboseError;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum HostWithPort {
+pub struct HostWithPort {
+    pub host: Host,
+    pub port: Option<Port>,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum Host {
     Domain(Domain),
-    SocketAddr(SocketAddr),
     IpAddr(IpAddr),
 }
 
-pub enum DomainType {
-    Domain(String),
-    Ip(IpAddr),
-}
-
-impl std::fmt::Display for DomainType {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Ip(ip_addr) => write!(f, "{}", ip_addr),
-            Self::Domain(host) => write!(f, "{}", host),
-        }
-    }
-}
+#[derive(HasValue, FromIntoInner, FromStr, Display, Debug, PartialEq, Eq, Clone)]
+pub struct Domain(String);
+#[derive(HasValue, FromIntoInner, Display, Debug, PartialEq, Eq, Clone)]
+pub struct Port(u16);
 
 impl HostWithPort {
-    pub fn domain(self) -> DomainType {
-        match self {
-            Self::Domain(domain) => DomainType::Domain(domain.host),
-            Self::SocketAddr(socket_addr) => DomainType::Ip(socket_addr.ip()),
-            Self::IpAddr(ip_addr) => DomainType::Ip(ip_addr),
+    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+        use std::str::{from_utf8, FromStr};
+
+        let host = from_utf8(tokenizer.host)?;
+        let host = match IpAddr::from_str(host) {
+            Ok(ip_addr) => Host::IpAddr(ip_addr),
+            Err(_) => Host::Domain(host.into()),
+        };
+
+        let port = match tokenizer.port {
+            Some(port) => Some(from_utf8(port)?.parse::<u16>()?).map(Into::into),
+            None => None,
+        };
+
+        Ok(HostWithPort { host, port })
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Tokenizer<'a> {
+    pub host: &'a [u8],
+    pub port: Option<&'a [u8]>,
+}
+
+impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
+    fn from(value: (&'a [u8], Option<&'a [u8]>)) -> Self {
+        Self {
+            host: value.0,
+            port: value.1,
         }
     }
+}
 
-    pub fn port(self) -> u16 {
-        match self {
-            Self::Domain(domain) => domain.port.unwrap_or(5060),
-            Self::SocketAddr(socket_addr) => socket_addr.port(),
-            Self::IpAddr(_) => 5060,
-        }
+impl<'a> Tokenizer<'a> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), nom::Err<VerboseError<&'a [u8]>>> {
+        use nom::{
+            bytes::complete::{tag, take_until},
+            combinator::rest,
+            sequence::tuple,
+        };
+
+        let (rem, (host_with_port, _)) = tuple((take_until(" "), tag(" ")))(part)?;
+        let (host, port) =
+            match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(
+                host_with_port,
+            ) {
+                Ok((_, (host, _, port))) => (host, Some(port)),
+                Err(_) => {
+                    let (_, host) = rest(host_with_port)?;
+                    (host, None)
+                }
+            };
+
+        Ok((rem, (host, port).into()))
     }
 }
 
 impl Default for HostWithPort {
     fn default() -> Self {
-        Self::SocketAddr(SocketAddr::localhost(5060))
+        Self {
+            host: Host::IpAddr(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1))),
+            port: None,
+        }
     }
 }
 
 impl From<IpAddr> for HostWithPort {
     fn from(ip_addr: IpAddr) -> Self {
-        Self::IpAddr(ip_addr)
+        Self {
+            host: Host::IpAddr(ip_addr),
+            port: None,
+        }
     }
 }
 
 impl From<SocketAddr> for HostWithPort {
     fn from(socket_addr: SocketAddr) -> Self {
-        Self::SocketAddr(socket_addr)
+        Self {
+            host: Host::IpAddr(socket_addr.ip()),
+            port: Some(socket_addr.port().into()),
+        }
     }
 }
 
 impl From<Domain> for HostWithPort {
     fn from(domain: Domain) -> Self {
-        Self::Domain(domain)
+        Self {
+            host: Host::Domain(domain),
+            port: None,
+        }
     }
 }
 
 //TODO: String should be a dns type for better safety
-impl From<String> for HostWithPort {
-    fn from(host: String) -> Self {
-        Self::Domain(Domain { host, port: None })
+impl From<&str> for HostWithPort {
+    fn from(host: &str) -> Self {
+        Self {
+            host: Host::Domain(host.into()),
+            port: None,
+        }
     }
 }
 
+/*
 impl std::fmt::Display for HostWithPort {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", Into::<libsip::uri::Domain>::into(self.clone()))
     }
-}
-
-impl Into<libsip::uri::Domain> for HostWithPort {
-    fn into(self) -> libsip::uri::Domain {
-        use crate::common::IpAddrLibsipExt;
-        use crate::common::SocketAddrLibsipExt;
-
-        match self {
-            Self::Domain(domain) => domain.into(),
-            Self::SocketAddr(socket_addr) => socket_addr.into_libsip_domain(),
-            Self::IpAddr(ip_addr) => ip_addr.into_libsip_domain(),
-        }
-    }
-}
-
-impl From<libsip::uri::Domain> for HostWithPort {
-    fn from(from: libsip::uri::Domain) -> Self {
-        match from {
-            libsip::uri::Domain::Ipv4(ip_addr, port) => Self::SocketAddr(SocketAddr::new(
-                std::net::IpAddr::V4(ip_addr),
-                port.unwrap_or(5060),
-            )),
-            libsip::uri::Domain::Domain(domain, port) => Self::Domain((domain, port).into()),
-        }
-    }
-}
+}*/

@@ -1,5 +1,3 @@
-//TODO: these need some love
-
 use crate::Error;
 use std::convert::{TryFrom, TryInto};
 
@@ -30,8 +28,8 @@ impl Default for Algorithm {
     }
 }
 
-impl Into<String> for Algorithm {
-    fn into(self) -> String {
+impl<'a> Into<&'a str> for Algorithm {
+    fn into(self) -> &'a str {
         self.algo.into()
     }
 }
@@ -46,12 +44,12 @@ impl TryFrom<String> for Algorithm {
     }
 }
 
-impl Into<String> for AlgorithmType {
-    fn into(self) -> String {
+impl<'a> Into<&'a str> for AlgorithmType {
+    fn into(self) -> &'a str {
         match self {
-            Self::Md5 => "MD5".into(),
-            Self::Sha256 => "SHA-256".into(),
-            Self::Sha512 => "SHA-512-256".into(),
+            Self::Md5 => "MD5",
+            Self::Sha256 => "SHA-256",
+            Self::Sha512 => "SHA-512-256",
         }
     }
 }

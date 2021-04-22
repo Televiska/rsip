@@ -1,5 +1,4 @@
-//written by hand so prone to error!
-//we should create a macro that auto-generates these codes!
+use crate::Error;
 
 #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone, Copy)]
 pub enum StatusCode {
@@ -102,6 +101,34 @@ impl StatusCode {
             code if code >= 600 && code < 700 => StatusCodeKind::GlobalFailure,
             _ => StatusCodeKind::Other,
         }
+    }
+
+    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+        use std::str::from_utf8;
+
+        Ok(from_utf8(tokenizer.value)?.parse::<u16>()?.into())
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Tokenizer<'a> {
+    pub value: &'a [u8],
+}
+
+impl<'a> From<&'a [u8]> for Tokenizer<'a> {
+    fn from(value: &'a [u8]) -> Self {
+        Self { value }
+    }
+}
+
+impl<'a> Tokenizer<'a> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), Error> {
+        use crate::parser_utils::opt_sp;
+        use nom::{character::complete::digit1, sequence::tuple};
+
+        let (rem, (code, _)) = tuple((digit1, opt_sp))(part)?;
+
+        Ok((rem, code.into()))
     }
 }
 

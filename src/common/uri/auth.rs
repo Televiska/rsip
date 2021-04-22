@@ -1,16 +1,10 @@
+use crate::Error;
+use nom::error::VerboseError;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Auth {
     pub username: String,
     pub password: Option<String>,
-}
-
-impl Default for Auth {
-    fn default() -> Self {
-        Self {
-            username: "foo".into(),
-            password: Some("123123123".into()),
-        }
-    }
 }
 
 impl From<(String, Option<String>)> for Auth {
@@ -22,20 +16,57 @@ impl From<(String, Option<String>)> for Auth {
     }
 }
 
-impl Into<libsip::uri::UriAuth> for Auth {
-    fn into(self) -> libsip::uri::UriAuth {
-        libsip::uri::UriAuth {
-            username: self.username,
-            password: self.password,
+impl Auth {
+    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+        use std::str::from_utf8;
+
+        Ok(Self {
+            username: from_utf8(tokenizer.username)?.into(),
+            password: tokenizer
+                .password
+                .map(|p| from_utf8(p))
+                .transpose()?
+                .map(Into::into),
+        })
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Tokenizer<'a> {
+    pub username: &'a [u8],
+    pub password: Option<&'a [u8]>,
+}
+
+impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
+    fn from(value: (&'a [u8], Option<&'a [u8]>)) -> Self {
+        Self {
+            username: value.0,
+            password: value.1,
         }
     }
 }
 
-impl From<libsip::uri::UriAuth> for Auth {
-    fn from(from: libsip::uri::UriAuth) -> Self {
-        Self {
-            username: from.username,
-            password: from.password,
-        }
+impl<'a> Tokenizer<'a> {
+    //we alt with take_until(".") and then tag("@") to make sure we fail early
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), nom::Err<VerboseError<&'a [u8]>>> {
+        use nom::{
+            branch::alt,
+            bytes::complete::{tag, take_until},
+            combinator::rest,
+            sequence::tuple,
+        };
+
+        let (rem, (auth, _)) = tuple((alt((take_until("@"), take_until("."))), tag("@")))(part)?;
+        let (username, password) =
+            match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(auth)
+            {
+                Ok((_, (username, _, password))) => (username, Some(password)),
+                Err(_) => {
+                    let (_, username) = rest(auth)?;
+                    (username, None)
+                }
+            };
+
+        Ok((rem, Tokenizer { username, password }))
     }
 }

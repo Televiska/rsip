@@ -2,8 +2,8 @@ use crate::{
     common::{StatusCode, Version},
     Headers, SipMessage,
 };
-use bytes::Bytes;
-use nom::error::VerboseError;
+//use bytes::Bytes;
+//use nom::error::VerboseError;
 use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
@@ -53,33 +53,7 @@ impl TryFrom<SipMessage> for Response {
     }
 }
 
-impl TryFrom<libsip::core::SipMessage> for Response {
-    type Error = &'static str;
-
-    fn try_from(sip_message: libsip::core::SipMessage) -> Result<Self, Self::Error> {
-        match sip_message {
-            libsip::core::SipMessage::Request { .. } => {
-                panic!("Can't convert a SipMessage::Response into Request !")
-            }
-            libsip::core::SipMessage::Response {
-                code,
-                version,
-                headers,
-                body,
-            } => Ok(Self {
-                code: (code as u16).into(),
-                version: version.into(),
-                headers: headers
-                    .into_iter()
-                    .map(Into::into)
-                    .collect::<Vec<_>>()
-                    .into(),
-                body,
-            }),
-        }
-    }
-}
-
+/*
 impl std::fmt::Display for Response {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -87,19 +61,6 @@ impl std::fmt::Display for Response {
             "{}",
             Into::<libsip::core::SipMessage>::into(self.clone())
         )
-    }
-}
-
-impl Into<libsip::core::SipMessage> for Response {
-    fn into(self) -> libsip::core::SipMessage {
-        let mut headers = libsip::headers::Headers::new();
-        headers.extend(self.headers.into_iter().map(Into::into).collect::<Vec<_>>());
-        libsip::core::SipMessage::Response {
-            code: Into::<u16>::into(self.code) as u32,
-            version: self.version.into(),
-            headers,
-            body: self.body,
-        }
     }
 }
 
@@ -120,4 +81,4 @@ impl TryFrom<Bytes> for Response {
 
         Ok(sip_message.try_into()?)
     }
-}
+}*/

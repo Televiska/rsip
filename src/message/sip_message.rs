@@ -1,8 +1,4 @@
 use crate::{common::Version, Headers, Request, Response};
-//nom::error::VerboseError,
-use bytes::Bytes;
-use nom::error::VerboseError;
-use std::convert::{TryFrom, TryInto};
 
 #[derive(Debug, Clone)]
 pub enum SipMessage {
@@ -55,40 +51,7 @@ impl SipMessage {
     }
 }
 
-impl TryFrom<libsip::SipMessage> for SipMessage {
-    type Error = &'static str;
-
-    fn try_from(sip_message: libsip::SipMessage) -> Result<Self, Self::Error> {
-        match sip_message {
-            libsip::SipMessage::Request { .. } => Ok(SipMessage::Request(
-                TryInto::<Request>::try_into(sip_message)?,
-            )),
-            libsip::SipMessage::Response { .. } => Ok(SipMessage::Response(
-                TryInto::<Response>::try_into(sip_message)?,
-            )),
-        }
-    }
-}
-
-impl std::fmt::Display for SipMessage {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            Into::<libsip::core::SipMessage>::into(self.clone())
-        )
-    }
-}
-
-impl Into<libsip::SipMessage> for SipMessage {
-    fn into(self) -> libsip::SipMessage {
-        match self {
-            SipMessage::Request(request) => request.into(),
-            SipMessage::Response(response) => response.into(),
-        }
-    }
-}
-
+/*
 impl TryFrom<Bytes> for SipMessage {
     type Error = String;
 
@@ -183,4 +146,4 @@ impl From<Response> for SipMessage {
     fn from(response: Response) -> Self {
         SipMessage::Response(response)
     }
-}
+}*/

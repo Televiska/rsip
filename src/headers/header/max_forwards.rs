@@ -1,34 +1,5 @@
 use crate::headers::Header;
+use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader};
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct MaxForwards(pub u32);
-
-impl Default for MaxForwards {
-    fn default() -> Self {
-        Self(70)
-    }
-}
-
-impl Into<u32> for MaxForwards {
-    fn into(self) -> u32 {
-        self.0
-    }
-}
-
-impl Into<Header> for MaxForwards {
-    fn into(self) -> Header {
-        Header::MaxForwards(self)
-    }
-}
-
-impl Into<libsip::headers::Header> for MaxForwards {
-    fn into(self) -> libsip::headers::Header {
-        libsip::headers::Header::MaxForwards(self.into())
-    }
-}
-
-impl From<u32> for MaxForwards {
-    fn from(from: u32) -> Self {
-        Self(from)
-    }
-}
+#[derive(HasValue, Display, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+pub struct MaxForwards(String);
