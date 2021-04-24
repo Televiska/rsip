@@ -38,7 +38,7 @@ impl Method {
         ]
     }
 
-    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
         use std::str::from_utf8;
 
         match from_utf8(tokenizer.value)? {

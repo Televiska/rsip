@@ -58,11 +58,12 @@ impl std::convert::From<Vec<Header>> for Headers {
     }
 }
 
-impl Into<Vec<Header>> for Headers {
-    fn into(self) -> Vec<Header> {
-        self.0
+impl std::convert::From<Headers> for Vec<Header> {
+    fn from(from: Headers) -> Self {
+        from.0
     }
 }
+
 /*
 impl std::fmt::Display for Headers {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

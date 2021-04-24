@@ -14,7 +14,7 @@ impl Default for Version {
 }
 
 impl Version {
-    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
         use nom::{bytes::complete::tag, character::complete::digit1, sequence::tuple};
         let (_, (_, major, _, _)) =
             tuple((tag("SIP/"), digit1, tag("."), digit1))(tokenizer.value)?;

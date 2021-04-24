@@ -10,9 +10,7 @@ pub use message::{Request, Response, SipMessage};
 pub(crate) mod parser_utils {
     use nom::{error::VerboseError, IResult};
 
-    pub(crate) fn opt_sp<'a>(
-        input: &'a [u8],
-    ) -> IResult<&'a [u8], Option<&'a [u8]>, VerboseError<&'a [u8]>> {
+    pub(crate) fn opt_sp(input: &[u8]) -> IResult<&[u8], Option<&[u8]>, VerboseError<&[u8]>> {
         use nom::{bytes::complete::tag, combinator::opt};
 
         opt(tag(" "))(input)

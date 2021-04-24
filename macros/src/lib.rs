@@ -61,9 +61,9 @@ pub fn into_header_signature(item: TokenStream) -> TokenStream {
     let struct_name = &ast.ident;
 
     let expanded = quote! {
-        impl Into<Header> for #struct_name {
-            fn into(self) -> Header {
-                Header::#struct_name(self)
+        impl std::convert::From<#struct_name> for Header {
+            fn from(from: #struct_name) -> Self {
+                Header::#struct_name(from)
             }
         }
     };

@@ -5,7 +5,7 @@ use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader};
 pub struct Accept(String);
 
 impl Accept {
-    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
         use std::str::from_utf8;
 
         Ok(Self(from_utf8(tokenizer.value)?.into()))

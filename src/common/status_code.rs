@@ -8,7 +8,7 @@ pub enum StatusCode {
     Queued,
     SessionProgress,
     EarlyDialogTerminated,
-    OK,
+    Ok,
     Accepted,
     NoNotification,
     MultipleChoices,
@@ -30,9 +30,9 @@ pub enum StatusCode {
     LengthRequired,
     ConditionalRequestFailed,
     RequestEntityTooLarge,
-    RequestURITooLong,
+    RequestUriTooLong,
     UnsupportedMediaType,
-    UnsupportedURIScheme,
+    UnsupportedUriScheme,
     UnknownResourcePriority,
     BadExtension,
     ExtensionRequired,
@@ -93,17 +93,17 @@ impl StatusCode {
     pub fn kind(&self) -> StatusCodeKind {
         let code = Into::<u16>::into(*self);
         match code {
-            code if code >= 100 && code < 200 => StatusCodeKind::Provisional,
-            code if code >= 200 && code < 300 => StatusCodeKind::Successful,
-            code if code >= 300 && code < 400 => StatusCodeKind::Redirection,
-            code if code >= 400 && code < 500 => StatusCodeKind::RequestFailure,
-            code if code >= 500 && code < 600 => StatusCodeKind::ServerFailure,
-            code if code >= 600 && code < 700 => StatusCodeKind::GlobalFailure,
+            code if (100..200).contains(&code) => StatusCodeKind::Provisional,
+            code if (200..300).contains(&code) => StatusCodeKind::Successful,
+            code if (300..400).contains(&code) => StatusCodeKind::Redirection,
+            code if (400..500).contains(&code) => StatusCodeKind::RequestFailure,
+            code if (500..600).contains(&code) => StatusCodeKind::ServerFailure,
+            code if (600..700).contains(&code) => StatusCodeKind::GlobalFailure,
             _ => StatusCodeKind::Other,
         }
     }
 
-    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
         use std::str::from_utf8;
 
         Ok(from_utf8(tokenizer.value)?.parse::<u16>()?.into())
@@ -132,18 +132,18 @@ impl<'a> Tokenizer<'a> {
     }
 }
 
-impl Into<u16> for StatusCode {
-    fn into(self) -> u16 {
+impl From<StatusCode> for u16 {
+    fn from(from: StatusCode) -> u16 {
         use StatusCode::*;
 
-        match self {
+        match from {
             Trying => 100,
             Ringing => 180,
             CallIsBeingForwarded => 181,
             Queued => 182,
             SessionProgress => 183,
             EarlyDialogTerminated => 199,
-            OK => 200,
+            Ok => 200,
             Accepted => 201,
             NoNotification => 204,
             MultipleChoices => 300,
@@ -165,9 +165,9 @@ impl Into<u16> for StatusCode {
             LengthRequired => 411,
             ConditionalRequestFailed => 412,
             RequestEntityTooLarge => 413,
-            RequestURITooLong => 414,
+            RequestUriTooLong => 414,
             UnsupportedMediaType => 415,
-            UnsupportedURIScheme => 416,
+            UnsupportedUriScheme => 416,
             UnknownResourcePriority => 417,
             BadExtension => 420,
             ExtensionRequired => 421,
@@ -226,7 +226,7 @@ impl From<u16> for StatusCode {
             182 => Queued,
             183 => SessionProgress,
             199 => EarlyDialogTerminated,
-            200 => OK,
+            200 => Ok,
             201 => Accepted,
             204 => NoNotification,
             300 => MultipleChoices,
@@ -248,9 +248,9 @@ impl From<u16> for StatusCode {
             411 => LengthRequired,
             412 => ConditionalRequestFailed,
             413 => RequestEntityTooLarge,
-            414 => RequestURITooLong,
+            414 => RequestUriTooLong,
             415 => UnsupportedMediaType,
-            416 => UnsupportedURIScheme,
+            416 => UnsupportedUriScheme,
             417 => UnknownResourcePriority,
             420 => BadExtension,
             421 => ExtensionRequired,
@@ -300,7 +300,7 @@ impl From<u16> for StatusCode {
 
 impl Default for StatusCode {
     fn default() -> Self {
-        Self::OK
+        Self::Ok
     }
 }
 

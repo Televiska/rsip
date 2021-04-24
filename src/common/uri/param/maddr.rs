@@ -6,7 +6,7 @@ use nom::error::VerboseError;
 pub struct Maddr(String);
 
 impl Maddr {
-    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
         use std::str::from_utf8;
 
         Ok(from_utf8(tokenizer.value)?.into())
@@ -24,6 +24,7 @@ impl<'a> From<&'a [u8]> for Tokenizer<'a> {
     }
 }
 
+#[allow(clippy::type_complexity)]
 impl<'a> Tokenizer<'a> {
     pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), nom::Err<VerboseError<&'a [u8]>>> {
         use nom::{

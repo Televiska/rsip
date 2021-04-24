@@ -39,7 +39,7 @@ impl Uri {
         })
     }
 
-    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
         Ok(Self {
             schema: tokenizer.schema.map(Schema::parse).transpose()?,
             auth: tokenizer.auth.map(Auth::parse).transpose()?,

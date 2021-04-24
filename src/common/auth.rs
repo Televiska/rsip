@@ -28,9 +28,9 @@ impl Default for Algorithm {
     }
 }
 
-impl<'a> Into<&'a str> for Algorithm {
-    fn into(self) -> &'a str {
-        self.algo.into()
+impl<'a> From<Algorithm> for &'a str {
+    fn from(from: Algorithm) -> Self {
+        from.algo.into()
     }
 }
 
@@ -44,12 +44,12 @@ impl TryFrom<String> for Algorithm {
     }
 }
 
-impl<'a> Into<&'a str> for AlgorithmType {
-    fn into(self) -> &'a str {
-        match self {
-            Self::Md5 => "MD5",
-            Self::Sha256 => "SHA-256",
-            Self::Sha512 => "SHA-512-256",
+impl<'a> From<AlgorithmType> for &'a str {
+    fn from(from: AlgorithmType) -> Self {
+        match from {
+            AlgorithmType::Md5 => "MD5",
+            AlgorithmType::Sha256 => "SHA-256",
+            AlgorithmType::Sha512 => "SHA-512-256",
         }
     }
 }
@@ -70,9 +70,9 @@ impl TryFrom<String> for AlgorithmType {
     }
 }
 
-impl Into<String> for Qop {
-    fn into(self) -> String {
-        match self {
+impl From<Qop> for String {
+    fn from(from: Qop) -> Self {
+        match from {
             Qop::Auth => "auth".into(),
             Qop::AuthInt => "auth-int".into(),
         }

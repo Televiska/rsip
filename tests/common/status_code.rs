@@ -12,7 +12,7 @@ fn tokenizer() {
 fn parser() {
     assert_eq!(
         StatusCode::parse(b"200".as_ref().into()),
-        Ok(StatusCode::OK)
+        Ok(StatusCode::Ok)
     );
 
     assert_eq!(

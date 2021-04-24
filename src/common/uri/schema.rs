@@ -15,7 +15,7 @@ impl Default for Schema {
 }
 
 impl Schema {
-    pub fn parse<'a>(tokenizer: Tokenizer<'a>) -> Result<Self, Error> {
+    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
         use std::str::from_utf8;
 
         match from_utf8(tokenizer.value)? {
@@ -37,16 +37,15 @@ impl<'a> From<&'a [u8]> for Tokenizer<'a> {
     }
 }
 
+#[allow(clippy::type_complexity)]
 impl<'a> Tokenizer<'a> {
     pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), nom::Err<VerboseError<&'a [u8]>>> {
         use nom::{
             branch::alt,
             bytes::complete::{tag, tag_no_case, take_until},
-            combinator::map,
             sequence::tuple,
         };
 
-        //let (rem, (schema, _)) = tuple((take_until(":"), tag(":")))(part)?;
         let (rem, (schema, _)) = alt((
             tuple((tag_no_case("sip"), tag(":"))),
             tuple((tag_no_case("sips"), tag(":"))),
