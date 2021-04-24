@@ -7,11 +7,15 @@ pub struct Auth {
     pub password: Option<String>,
 }
 
-impl From<(String, Option<String>)> for Auth {
-    fn from(tuple: (String, Option<String>)) -> Self {
+impl<T, S> From<(T, Option<S>)> for Auth
+where
+    T: Into<String>,
+    S: Into<String>,
+{
+    fn from(from: (T, Option<S>)) -> Self {
         Self {
-            username: tuple.0,
-            password: tuple.1,
+            username: from.0.into(),
+            password: from.1.map(|p| p.into()),
         }
     }
 }

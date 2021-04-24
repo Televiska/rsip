@@ -125,6 +125,19 @@ impl From<&str> for HostWithPort {
     }
 }
 
+impl<T, S> From<(T, Option<S>)> for HostWithPort
+where
+    T: Into<Domain>,
+    S: Into<Port>,
+{
+    fn from(from: (T, Option<S>)) -> Self {
+        Self {
+            host: Host::Domain(from.0.into()),
+            port: from.1.map(|p| p.into()),
+        }
+    }
+}
+
 /*
 impl std::fmt::Display for HostWithPort {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

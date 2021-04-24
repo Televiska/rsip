@@ -32,6 +32,7 @@ fn tokenizer() {
     );
 }
 
+#[test]
 fn parser() {
     assert_eq!(
         Maddr::parse(b"255.255.255.255".as_ref().into()),
