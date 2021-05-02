@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::{Error, NomError};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Method {
@@ -74,11 +74,23 @@ impl<'a> From<&'a [u8]> for Tokenizer<'a> {
 
 impl<'a> Tokenizer<'a> {
     //works for request line
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), Error> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
         use crate::parser_utils::opt_sp;
-        use nom::{bytes::complete::take_until, sequence::tuple};
+        use nom::{
+            bytes::complete::take_until,
+            error::{VerboseError, VerboseErrorKind},
+            sequence::tuple,
+        };
 
         let (rem, (method, _)) = tuple((take_until(" "), opt_sp))(part)?;
+        if method.contains(&b'/') {
+            return Err(nom::Err::Error(VerboseError {
+                errors: vec![(
+                    method,
+                    VerboseErrorKind::Context("SIP version found instead"),
+                )],
+            }));
+        }
 
         Ok((rem, method.into()))
     }

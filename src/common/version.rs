@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::{Error, NomError};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Version {
@@ -39,11 +39,14 @@ impl<'a> From<&'a [u8]> for Tokenizer<'a> {
 }
 
 impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), Error> {
-        use crate::parser_utils::opt_sp;
-        use nom::{bytes::complete::take_until, sequence::tuple};
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        use nom::{
+            branch::alt,
+            bytes::complete::{tag, take_till},
+        };
 
-        let (rem, (version, _)) = tuple((take_until(" "), opt_sp))(part)?;
+        let (rem, version) = take_till(|c| c == b' ' || c == b'\r')(part)?;
+        let (rem, _) = alt((tag(" "), tag("\r\n")))(rem)?;
 
         Ok((rem, version.into()))
     }

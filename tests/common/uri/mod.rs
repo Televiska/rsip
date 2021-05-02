@@ -90,6 +90,20 @@ fn tokenizer() {
             }
         )),
     );
+
+    assert_eq!(
+        Tokenizer::tokenize(b"sips:ss2.biloxi.example.com SIP/2.0"),
+        Ok((
+            b"SIP/2.0".as_ref(),
+            Tokenizer {
+                schema: Some(b"sips".as_ref().into()),
+                auth: None,
+                host_with_port: (b"ss2.biloxi.example.com".as_ref(), None).into(),
+                params: None,
+                headers: None
+            }
+        )),
+    );
 }
 
 #[test]

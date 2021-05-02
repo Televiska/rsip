@@ -8,7 +8,7 @@ pub use host_with_port::{Domain, Host, HostWithPort, Port};
 pub use param::{Branch, Param};
 pub use schema::Schema;
 
-use crate::Error;
+use crate::{Error, NomError};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Uri {
@@ -60,7 +60,7 @@ pub struct Tokenizer<'a> {
 }
 
 impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), Error> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
         use nom::combinator::opt;
 
         let (rem, schema) = opt(schema::Tokenizer::tokenize)(part)?;

@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::{Error, NomError};
 use nom::error::VerboseError;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -53,15 +53,14 @@ impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
 #[allow(clippy::type_complexity)]
 impl<'a> Tokenizer<'a> {
     //we alt with take_until(".") and then tag("@") to make sure we fail early
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), nom::Err<VerboseError<&'a [u8]>>> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
         use nom::{
-            branch::alt,
-            bytes::complete::{tag, take_until},
+            bytes::complete::{tag, take_till, take_until},
             combinator::rest,
             sequence::tuple,
         };
+        let (rem, (auth, _)) = tuple((take_till(|c| c == b'.' || c == b'@'), tag("@")))(part)?;
 
-        let (rem, (auth, _)) = tuple((alt((take_until("@"), take_until("."))), tag("@")))(part)?;
         let (username, password) =
             match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(auth)
             {

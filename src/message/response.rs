@@ -1,6 +1,10 @@
 use crate::{
-    common::{StatusCode, Version},
-    Headers, SipMessage,
+    common::{
+        status_code::{self, StatusCode},
+        version::{self, Version},
+    },
+    headers::{header, Headers},
+    NomError, SipMessage,
 };
 //use bytes::Bytes;
 //use nom::error::VerboseError;
@@ -37,6 +41,37 @@ impl Response {
 
     pub fn body_mut(&mut self) -> &mut Vec<u8> {
         &mut self.body
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Tokenizer<'a> {
+    pub version: version::Tokenizer<'a>,
+    pub status_code: status_code::Tokenizer<'a>,
+    pub headers: Vec<header::Tokenizer<'a>>,
+    pub body: &'a [u8],
+}
+
+impl<'a> Tokenizer<'a> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        use nom::{bytes::complete::tag, multi::many0, sequence::tuple};
+
+        let (rem, (version, status_code)) = tuple((
+            version::Tokenizer::tokenize,
+            status_code::Tokenizer::tokenize_with_reason,
+        ))(part)?;
+        let (rem, headers) = many0(header::Tokenizer::tokenize)(rem)?;
+        let (body, _) = tag("\r\n")(rem)?;
+
+        Ok((
+            &[],
+            Self {
+                version,
+                status_code,
+                headers,
+                body,
+            },
+        ))
     }
 }
 

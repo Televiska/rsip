@@ -1,7 +1,11 @@
 use crate::{
-    common::{Method, Uri, Version},
-    headers::Headers,
-    SipMessage,
+    common::{
+        method::{self, Method},
+        uri::{self, Uri},
+        version::{self, Version},
+    },
+    headers::{header, Headers},
+    NomError, SipMessage,
 };
 //use bytes::Bytes;
 //use nom::error::VerboseError;
@@ -44,26 +48,41 @@ impl Request {
     pub fn body_mut(&mut self) -> &mut Vec<u8> {
         &mut self.body
     }
-
-    /*
-    pub fn parse(part: &[u8]) -> Result<Self, Error> {
-        Ok(Self(String::from_utf8(parse(part)?.to_vec()).map_err(
-            |e| Error::Utf8Error(crate::error::Header::Accept, e.to_string()),
-        )?))
-    }*/
 }
 
-/*
-fn parse<'a>(part: &'a [u8]) -> Result<&'a [u8], Error> {
-    use nom::{
-        character::complete::space1,
-        sequence::tuple,
-        bytes::complete::{tag, take_until},
-        sequence::delimited,
-    };
+#[derive(Debug, PartialEq, Eq)]
+pub struct Tokenizer<'a> {
+    pub method: method::Tokenizer<'a>,
+    pub uri: uri::Tokenizer<'a>,
+    pub version: version::Tokenizer<'a>,
+    pub headers: Vec<header::Tokenizer<'a>>,
+    pub body: &'a [u8],
+}
 
-    Ok(delimited(tuple((tag("Accept:"), space1)), take_until("\r\n"), tag("\r\n"))(part)?.1)
-}*/
+impl<'a> Tokenizer<'a> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        use nom::{bytes::complete::tag, multi::many0, sequence::tuple};
+
+        let (rem, (method, uri, version)) = tuple((
+            method::Tokenizer::tokenize,
+            uri::Tokenizer::tokenize,
+            version::Tokenizer::tokenize,
+        ))(part)?;
+        let (rem, headers) = many0(header::Tokenizer::tokenize)(rem)?;
+        let (body, _) = tag("\r\n")(rem)?;
+
+        Ok((
+            &[],
+            Self {
+                method,
+                uri,
+                version,
+                headers,
+                body,
+            },
+        ))
+    }
+}
 
 impl TryFrom<SipMessage> for Request {
     type Error = &'static str;

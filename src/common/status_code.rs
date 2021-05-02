@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::{Error, NomError};
 
 #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone, Copy)]
 pub enum StatusCode {
@@ -106,29 +106,67 @@ impl StatusCode {
     pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
         use std::str::from_utf8;
 
-        Ok(from_utf8(tokenizer.value)?.parse::<u16>()?.into())
+        Ok(from_utf8(tokenizer.code)?.parse::<u16>()?.into())
     }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Tokenizer<'a> {
-    pub value: &'a [u8],
+    pub code: &'a [u8],
+    pub reason: Option<&'a [u8]>,
 }
 
 impl<'a> From<&'a [u8]> for Tokenizer<'a> {
-    fn from(value: &'a [u8]) -> Self {
-        Self { value }
+    fn from(code: &'a [u8]) -> Self {
+        Self { code, reason: None }
+    }
+}
+
+impl<'a> From<(&'a [u8], &'a [u8])> for Tokenizer<'a> {
+    fn from(tuple: (&'a [u8], &'a [u8])) -> Self {
+        Self {
+            code: tuple.0,
+            reason: Some(tuple.1),
+        }
+    }
+}
+
+impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
+    fn from(tuple: (&'a [u8], Option<&'a [u8]>)) -> Self {
+        Self {
+            code: tuple.0,
+            reason: tuple.1,
+        }
     }
 }
 
 impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), Error> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
         use crate::parser_utils::opt_sp;
         use nom::{character::complete::digit1, sequence::tuple};
 
         let (rem, (code, _)) = tuple((digit1, opt_sp))(part)?;
 
         Ok((rem, code.into()))
+    }
+
+    pub fn tokenize_with_reason(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        use nom::{
+            bytes::complete::{tag, take_until},
+            character::complete::digit1,
+            sequence::tuple,
+        };
+
+        let (rem, (code, _, reason, _)) =
+            tuple((digit1, tag(" "), take_until("\r\n"), tag("\r\n")))(part)?;
+
+        Ok((
+            rem,
+            Self {
+                code,
+                reason: Some(reason),
+            },
+        ))
     }
 }
 
