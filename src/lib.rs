@@ -17,6 +17,12 @@ pub(crate) mod parser_utils {
 
         opt(tag(" "))(input)
     }
+
+    pub(crate) fn create_error_for<'a>(rem: &'a [u8], error: &'static str) -> super::NomError<'a> {
+        nom::Err::Error(nom::error::VerboseError {
+            errors: vec![(rem, nom::error::VerboseErrorKind::Context(error))],
+        })
+    }
     /*
         pub(crate) fn opt_sc<'a>(
             input: &'a [u8],

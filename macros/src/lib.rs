@@ -118,6 +118,46 @@ pub fn from_into_inner_signature(item: TokenStream) -> TokenStream {
     expanded.into()
 }
 
+#[proc_macro_derive(Utf8Tokenizer)]
+pub fn utf8_tokenizer(item: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(item as DeriveInput);
+
+    let fields = match &ast.data {
+        syn::Data::Struct(syn::DataStruct {
+            fields: syn::Fields::Named(fields),
+            ..
+        }) => &fields.named,
+        _ => panic!("expected a struct with named fields"),
+    };
+    let field_name = fields.iter().map(|field| &field.ident);
+    let field_name_cloned = field_name.clone();
+
+    let expanded = quote! {
+        #[derive(Debug, PartialEq, Eq)]
+        pub struct Utf8Tokenizer<'a> {
+            #(
+                pub #field_name: &'a str,
+            )*
+        }
+
+        impl<'a> TryFrom<Tokenizer<'a>> for Utf8Tokenizer<'a> {
+            type Error = crate::Error;
+
+            fn try_from(tokenizer: Tokenizer<'a>) -> Result<Self, Self::Error> {
+                use std::str::from_utf8;
+
+                Ok(Self {
+                    #(
+                        #field_name_cloned: from_utf8(tokenizer.#field_name_cloned)?,
+                    )*
+                })
+            }
+        }
+    };
+
+    expanded.into()
+}
+
 fn field_type_name(field_type: syn::Type) -> syn::Ident {
     match field_type {
         syn::Type::Reference(syn::TypeReference { elem, .. }) => match *elem {

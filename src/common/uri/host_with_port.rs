@@ -1,6 +1,7 @@
 use crate::{Error, NomError};
 use macros::{Display, FromIntoInner, FromStr, HasValue};
 use nom::error::VerboseError;
+use std::convert::TryFrom;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -36,6 +37,14 @@ impl HostWithPort {
         };
 
         Ok(HostWithPort { host, port })
+    }
+}
+
+impl<'a> TryFrom<Tokenizer<'a>> for HostWithPort {
+    type Error = Error;
+
+    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
+        Self::parse(tokenizer)
     }
 }
 

@@ -1,4 +1,5 @@
 use crate::{Error, NomError};
+use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone, Copy)]
 pub enum StatusCode {
@@ -107,6 +108,14 @@ impl StatusCode {
         use std::str::from_utf8;
 
         Ok(from_utf8(tokenizer.code)?.parse::<u16>()?.into())
+    }
+}
+
+impl<'a> TryFrom<Tokenizer<'a>> for StatusCode {
+    type Error = Error;
+
+    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
+        Self::parse(tokenizer)
     }
 }
 

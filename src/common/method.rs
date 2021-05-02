@@ -1,4 +1,5 @@
 use crate::{Error, NomError};
+use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Method {
@@ -61,6 +62,14 @@ impl Method {
     }
 }
 
+impl<'a> TryFrom<Tokenizer<'a>> for Method {
+    type Error = Error;
+
+    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
+        Self::parse(tokenizer)
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Tokenizer<'a> {
     pub value: &'a [u8],
@@ -75,21 +84,14 @@ impl<'a> From<&'a [u8]> for Tokenizer<'a> {
 impl<'a> Tokenizer<'a> {
     //works for request line
     pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-        use crate::parser_utils::opt_sp;
-        use nom::{
-            bytes::complete::take_until,
-            error::{VerboseError, VerboseErrorKind},
-            sequence::tuple,
-        };
+        use crate::parser_utils::{create_error_for, opt_sp};
+        use nom::{bytes::complete::take_until, sequence::tuple};
 
         let (rem, (method, _)) = tuple((take_until(" "), opt_sp))(part)?;
-        if method.contains(&b'/') {
-            return Err(nom::Err::Error(VerboseError {
-                errors: vec![(
-                    method,
-                    VerboseErrorKind::Context("SIP version found instead"),
-                )],
-            }));
+        //TODO: helpful to return early in case we parse a response but maybe it should be checked
+        //here though
+        if method.starts_with(b"SIP/") {
+            return Err(create_error_for(method, "SIP version found instead"));
         }
 
         Ok((rem, method.into()))

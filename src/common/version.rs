@@ -1,4 +1,5 @@
 use crate::{Error, NomError};
+use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Version {
@@ -24,6 +25,14 @@ impl Version {
             b"2" => Ok(Self::V2),
             _ => Err(Error::ParseError("Unrecognized SIP version".into())),
         }
+    }
+}
+
+impl<'a> TryFrom<Tokenizer<'a>> for Version {
+    type Error = Error;
+
+    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
+        Self::parse(tokenizer)
     }
 }
 
