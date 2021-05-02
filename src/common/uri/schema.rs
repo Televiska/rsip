@@ -1,4 +1,5 @@
 use crate::{Error, NomError};
+use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Schema {
@@ -22,6 +23,14 @@ impl Schema {
             part if part.eq_ignore_ascii_case("sips") => Ok(Self::Sips),
             part => Err(Error::ParseError(format!("Invalid method `{}`", part))),
         }
+    }
+}
+
+impl<'a> TryFrom<Tokenizer<'a>> for Schema {
+    type Error = Error;
+
+    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
+        Self::parse(tokenizer)
     }
 }
 

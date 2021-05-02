@@ -1,7 +1,8 @@
 use super::{request, response};
-use crate::{common::Version, Headers, NomError, Request, Response};
+use crate::{common::Version, Error, Headers, NomError, Request, Response};
+use std::convert::TryFrom;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum SipMessage {
     Request(Request),
     Response(Response),
@@ -49,6 +50,53 @@ impl SipMessage {
             Self::Request(request) => request.body_mut(),
             Self::Response(response) => response.body_mut(),
         }
+    }
+
+    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
+        match tokenizer {
+            Tokenizer::Request(tokenizer) => Ok(Self::Request(Request::parse(tokenizer)?)),
+            Tokenizer::Response(tokenizer) => Ok(Self::Response(Response::parse(tokenizer)?)),
+        }
+    }
+}
+
+impl TryFrom<&[u8]> for SipMessage {
+    type Error = Error;
+
+    fn try_from(from: &[u8]) -> Result<Self, Self::Error> {
+        Self::parse(Tokenizer::tokenize(from)?.1)
+    }
+}
+
+impl TryFrom<Vec<u8>> for SipMessage {
+    type Error = Error;
+
+    fn try_from(from: Vec<u8>) -> Result<Self, Self::Error> {
+        Self::parse(Tokenizer::tokenize(&from)?.1)
+    }
+}
+
+impl TryFrom<&str> for SipMessage {
+    type Error = Error;
+
+    fn try_from(from: &str) -> Result<Self, Self::Error> {
+        Self::parse(Tokenizer::tokenize(from.as_bytes())?.1)
+    }
+}
+
+impl TryFrom<String> for SipMessage {
+    type Error = Error;
+
+    fn try_from(from: String) -> Result<Self, Self::Error> {
+        Self::parse(Tokenizer::tokenize(&from.as_bytes())?.1)
+    }
+}
+
+impl<'a> TryFrom<Tokenizer<'a>> for SipMessage {
+    type Error = Error;
+
+    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
+        Self::parse(tokenizer)
     }
 }
 

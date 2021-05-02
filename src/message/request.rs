@@ -5,11 +5,9 @@ use crate::{
         version::{self, Version},
     },
     headers::{header, Headers},
-    NomError, SipMessage,
+    Error, NomError, SipMessage,
 };
-//use bytes::Bytes;
-//use nom::error::VerboseError;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Request {
@@ -48,6 +46,74 @@ impl Request {
     pub fn body_mut(&mut self) -> &mut Vec<u8> {
         &mut self.body
     }
+
+    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
+        Ok(Self {
+            method: tokenizer.method.try_into()?,
+            uri: tokenizer.uri.try_into()?,
+            version: tokenizer.version.try_into()?,
+            headers: tokenizer
+                .headers
+                .into_iter()
+                .map(TryInto::try_into)
+                .collect::<Result<Vec<_>, Error>>()?
+                .into(),
+            body: tokenizer.body.into(),
+        })
+    }
+}
+
+impl TryFrom<SipMessage> for Request {
+    type Error = &'static str;
+
+    fn try_from(sip_message: crate::SipMessage) -> Result<Self, Self::Error> {
+        match sip_message {
+            crate::SipMessage::Request(request) => Ok(request),
+            crate::SipMessage::Response(_) => {
+                Err("Can't convert a models::SipMessage::Response into Request !")
+            }
+        }
+    }
+}
+
+impl TryFrom<&[u8]> for Request {
+    type Error = Error;
+
+    fn try_from(from: &[u8]) -> Result<Self, Self::Error> {
+        Self::parse(Tokenizer::tokenize(from)?.1)
+    }
+}
+
+impl TryFrom<Vec<u8>> for Request {
+    type Error = Error;
+
+    fn try_from(from: Vec<u8>) -> Result<Self, Self::Error> {
+        Self::parse(Tokenizer::tokenize(&from)?.1)
+    }
+}
+
+impl TryFrom<&str> for Request {
+    type Error = Error;
+
+    fn try_from(from: &str) -> Result<Self, Self::Error> {
+        Self::parse(Tokenizer::tokenize(from.as_bytes())?.1)
+    }
+}
+
+impl TryFrom<String> for Request {
+    type Error = Error;
+
+    fn try_from(from: String) -> Result<Self, Self::Error> {
+        Self::parse(Tokenizer::tokenize(&from.as_bytes())?.1)
+    }
+}
+
+impl<'a> TryFrom<Tokenizer<'a>> for Request {
+    type Error = Error;
+
+    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
+        Self::parse(tokenizer)
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -81,19 +147,6 @@ impl<'a> Tokenizer<'a> {
                 body,
             },
         ))
-    }
-}
-
-impl TryFrom<SipMessage> for Request {
-    type Error = &'static str;
-
-    fn try_from(sip_message: crate::SipMessage) -> Result<Self, Self::Error> {
-        match sip_message {
-            crate::SipMessage::Request(request) => Ok(request),
-            crate::SipMessage::Response(_) => {
-                Err("Can't convert a models::SipMessage::Response into Request !")
-            }
-        }
     }
 }
 

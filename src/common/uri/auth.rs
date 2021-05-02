@@ -1,5 +1,6 @@
 use crate::{Error, NomError};
 use nom::error::VerboseError;
+use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Auth {
@@ -32,6 +33,14 @@ impl Auth {
                 .transpose()?
                 .map(Into::into),
         })
+    }
+}
+
+impl<'a> TryFrom<Tokenizer<'a>> for Auth {
+    type Error = Error;
+
+    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
+        Self::parse(tokenizer)
     }
 }
 

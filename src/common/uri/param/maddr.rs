@@ -1,5 +1,6 @@
 use crate::{Error, NomError};
 use macros::{Display, FromIntoInner, FromStr, HasValue};
+use std::convert::TryFrom;
 
 #[derive(HasValue, Display, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
 pub struct Maddr(String);
@@ -9,6 +10,14 @@ impl Maddr {
         use std::str::from_utf8;
 
         Ok(from_utf8(tokenizer.value)?.into())
+    }
+}
+
+impl<'a> TryFrom<Tokenizer<'a>> for Maddr {
+    type Error = Error;
+
+    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
+        Self::parse(tokenizer)
     }
 }
 

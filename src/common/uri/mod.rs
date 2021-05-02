@@ -9,6 +9,7 @@ pub use param::{Branch, Param};
 pub use schema::Schema;
 
 use crate::{Error, NomError};
+use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Uri {
@@ -47,6 +48,14 @@ impl Uri {
             params: Default::default(),
             headers: Default::default(),
         })
+    }
+}
+
+impl<'a> TryFrom<Tokenizer<'a>> for Uri {
+    type Error = Error;
+
+    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
+        Self::parse(tokenizer)
     }
 }
 
