@@ -11,6 +11,7 @@ pub enum Error {
     //TODO: needs fixing
     ParseError(String),
     Utf8Error(Header, String),
+    Unexpected(String),
 }
 
 impl fmt::Display for Error {
@@ -18,11 +19,8 @@ impl fmt::Display for Error {
         match self {
             Self::MissingHeader(header) => write!(f, "rsip error: missing header: {:?}", header),
             Self::InvalidParam(inner) => write!(f, "rsip error: invalid header param: {}", inner),
-            Self::ParseError(inner) => write!(
-                f,
-                "rsip error: could not parse header through libsip: {}",
-                inner
-            ),
+            Self::ParseError(inner) => write!(f, "rsip error: could not parse part: {}", inner),
+            Self::Unexpected(inner) => write!(f, "rsip quite unexpected error: {}", inner),
             Self::Utf8Error(header, reason) => write!(
                 f,
                 "rsip error: could not parse header {:?}: invalid utf8 ({})",
@@ -90,7 +88,27 @@ pub enum Header {
 
 impl From<nom::Err<VerboseError<&[u8]>>> for Error {
     fn from(error: nom::Err<VerboseError<&[u8]>>) -> Self {
-        Self::ParseError(error.to_string())
+        use std::str::from_utf8;
+
+        let transform_errors = |error: VerboseError<&[u8]>| match error
+            .errors
+            .iter()
+            .map(|error_item| {
+                from_utf8(error_item.0)
+                    .map(|e| format!("{:?}: {}", error_item.1, String::from(e)))
+                    .map_err(Error::from)
+            })
+            .collect::<Result<Vec<String>, Self>>()
+        {
+            Ok(vec) => Error::ParseError(vec.join(", ")),
+            Err(err) => err,
+        };
+
+        match error {
+            nom::Err::Failure(e) => transform_errors(e),
+            nom::Err::Error(e) => transform_errors(e),
+            _ => Error::Unexpected(error.to_string()),
+        }
     }
 }
 

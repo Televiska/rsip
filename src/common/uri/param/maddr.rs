@@ -1,6 +1,5 @@
-use crate::Error;
+use crate::{Error, NomError};
 use macros::{Display, FromIntoInner, FromStr, HasValue};
-use nom::error::VerboseError;
 
 #[derive(HasValue, Display, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
 pub struct Maddr(String);
@@ -26,7 +25,7 @@ impl<'a> From<&'a [u8]> for Tokenizer<'a> {
 
 #[allow(clippy::type_complexity)]
 impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), nom::Err<VerboseError<&'a [u8]>>> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
         use nom::{
             bytes::complete::{is_not, tag},
             sequence::tuple,

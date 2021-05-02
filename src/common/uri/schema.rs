@@ -1,5 +1,4 @@
-use crate::Error;
-use nom::error::VerboseError;
+use crate::{Error, NomError};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Schema {
@@ -39,7 +38,7 @@ impl<'a> From<&'a [u8]> for Tokenizer<'a> {
 
 #[allow(clippy::type_complexity)]
 impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), nom::Err<VerboseError<&'a [u8]>>> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
         use nom::{
             branch::alt,
             bytes::complete::{tag, tag_no_case, take_until},

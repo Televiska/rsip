@@ -1,4 +1,4 @@
-use crate::Error;
+use crate::{Error, NomError};
 use macros::{Display, FromIntoInner, FromStr, HasValue};
 use nom::error::VerboseError;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -56,7 +56,7 @@ impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
 
 #[allow(clippy::type_complexity)]
 impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), nom::Err<VerboseError<&'a [u8]>>> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
         use nom::{
             bytes::complete::{tag, take_until},
             combinator::rest,

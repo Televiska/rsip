@@ -7,6 +7,8 @@ pub use error::Error;
 pub use headers::{Header, Headers};
 pub use message::{Request, Response, SipMessage};
 
+pub(crate) type NomError<'a> = nom::Err<nom::error::VerboseError<&'a [u8]>>;
+
 pub(crate) mod parser_utils {
     use nom::{error::VerboseError, IResult};
 

@@ -1,3 +1,5 @@
+use crate::NomError;
+
 pub mod accept;
 pub mod accept_encoding;
 pub mod accept_language;
@@ -70,7 +72,6 @@ pub use in_reply_to::InReplyTo;
 pub use max_forwards::MaxForwards;
 pub use mime_version::MimeVersion;
 pub use min_expires::MinExpires;
-//pub use named::{ContactParam, GenValue, NamedHeader, NamedParam, NamedParams};
 pub use organization::Organization;
 pub use priority::Priority;
 pub use proxy_authenticate::ProxyAuthenticate;
@@ -142,4 +143,39 @@ pub enum Header {
     Via(Via),
     Warning(Warning),
     WwwAuthenticate(WwwAuthenticate),
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Tokenizer<'a> {
+    pub name: &'a [u8],
+    pub value: &'a [u8],
+}
+
+impl<'a> Tokenizer<'a> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        use nom::{
+            bytes::complete::{tag, take_until},
+            character::complete::space0,
+            sequence::tuple,
+        };
+
+        let (rem, (name, _, _, value, _)) = tuple((
+            take_until(":"),
+            tag(":"),
+            space0,
+            take_until("\r\n"),
+            tag("\r\n"),
+        ))(part)?;
+
+        Ok((rem, (name, value).into()))
+    }
+}
+
+impl<'a> std::convert::From<(&'a [u8], &'a [u8])> for Tokenizer<'a> {
+    fn from(tuple: (&'a [u8], &'a [u8])) -> Self {
+        Self {
+            name: tuple.0,
+            value: tuple.1,
+        }
+    }
 }

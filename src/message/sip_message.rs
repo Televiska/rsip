@@ -1,4 +1,5 @@
-use crate::{common::Version, Headers, Request, Response};
+use super::{request, response};
+use crate::{common::Version, Headers, NomError, Request, Response};
 
 #[derive(Debug, Clone)]
 pub enum SipMessage {
@@ -48,6 +49,37 @@ impl SipMessage {
             Self::Request(request) => request.body_mut(),
             Self::Response(response) => response.body_mut(),
         }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Tokenizer<'a> {
+    Request(request::Tokenizer<'a>),
+    Response(response::Tokenizer<'a>),
+}
+
+impl<'a> From<request::Tokenizer<'a>> for Tokenizer<'a> {
+    fn from(tokenizer: request::Tokenizer<'a>) -> Self {
+        Self::Request(tokenizer)
+    }
+}
+
+impl<'a> From<response::Tokenizer<'a>> for Tokenizer<'a> {
+    fn from(tokenizer: response::Tokenizer<'a>) -> Self {
+        Self::Response(tokenizer)
+    }
+}
+
+impl<'a> Tokenizer<'a> {
+    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        use nom::{branch::alt, combinator::map};
+
+        let (_, message) = alt((
+            map(response::Tokenizer::tokenize, |r| r.into()),
+            map(request::Tokenizer::tokenize, |r| r.into()),
+        ))(part)?;
+
+        Ok((&[], message))
     }
 }
 
