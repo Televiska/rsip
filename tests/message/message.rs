@@ -114,19 +114,19 @@ fn parser() {
 #[test]
 fn tokenizer() {
     assert_eq!(
-        Tokenizer::tokenize(b"REGISTER sip:server.com SIP/2.0\r\n\r\n".as_ref()),
+        Tokenizer::tokenize("REGISTER sip:server.com SIP/2.0\r\n\r\n".as_bytes()),
         Ok((
-            b"".as_ref(),
+            "".as_bytes(),
             Tokenizer::Request(request::Tokenizer {
-                method: b"REGISTER".as_ref().into(),
+                method: "REGISTER".as_bytes().into(),
                 uri: uri::Tokenizer {
-                    schema: Some(b"sip".as_ref().into()),
+                    schema: Some("sip".as_bytes().into()),
                     auth: None,
-                    host_with_port: (b"server.com".as_ref(), None).into(),
+                    host_with_port: ("server.com".as_bytes(), None).into(),
                     params: None,
                     headers: None
                 },
-                version: b"SIP/2.0".as_ref().into(),
+                version: "SIP/2.0".as_bytes().into(),
                 headers: vec![].into(),
                 body: &[]
             })
@@ -149,17 +149,17 @@ fn tokenizer() {
             ).as_bytes()
         ),
         Ok((
-            b"".as_ref(),
+            "".as_bytes(),
             Tokenizer::Request(request::Tokenizer {
-                method: b"REGISTER".as_ref().into(),
+                method: "REGISTER".as_bytes().into(),
                 uri: uri::Tokenizer {
-                    schema: Some(b"sips".as_ref().into()),
+                    schema: Some("sips".as_bytes().into()),
                     auth: None,
-                    host_with_port: (b"ss2.biloxi.example.com".as_ref(), None).into(),
+                    host_with_port: ("ss2.biloxi.example.com".as_bytes(), None).into(),
                     params: None,
                     headers: None
                 },
-                version: b"SIP/2.0".as_ref().into(),
+                version: "SIP/2.0".as_bytes().into(),
                 headers: vec![
                     ("Via".as_bytes(), "SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashd92".as_bytes()).into(),
                     ("Max-Forwards".as_bytes(), "70".as_bytes()).into(),
@@ -177,9 +177,9 @@ fn tokenizer() {
     );
 
     assert_eq!(
-        Tokenizer::tokenize(b"SIP/2.0 401 Unauthorized\r\n\r\n".as_ref()),
+        Tokenizer::tokenize("SIP/2.0 401 Unauthorized\r\n\r\n".as_bytes()),
         Ok((
-            b"".as_ref(),
+            "".as_bytes(),
             Tokenizer::Response(response::Tokenizer {
                 version: "SIP/2.0".as_bytes().into(),
                 status_code: ("401".as_bytes(), "Unauthorized".as_bytes()).into(),
@@ -203,7 +203,7 @@ fn tokenizer() {
             ).as_bytes()
         ),
         Ok((
-            b"".as_ref(),
+            "".as_bytes(),
             Tokenizer::Response(response::Tokenizer {
                 version: "SIP/2.0".as_bytes().into(),
                 status_code: ("401".as_bytes(), "Unauthorized".as_bytes()).into(),

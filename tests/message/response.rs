@@ -50,9 +50,9 @@ fn parser() {
 #[test]
 fn tokenizer() {
     assert_eq!(
-        Tokenizer::tokenize(b"SIP/2.0 401 Unauthorized\r\n\r\n".as_ref()),
+        Tokenizer::tokenize("SIP/2.0 401 Unauthorized\r\n\r\n".as_bytes()),
         Ok((
-            b"".as_ref(),
+            "".as_bytes(),
             Tokenizer {
                 version: "SIP/2.0".as_bytes().into(),
                 status_code: ("401".as_bytes(), "Unauthorized".as_bytes()).into(),
@@ -76,7 +76,7 @@ fn tokenizer() {
             ).as_bytes()
         ),
         Ok((
-            b"".as_ref(),
+            "".as_bytes(),
             Tokenizer {
                 version: "SIP/2.0".as_bytes().into(),
                 status_code: ("401".as_bytes(), "Unauthorized".as_bytes()).into(),
@@ -94,5 +94,5 @@ fn tokenizer() {
         )),
     );
 
-    assert!(Tokenizer::tokenize(b"REGISTER sip:server.com SIP/2.0\r\n\r\n".as_ref()).is_err());
+    assert!(Tokenizer::tokenize("REGISTER sip:server.com SIP/2.0\r\n\r\n".as_bytes()).is_err());
 }

@@ -4,30 +4,30 @@ use rsip::common::uri::param::maddr::{Maddr, Tokenizer};
 fn tokenizer() {
     assert_eq!(
         Tokenizer::tokenize(b"maddr=255.255.255.255 something"),
-        Ok((b" something".as_ref(), b"255.255.255.255".as_ref().into())),
+        Ok((" something".as_bytes(), "255.255.255.255".as_bytes().into())),
     );
 
     assert_eq!(
         Tokenizer::tokenize(b"maddr=255.255.255.255;user=filippos"),
         Ok((
-            b";user=filippos".as_ref(),
-            b"255.255.255.255".as_ref().into()
+            ";user=filippos".as_bytes(),
+            "255.255.255.255".as_bytes().into()
         )),
     );
 
     assert_eq!(
         Tokenizer::tokenize(b"maddr=255.255.255.255?user=filippos"),
         Ok((
-            b"?user=filippos".as_ref(),
-            b"255.255.255.255".as_ref().into()
+            "?user=filippos".as_bytes(),
+            "255.255.255.255".as_bytes().into()
         )),
     );
 
     assert_eq!(
         Tokenizer::tokenize(b"maddr=255.255.255.255\r\nuser=filippos"),
         Ok((
-            b"\r\nuser=filippos".as_ref(),
-            b"255.255.255.255".as_ref().into()
+            "\r\nuser=filippos".as_bytes(),
+            "255.255.255.255".as_bytes().into()
         )),
     );
 }
@@ -35,7 +35,7 @@ fn tokenizer() {
 #[test]
 fn parser() {
     assert_eq!(
-        Maddr::parse(b"255.255.255.255".as_ref().into()),
+        Maddr::parse("255.255.255.255".as_bytes().into()),
         Ok(Maddr::new("255.255.255.255"))
     );
 }

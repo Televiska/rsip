@@ -5,8 +5,8 @@ fn tokenizer() {
     assert_eq!(
         Tokenizer::tokenize(b"user:password@server2.com SIP/2.0"),
         Ok((
-            b"server2.com SIP/2.0".as_ref(),
-            (b"user".as_ref(), Some(b"password".as_ref())).into()
+            "server2.com SIP/2.0".as_bytes(),
+            ("user".as_bytes(), Some("password".as_bytes())).into()
         )),
     );
 
@@ -16,7 +16,7 @@ fn tokenizer() {
 #[test]
 fn parser() {
     assert_eq!(
-        Auth::parse((b"user".as_ref(), Some(b"password".as_ref())).into()),
+        Auth::parse(("user".as_bytes(), Some("password".as_bytes())).into()),
         Ok(Auth {
             username: "user".into(),
             password: Some("password".into())

@@ -5,22 +5,22 @@ fn tokenizer() {
     assert_eq!(
         Tokenizer::tokenize(b"sip:user2@server2.com SIP/2.0"),
         Ok((
-            b"user2@server2.com SIP/2.0".as_ref(),
-            b"sip".as_ref().into()
+            "user2@server2.com SIP/2.0".as_bytes(),
+            "sip".as_bytes().into()
         )),
     );
 
     assert_eq!(
         Tokenizer::tokenize(b"sips:user2@server2.com SIP/2.0"),
         Ok((
-            b"user2@server2.com SIP/2.0".as_ref(),
-            b"sips".as_ref().into()
+            "user2@server2.com SIP/2.0".as_bytes(),
+            "sips".as_bytes().into()
         )),
     );
 }
 
 #[test]
 fn parser() {
-    assert_eq!(Schema::parse(b"sip".as_ref().into()), Ok(Schema::Sip));
-    assert_eq!(Schema::parse(b"sips".as_ref().into()), Ok(Schema::Sips));
+    assert_eq!(Schema::parse("sip".as_bytes().into()), Ok(Schema::Sip));
+    assert_eq!(Schema::parse("sips".as_bytes().into()), Ok(Schema::Sips));
 }

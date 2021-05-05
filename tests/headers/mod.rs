@@ -7,10 +7,10 @@ fn tokenizer() {
     assert_eq!(
         Tokenizer::tokenize(b"Accept: REGISTER, INVITE\r\n something"),
         Ok((
-            b" something".as_ref(),
+            " something".as_bytes(),
             Tokenizer {
-                name: b"Accept".as_ref(),
-                value: b"REGISTER, INVITE".as_ref()
+                name: "Accept".as_bytes(),
+                value: "REGISTER, INVITE".as_bytes()
             }
         )),
     );
@@ -20,7 +20,7 @@ fn tokenizer() {
 #[test]
 fn parser() {
     assert_eq!(
-        Accept::parse(b"REGISTER, INVITE".as_ref().into()),
+        Accept::parse(b"REGISTER, INVITE".as_bytes().into()),
         Ok(Accept::new("REGISTER, INVITE")),
     );
 }*/

@@ -4,14 +4,14 @@ use rsip::common::method::{Method, Tokenizer};
 fn tokenizer() {
     assert_eq!(
         Tokenizer::tokenize(b"REGISTER something"),
-        Ok((b"something".as_ref(), b"REGISTER".as_ref().into())),
+        Ok(("something".as_bytes(), "REGISTER".as_bytes().into())),
     );
 }
 
 #[test]
 fn parser() {
     assert_eq!(
-        Method::parse(b"REGISTER".as_ref().into()),
+        Method::parse("REGISTER".as_bytes().into()),
         Ok(Method::Register),
     );
 }

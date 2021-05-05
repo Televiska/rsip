@@ -4,14 +4,17 @@ use rsip::common::uri::{host_with_port::Tokenizer, Host, HostWithPort};
 fn tokenizer() {
     assert_eq!(
         Tokenizer::tokenize(b"server2.com SIP/2.0"),
-        Ok((b"SIP/2.0".as_ref(), (b"server2.com".as_ref(), None).into())),
+        Ok((
+            "SIP/2.0".as_bytes(),
+            ("server2.com".as_bytes(), None).into()
+        )),
     );
 
     assert_eq!(
         Tokenizer::tokenize(b"server2.com:5060 SIP/2.0"),
         Ok((
-            b"SIP/2.0".as_ref(),
-            (b"server2.com".as_ref(), Some(b"5060".as_ref())).into()
+            "SIP/2.0".as_bytes(),
+            ("server2.com".as_bytes(), Some("5060".as_bytes())).into()
         )),
     );
 }
@@ -19,7 +22,7 @@ fn tokenizer() {
 #[test]
 fn parser() {
     assert_eq!(
-        HostWithPort::parse((b"server2.com".as_ref(), None).into()),
+        HostWithPort::parse(("server2.com".as_bytes(), None).into()),
         Ok(HostWithPort {
             host: Host::Domain("server2.com".into()),
             port: None
@@ -27,7 +30,7 @@ fn parser() {
     );
 
     assert_eq!(
-        HostWithPort::parse((b"server2.com".as_ref(), Some(b"5060".as_ref())).into()),
+        HostWithPort::parse(("server2.com".as_bytes(), Some("5060".as_bytes())).into()),
         Ok(HostWithPort {
             host: Host::Domain("server2.com".into()),
             port: Some(5060.into())

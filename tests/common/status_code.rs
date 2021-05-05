@@ -4,19 +4,19 @@ use rsip::common::status_code::{StatusCode, Tokenizer};
 fn tokenizer() {
     assert_eq!(
         Tokenizer::tokenize(b"200 something"),
-        Ok((b"something".as_ref(), b"200".as_ref().into())),
+        Ok(("something".as_bytes(), "200".as_bytes().into())),
     );
 }
 
 #[test]
 fn parser() {
     assert_eq!(
-        StatusCode::parse(b"200".as_ref().into()),
+        StatusCode::parse("200".as_bytes().into()),
         Ok(StatusCode::Ok)
     );
 
     assert_eq!(
-        StatusCode::parse(b"700".as_ref().into()),
+        StatusCode::parse("700".as_bytes().into()),
         Ok(StatusCode::Other(700))
     );
 }
