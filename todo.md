@@ -11,3 +11,4 @@ maybe permutation(take_while(alpha), take_until(":"))~~
 * ~~in URI: do alt(((tag_no_case("sip:"), tag_no_case("sips:"), ((take_until("://"), tag("://"))))~~
 * expand the idea of Utf8Tokenizer
 * remove some tech debt around organization, b"".as_ref() -> as_bytes etc
+* now we have impl only TryInto for Tokenizer, but we should impl instead TryFrom<Tokenizer>

@@ -1,4 +1,5 @@
 use rsip::common::method::{Method, Tokenizer};
+use std::convert::TryInto;
 
 #[test]
 fn tokenizer() {
@@ -11,7 +12,7 @@ fn tokenizer() {
 #[test]
 fn parser() {
     assert_eq!(
-        Method::parse("REGISTER".as_bytes().into()),
+        Tokenizer::from("REGISTER".as_bytes()).try_into(),
         Ok(Method::Register),
     );
 }

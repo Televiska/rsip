@@ -1,7 +1,6 @@
-use crate::{Error, NomError};
+pub use tokenizer::Tokenizer;
+
 use macros::{Display, FromIntoInner, FromStr, HasValue};
-use nom::error::VerboseError;
-use std::convert::TryFrom;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -20,73 +19,6 @@ pub enum Host {
 pub struct Domain(String);
 #[derive(HasValue, FromIntoInner, Display, Debug, PartialEq, Eq, Clone)]
 pub struct Port(u16);
-
-impl HostWithPort {
-    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
-        use std::str::{from_utf8, FromStr};
-
-        let host = from_utf8(tokenizer.host)?;
-        let host = match IpAddr::from_str(host) {
-            Ok(ip_addr) => Host::IpAddr(ip_addr),
-            Err(_) => Host::Domain(host.into()),
-        };
-
-        let port = match tokenizer.port {
-            Some(port) => Some(from_utf8(port)?.parse::<u16>()?).map(Into::into),
-            None => None,
-        };
-
-        Ok(HostWithPort { host, port })
-    }
-}
-
-impl<'a> TryFrom<Tokenizer<'a>> for HostWithPort {
-    type Error = Error;
-
-    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
-        Self::parse(tokenizer)
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Tokenizer<'a> {
-    pub host: &'a [u8],
-    pub port: Option<&'a [u8]>,
-}
-
-impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
-    fn from(value: (&'a [u8], Option<&'a [u8]>)) -> Self {
-        Self {
-            host: value.0,
-            port: value.1,
-        }
-    }
-}
-
-#[allow(clippy::type_complexity)]
-impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-        use nom::{
-            bytes::complete::{tag, take_until},
-            combinator::rest,
-            sequence::tuple,
-        };
-
-        let (rem, (host_with_port, _)) = tuple((take_until(" "), tag(" ")))(part)?;
-        let (host, port) =
-            match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(
-                host_with_port,
-            ) {
-                Ok((_, (host, _, port))) => (host, Some(port)),
-                Err(_) => {
-                    let (_, host) = rest(host_with_port)?;
-                    (host, None)
-                }
-            };
-
-        Ok((rem, (host, port).into()))
-    }
-}
 
 impl Default for HostWithPort {
     fn default() -> Self {
@@ -153,3 +85,72 @@ impl std::fmt::Display for HostWithPort {
         write!(f, "{}", Into::<libsip::uri::Domain>::into(self.clone()))
     }
 }*/
+
+pub mod tokenizer {
+    use super::{Host, HostWithPort};
+    use crate::{Error, NomError};
+    use nom::error::VerboseError;
+    use std::convert::TryInto;
+
+    impl<'a> TryInto<HostWithPort> for Tokenizer<'a> {
+        type Error = Error;
+
+        fn try_into(self) -> Result<HostWithPort, Error> {
+            use std::net::IpAddr;
+            use std::str::{from_utf8, FromStr};
+
+            let host = from_utf8(self.host)?;
+            let host = match IpAddr::from_str(host) {
+                Ok(ip_addr) => Host::IpAddr(ip_addr),
+                Err(_) => Host::Domain(host.into()),
+            };
+
+            let port = match self.port {
+                Some(port) => Some(from_utf8(port)?.parse::<u16>()?).map(Into::into),
+                None => None,
+            };
+
+            Ok(HostWithPort { host, port })
+        }
+    }
+
+    #[derive(Debug, PartialEq, Eq, Clone)]
+    pub struct Tokenizer<'a> {
+        pub host: &'a [u8],
+        pub port: Option<&'a [u8]>,
+    }
+
+    impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
+        fn from(value: (&'a [u8], Option<&'a [u8]>)) -> Self {
+            Self {
+                host: value.0,
+                port: value.1,
+            }
+        }
+    }
+
+    #[allow(clippy::type_complexity)]
+    impl<'a> Tokenizer<'a> {
+        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+            use nom::{
+                bytes::complete::{tag, take_until},
+                combinator::rest,
+                sequence::tuple,
+            };
+
+            let (rem, (host_with_port, _)) = tuple((take_until(" "), tag(" ")))(part)?;
+            let (host, port) =
+                match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(
+                    host_with_port,
+                ) {
+                    Ok((_, (host, _, port))) => (host, Some(port)),
+                    Err(_) => {
+                        let (_, host) = rest(host_with_port)?;
+                        (host, None)
+                    }
+                };
+
+            Ok((rem, (host, port).into()))
+        }
+    }
+}

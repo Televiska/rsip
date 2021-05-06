@@ -1,4 +1,5 @@
 use rsip::common::status_code::{StatusCode, Tokenizer};
+use std::convert::TryInto;
 
 #[test]
 fn tokenizer() {
@@ -11,12 +12,12 @@ fn tokenizer() {
 #[test]
 fn parser() {
     assert_eq!(
-        StatusCode::parse("200".as_bytes().into()),
+        Tokenizer::from("200".as_bytes()).try_into(),
         Ok(StatusCode::Ok)
     );
 
     assert_eq!(
-        StatusCode::parse("700".as_bytes().into()),
+        Tokenizer::from("700".as_bytes()).try_into(),
         Ok(StatusCode::Other(700))
     );
 }

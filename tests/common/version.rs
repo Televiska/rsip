@@ -1,4 +1,5 @@
 use rsip::common::version::{Tokenizer, Version};
+use std::convert::TryInto;
 
 #[test]
 fn tokenizer() {
@@ -15,7 +16,13 @@ fn tokenizer() {
 
 #[test]
 fn parser() {
-    assert_eq!(Version::parse("SIP/1.0".as_bytes().into()), Ok(Version::V1));
+    assert_eq!(
+        Tokenizer::from("SIP/1.0".as_bytes()).try_into(),
+        Ok(Version::V1)
+    );
 
-    assert_eq!(Version::parse("SIP/2.0".as_bytes().into()), Ok(Version::V2));
+    assert_eq!(
+        Tokenizer::from("SIP/2.0".as_bytes()).try_into(),
+        Ok(Version::V2)
+    );
 }

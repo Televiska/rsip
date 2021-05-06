@@ -4,6 +4,7 @@ pub mod params;
 pub mod schema;
 
 use rsip::common::uri::{Schema, Tokenizer, Uri};
+use std::convert::TryInto;
 
 #[test]
 fn tokenizer() {
@@ -109,13 +110,14 @@ fn tokenizer() {
 #[test]
 fn parser() {
     assert_eq!(
-        Uri::parse(Tokenizer {
+        Tokenizer {
             schema: None,
             auth: None,
             host_with_port: ("server2.com".as_bytes(), None).into(),
             params: None,
             headers: None
-        }),
+        }
+        .try_into(),
         Ok(Uri {
             schema: None,
             auth: None,
@@ -126,13 +128,14 @@ fn parser() {
     );
 
     assert_eq!(
-        Uri::parse(Tokenizer {
+        Tokenizer {
             schema: None,
             auth: Some(("user".as_bytes(), None).into()),
             host_with_port: ("server2.com".as_bytes(), None).into(),
             params: None,
             headers: None
-        }),
+        }
+        .try_into(),
         Ok(Uri {
             schema: None,
             auth: Some(("user", Option::<String>::None).into()),
@@ -143,13 +146,14 @@ fn parser() {
     );
 
     assert_eq!(
-        Uri::parse(Tokenizer {
+        Tokenizer {
             schema: None,
             auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
             host_with_port: ("server2.com".as_bytes(), None).into(),
             params: None,
             headers: None
-        }),
+        }
+        .try_into(),
         Ok(Uri {
             schema: None,
             auth: Some(("user", Some("password")).into()),
@@ -160,13 +164,14 @@ fn parser() {
     );
 
     assert_eq!(
-        Uri::parse(Tokenizer {
+        Tokenizer {
             schema: None,
             auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
             host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
             params: None,
             headers: None
-        }),
+        }
+        .try_into(),
         Ok(Uri {
             schema: None,
             auth: Some(("user", Some("password")).into()),
@@ -177,13 +182,14 @@ fn parser() {
     );
 
     assert_eq!(
-        Uri::parse(Tokenizer {
+        Tokenizer {
             schema: Some("sip".as_bytes().into()),
             auth: Some(("user".as_bytes(), None).into()),
             host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
             params: None,
             headers: None
-        }),
+        }
+        .try_into(),
         Ok(Uri {
             schema: Some(Schema::Sip),
             auth: Some(("user", Option::<String>::None).into()),
@@ -194,13 +200,14 @@ fn parser() {
     );
 
     assert_eq!(
-        Uri::parse(Tokenizer {
+        Tokenizer {
             schema: Some("sip".as_bytes().into()),
             auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
             host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
             params: None,
             headers: None
-        }),
+        }
+        .try_into(),
         Ok(Uri {
             schema: Some(Schema::Sip),
             auth: Some(("user", Some("password")).into()),

@@ -1,5 +1,4 @@
-use crate::{Error, NomError};
-use std::convert::TryFrom;
+pub use tokenizer::Tokenizer;
 
 #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone, Copy)]
 pub enum StatusCode {
@@ -102,80 +101,6 @@ impl StatusCode {
             code if (600..700).contains(&code) => StatusCodeKind::GlobalFailure,
             _ => StatusCodeKind::Other,
         }
-    }
-
-    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
-        use std::str::from_utf8;
-
-        Ok(from_utf8(tokenizer.code)?.parse::<u16>()?.into())
-    }
-}
-
-impl<'a> TryFrom<Tokenizer<'a>> for StatusCode {
-    type Error = Error;
-
-    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
-        Self::parse(tokenizer)
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Tokenizer<'a> {
-    pub code: &'a [u8],
-    pub reason: Option<&'a [u8]>,
-}
-
-impl<'a> From<&'a [u8]> for Tokenizer<'a> {
-    fn from(code: &'a [u8]) -> Self {
-        Self { code, reason: None }
-    }
-}
-
-impl<'a> From<(&'a [u8], &'a [u8])> for Tokenizer<'a> {
-    fn from(tuple: (&'a [u8], &'a [u8])) -> Self {
-        Self {
-            code: tuple.0,
-            reason: Some(tuple.1),
-        }
-    }
-}
-
-impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
-    fn from(tuple: (&'a [u8], Option<&'a [u8]>)) -> Self {
-        Self {
-            code: tuple.0,
-            reason: tuple.1,
-        }
-    }
-}
-
-impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-        use crate::parser_utils::opt_sp;
-        use nom::{character::complete::digit1, sequence::tuple};
-
-        let (rem, (code, _)) = tuple((digit1, opt_sp))(part)?;
-
-        Ok((rem, code.into()))
-    }
-
-    pub fn tokenize_with_reason(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-        use nom::{
-            bytes::complete::{tag, take_until},
-            character::complete::digit1,
-            sequence::tuple,
-        };
-
-        let (rem, (code, _, reason, _)) =
-            tuple((digit1, tag(" "), take_until("\r\n"), tag("\r\n")))(part)?;
-
-        Ok((
-            rem,
-            Self {
-                code,
-                reason: Some(reason),
-            },
-        ))
     }
 }
 
@@ -354,5 +279,81 @@ impl Default for StatusCode {
 impl std::fmt::Display for StatusCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", Into::<u16>::into(*self))
+    }
+}
+
+pub mod tokenizer {
+    use super::StatusCode;
+    use crate::{Error, NomError};
+    use std::convert::TryInto;
+
+    impl<'a> TryInto<StatusCode> for Tokenizer<'a> {
+        type Error = Error;
+
+        fn try_into(self) -> Result<StatusCode, Error> {
+            use std::str::from_utf8;
+
+            Ok(from_utf8(self.code)?.parse::<u16>()?.into())
+        }
+    }
+
+    #[derive(Debug, PartialEq, Eq, Clone)]
+    pub struct Tokenizer<'a> {
+        pub code: &'a [u8],
+        pub reason: Option<&'a [u8]>,
+    }
+
+    impl<'a> From<&'a [u8]> for Tokenizer<'a> {
+        fn from(code: &'a [u8]) -> Self {
+            Self { code, reason: None }
+        }
+    }
+
+    impl<'a> From<(&'a [u8], &'a [u8])> for Tokenizer<'a> {
+        fn from(tuple: (&'a [u8], &'a [u8])) -> Self {
+            Self {
+                code: tuple.0,
+                reason: Some(tuple.1),
+            }
+        }
+    }
+
+    impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
+        fn from(tuple: (&'a [u8], Option<&'a [u8]>)) -> Self {
+            Self {
+                code: tuple.0,
+                reason: tuple.1,
+            }
+        }
+    }
+
+    impl<'a> Tokenizer<'a> {
+        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+            use crate::parser_utils::opt_sp;
+            use nom::{character::complete::digit1, sequence::tuple};
+
+            let (rem, (code, _)) = tuple((digit1, opt_sp))(part)?;
+
+            Ok((rem, code.into()))
+        }
+
+        pub fn tokenize_with_reason(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+            use nom::{
+                bytes::complete::{tag, take_until},
+                character::complete::digit1,
+                sequence::tuple,
+            };
+
+            let (rem, (code, _, reason, _)) =
+                tuple((digit1, tag(" "), take_until("\r\n"), tag("\r\n")))(part)?;
+
+            Ok((
+                rem,
+                Self {
+                    code,
+                    reason: Some(reason),
+                },
+            ))
+        }
     }
 }

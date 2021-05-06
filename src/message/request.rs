@@ -1,3 +1,5 @@
+pub use tokenizer::Tokenizer;
+
 use crate::{
     common::{
         method::{self, Method},
@@ -5,7 +7,7 @@ use crate::{
         version::{self, Version},
     },
     headers::{header, Headers},
-    Error, NomError, SipMessage,
+    Error, SipMessage,
 };
 use std::convert::{TryFrom, TryInto};
 
@@ -46,21 +48,6 @@ impl Request {
     pub fn body_mut(&mut self) -> &mut Vec<u8> {
         &mut self.body
     }
-
-    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
-        Ok(Self {
-            method: tokenizer.method.try_into()?,
-            uri: tokenizer.uri.try_into()?,
-            version: tokenizer.version.try_into()?,
-            headers: tokenizer
-                .headers
-                .into_iter()
-                .map(TryInto::try_into)
-                .collect::<Result<Vec<_>, Error>>()?
-                .into(),
-            body: tokenizer.body.into(),
-        })
-    }
 }
 
 impl TryFrom<SipMessage> for Request {
@@ -80,7 +67,7 @@ impl TryFrom<&[u8]> for Request {
     type Error = Error;
 
     fn try_from(from: &[u8]) -> Result<Self, Self::Error> {
-        Self::parse(Tokenizer::tokenize(from)?.1)
+        Tokenizer::tokenize(from)?.1.try_into()
     }
 }
 
@@ -88,7 +75,7 @@ impl TryFrom<Vec<u8>> for Request {
     type Error = Error;
 
     fn try_from(from: Vec<u8>) -> Result<Self, Self::Error> {
-        Self::parse(Tokenizer::tokenize(&from)?.1)
+        Tokenizer::tokenize(&from)?.1.try_into()
     }
 }
 
@@ -96,7 +83,7 @@ impl TryFrom<&str> for Request {
     type Error = Error;
 
     fn try_from(from: &str) -> Result<Self, Self::Error> {
-        Self::parse(Tokenizer::tokenize(from.as_bytes())?.1)
+        Tokenizer::tokenize(from.as_bytes())?.1.try_into()
     }
 }
 
@@ -104,7 +91,7 @@ impl TryFrom<String> for Request {
     type Error = Error;
 
     fn try_from(from: String) -> Result<Self, Self::Error> {
-        Self::parse(Tokenizer::tokenize(&from.as_bytes())?.1)
+        Tokenizer::tokenize(&from.as_bytes())?.1.try_into()
     }
 }
 
@@ -112,79 +99,65 @@ impl TryFrom<bytes::Bytes> for Request {
     type Error = Error;
 
     fn try_from(from: bytes::Bytes) -> Result<Self, Self::Error> {
-        Self::parse(Tokenizer::tokenize(&from)?.1)
+        Tokenizer::tokenize(&from)?.1.try_into()
     }
 }
 
-impl<'a> TryFrom<Tokenizer<'a>> for Request {
-    type Error = Error;
+pub mod tokenizer {
+    use super::{header, method, uri, version, Request};
+    use crate::{Error, NomError};
+    use std::convert::TryInto;
 
-    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
-        Self::parse(tokenizer)
+    impl<'a> TryInto<Request> for Tokenizer<'a> {
+        type Error = Error;
+
+        fn try_into(self) -> Result<Request, Error> {
+            Ok(Request {
+                method: self.method.try_into()?,
+                uri: self.uri.try_into()?,
+                version: self.version.try_into()?,
+                headers: self
+                    .headers
+                    .into_iter()
+                    .map(TryInto::try_into)
+                    .collect::<Result<Vec<_>, Error>>()?
+                    .into(),
+                body: self.body.into(),
+            })
+        }
+    }
+
+    #[derive(Debug, PartialEq, Eq)]
+    pub struct Tokenizer<'a> {
+        pub method: method::Tokenizer<'a>,
+        pub uri: uri::Tokenizer<'a>,
+        pub version: version::Tokenizer<'a>,
+        pub headers: Vec<header::Tokenizer<'a>>,
+        pub body: &'a [u8],
+    }
+
+    impl<'a> Tokenizer<'a> {
+        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+            use nom::{bytes::complete::tag, multi::many0, sequence::tuple};
+
+            let (rem, (method, uri, version)) = tuple((
+                method::Tokenizer::tokenize,
+                uri::Tokenizer::tokenize,
+                version::Tokenizer::tokenize,
+            ))(part)?;
+            let (rem, headers) = many0(header::Tokenizer::tokenize)(rem)?;
+            let (body, _) = tag("\r\n")(rem)?;
+
+            Ok((
+                &[],
+                Self {
+                    method,
+                    uri,
+                    version,
+                    headers,
+                    body,
+                },
+            ))
+        }
     }
 }
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Tokenizer<'a> {
-    pub method: method::Tokenizer<'a>,
-    pub uri: uri::Tokenizer<'a>,
-    pub version: version::Tokenizer<'a>,
-    pub headers: Vec<header::Tokenizer<'a>>,
-    pub body: &'a [u8],
-}
-
-impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-        use nom::{bytes::complete::tag, multi::many0, sequence::tuple};
-
-        let (rem, (method, uri, version)) = tuple((
-            method::Tokenizer::tokenize,
-            uri::Tokenizer::tokenize,
-            version::Tokenizer::tokenize,
-        ))(part)?;
-        let (rem, headers) = many0(header::Tokenizer::tokenize)(rem)?;
-        let (body, _) = tag("\r\n")(rem)?;
-
-        Ok((
-            &[],
-            Self {
-                method,
-                uri,
-                version,
-                headers,
-                body,
-            },
-        ))
-    }
-}
-
-/*
-impl std::fmt::Display for Request {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            Into::<libsip::core::SipMessage>::into(self.clone())
-        )
-    }
-}*/
-
-/*
-impl TryFrom<Bytes> for Request {
-    type Error = String;
-
-    fn try_from(bytes: Bytes) -> Result<Self, Self::Error> {
-        use std::convert::TryInto;
-
-        let (_, sip_message) = libsip::parse_message::<VerboseError<&[u8]>>(&bytes.to_vec())
-            .map_err(|e| e.to_string())?;
-
-        Ok(sip_message.try_into()?)
-    }
-}
-
-impl Into<Bytes> for Request {
-    fn into(self) -> Bytes {
-        crate::SipMessage::from(self).into()
-    }
-}*/

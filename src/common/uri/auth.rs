@@ -1,6 +1,4 @@
-use crate::{Error, NomError};
-use nom::error::VerboseError;
-use std::convert::TryFrom;
+pub use tokenizer::Tokenizer;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Auth {
@@ -21,65 +19,67 @@ where
     }
 }
 
-impl Auth {
-    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
-        use std::str::from_utf8;
+pub mod tokenizer {
+    use super::Auth;
+    use crate::{Error, NomError};
+    use nom::error::VerboseError;
+    use std::convert::TryInto;
 
-        Ok(Self {
-            username: from_utf8(tokenizer.username)?.into(),
-            password: tokenizer
-                .password
-                .map(|p| from_utf8(p))
-                .transpose()?
-                .map(Into::into),
-        })
-    }
-}
+    impl<'a> TryInto<Auth> for Tokenizer<'a> {
+        type Error = Error;
 
-impl<'a> TryFrom<Tokenizer<'a>> for Auth {
-    type Error = Error;
+        fn try_into(self) -> Result<Auth, Error> {
+            use std::str::from_utf8;
 
-    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
-        Self::parse(tokenizer)
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Tokenizer<'a> {
-    pub username: &'a [u8],
-    pub password: Option<&'a [u8]>,
-}
-
-impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
-    fn from(value: (&'a [u8], Option<&'a [u8]>)) -> Self {
-        Self {
-            username: value.0,
-            password: value.1,
+            Ok(Auth {
+                username: from_utf8(self.username)?.into(),
+                password: self
+                    .password
+                    .map(|p| from_utf8(p))
+                    .transpose()?
+                    .map(Into::into),
+            })
         }
     }
-}
 
-#[allow(clippy::type_complexity)]
-impl<'a> Tokenizer<'a> {
-    //we alt with take_until(".") and then tag("@") to make sure we fail early
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-        use nom::{
-            bytes::complete::{tag, take_till, take_until},
-            combinator::rest,
-            sequence::tuple,
-        };
-        let (rem, (auth, _)) = tuple((take_till(|c| c == b'.' || c == b'@'), tag("@")))(part)?;
+    #[derive(Debug, PartialEq, Eq, Clone)]
+    pub struct Tokenizer<'a> {
+        pub username: &'a [u8],
+        pub password: Option<&'a [u8]>,
+    }
 
-        let (username, password) =
-            match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(auth)
-            {
-                Ok((_, (username, _, password))) => (username, Some(password)),
-                Err(_) => {
-                    let (_, username) = rest(auth)?;
-                    (username, None)
-                }
+    impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
+        fn from(value: (&'a [u8], Option<&'a [u8]>)) -> Self {
+            Self {
+                username: value.0,
+                password: value.1,
+            }
+        }
+    }
+
+    #[allow(clippy::type_complexity)]
+    impl<'a> Tokenizer<'a> {
+        //we alt with take_until(".") and then tag("@") to make sure we fail early
+        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+            use nom::{
+                bytes::complete::{tag, take_till, take_until},
+                combinator::rest,
+                sequence::tuple,
             };
+            let (rem, (auth, _)) = tuple((take_till(|c| c == b'.' || c == b'@'), tag("@")))(part)?;
 
-        Ok((rem, Tokenizer { username, password }))
+            let (username, password) =
+                match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(
+                    auth,
+                ) {
+                    Ok((_, (username, _, password))) => (username, Some(password)),
+                    Err(_) => {
+                        let (_, username) = rest(auth)?;
+                        (username, None)
+                    }
+                };
+
+            Ok((rem, Tokenizer { username, password }))
+        }
     }
 }

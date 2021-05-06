@@ -1,4 +1,5 @@
 use rsip::common::uri::{host_with_port::Tokenizer, Host, HostWithPort};
+use std::convert::TryInto;
 
 #[test]
 fn tokenizer() {
@@ -22,7 +23,7 @@ fn tokenizer() {
 #[test]
 fn parser() {
     assert_eq!(
-        HostWithPort::parse(("server2.com".as_bytes(), None).into()),
+        Tokenizer::from(("server2.com".as_bytes(), None)).try_into(),
         Ok(HostWithPort {
             host: Host::Domain("server2.com".into()),
             port: None
@@ -30,7 +31,7 @@ fn parser() {
     );
 
     assert_eq!(
-        HostWithPort::parse(("server2.com".as_bytes(), Some("5060".as_bytes())).into()),
+        Tokenizer::from(("server2.com".as_bytes(), Some("5060".as_bytes()))).try_into(),
         Ok(HostWithPort {
             host: Host::Domain("server2.com".into()),
             port: Some(5060.into())
