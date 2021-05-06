@@ -103,6 +103,14 @@ impl TryFrom<String> for Response {
     }
 }
 
+impl TryFrom<bytes::Bytes> for Response {
+    type Error = Error;
+
+    fn try_from(from: bytes::Bytes) -> Result<Self, Self::Error> {
+        Self::parse(Tokenizer::tokenize(&from)?.1)
+    }
+}
+
 impl<'a> TryFrom<Tokenizer<'a>> for Response {
     type Error = Error;
 
