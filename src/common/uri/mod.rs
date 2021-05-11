@@ -3,13 +3,12 @@ pub mod host_with_port;
 pub mod param;
 pub mod schema;
 
+pub use tokenizer::Tokenizer;
+
 pub use auth::Auth;
 pub use host_with_port::{Domain, Host, HostWithPort, Port};
 pub use param::{Branch, Param};
 pub use schema::Schema;
-
-use crate::{Error, NomError};
-use std::convert::TryFrom;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Uri {
@@ -38,54 +37,6 @@ impl Uri {
             Param::Branch(branch) => Some(branch),
             _ => None,
         })
-    }
-
-    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
-        Ok(Self {
-            schema: tokenizer.schema.map(Schema::parse).transpose()?,
-            auth: tokenizer.auth.map(Auth::parse).transpose()?,
-            host_with_port: HostWithPort::parse(tokenizer.host_with_port)?,
-            params: Default::default(),
-            headers: Default::default(),
-        })
-    }
-}
-
-impl<'a> TryFrom<Tokenizer<'a>> for Uri {
-    type Error = Error;
-
-    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
-        Self::parse(tokenizer)
-    }
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Tokenizer<'a> {
-    pub schema: Option<schema::Tokenizer<'a>>,
-    pub auth: Option<auth::Tokenizer<'a>>,
-    pub host_with_port: host_with_port::Tokenizer<'a>,
-    pub params: Option<Vec<&'a [u8]>>,
-    pub headers: Option<Vec<&'a [u8]>>,
-}
-
-impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-        use nom::combinator::opt;
-
-        let (rem, schema) = opt(schema::Tokenizer::tokenize)(part)?;
-        let (rem, auth) = opt(auth::Tokenizer::tokenize)(rem)?;
-        let (rem, host_with_port) = host_with_port::Tokenizer::tokenize(rem)?;
-
-        Ok((
-            rem,
-            Self {
-                schema,
-                auth,
-                host_with_port,
-                params: None,
-                headers: None,
-            },
-        ))
     }
 }
 
@@ -143,3 +94,53 @@ impl std::fmt::Display for Uri {
         write!(f, "{}", Into::<libsip::uri::Uri>::into(self.clone()))
     }
 }*/
+
+pub mod tokenizer {
+    use super::{auth, host_with_port, schema, Uri};
+    use crate::{Error, NomError};
+    use std::convert::TryInto;
+
+    impl<'a> TryInto<Uri> for Tokenizer<'a> {
+        type Error = Error;
+
+        fn try_into(self) -> Result<Uri, Error> {
+            Ok(Uri {
+                schema: self.schema.map(TryInto::try_into).transpose()?,
+                auth: self.auth.map(TryInto::try_into).transpose()?,
+                host_with_port: self.host_with_port.try_into()?,
+                params: Default::default(),
+                headers: Default::default(),
+            })
+        }
+    }
+
+    #[derive(Debug, PartialEq, Eq)]
+    pub struct Tokenizer<'a> {
+        pub schema: Option<schema::Tokenizer<'a>>,
+        pub auth: Option<auth::Tokenizer<'a>>,
+        pub host_with_port: host_with_port::Tokenizer<'a>,
+        pub params: Option<Vec<&'a [u8]>>,
+        pub headers: Option<Vec<&'a [u8]>>,
+    }
+
+    impl<'a> Tokenizer<'a> {
+        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+            use nom::combinator::opt;
+
+            let (rem, schema) = opt(schema::Tokenizer::tokenize)(part)?;
+            let (rem, auth) = opt(auth::Tokenizer::tokenize)(rem)?;
+            let (rem, host_with_port) = host_with_port::Tokenizer::tokenize(rem)?;
+
+            Ok((
+                rem,
+                Self {
+                    schema,
+                    auth,
+                    host_with_port,
+                    params: None,
+                    headers: None,
+                },
+            ))
+        }
+    }
+}

@@ -1,6 +1,8 @@
+pub use tokenizer::Tokenizer;
+
 use super::{request, response};
-use crate::{common::Version, Error, Headers, NomError, Request, Response};
-use std::convert::TryFrom;
+use crate::{common::Version, Error, Headers, Request, Response};
+use std::convert::{TryFrom, TryInto};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum SipMessage {
@@ -51,20 +53,13 @@ impl SipMessage {
             Self::Response(response) => response.body_mut(),
         }
     }
-
-    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
-        match tokenizer {
-            Tokenizer::Request(tokenizer) => Ok(Self::Request(Request::parse(tokenizer)?)),
-            Tokenizer::Response(tokenizer) => Ok(Self::Response(Response::parse(tokenizer)?)),
-        }
-    }
 }
 
 impl TryFrom<&[u8]> for SipMessage {
     type Error = Error;
 
     fn try_from(from: &[u8]) -> Result<Self, Self::Error> {
-        Self::parse(Tokenizer::tokenize(from)?.1)
+        Tokenizer::tokenize(from)?.1.try_into()
     }
 }
 
@@ -72,7 +67,7 @@ impl TryFrom<Vec<u8>> for SipMessage {
     type Error = Error;
 
     fn try_from(from: Vec<u8>) -> Result<Self, Self::Error> {
-        Self::parse(Tokenizer::tokenize(&from)?.1)
+        Tokenizer::tokenize(&from)?.1.try_into()
     }
 }
 
@@ -80,7 +75,7 @@ impl TryFrom<&str> for SipMessage {
     type Error = Error;
 
     fn try_from(from: &str) -> Result<Self, Self::Error> {
-        Self::parse(Tokenizer::tokenize(from.as_bytes())?.1)
+        Tokenizer::tokenize(from.as_bytes())?.1.try_into()
     }
 }
 
@@ -88,7 +83,7 @@ impl TryFrom<String> for SipMessage {
     type Error = Error;
 
     fn try_from(from: String) -> Result<Self, Self::Error> {
-        Self::parse(Tokenizer::tokenize(&from.as_bytes())?.1)
+        Tokenizer::tokenize(&from.as_bytes())?.1.try_into()
     }
 }
 
@@ -96,142 +91,54 @@ impl TryFrom<bytes::Bytes> for SipMessage {
     type Error = Error;
 
     fn try_from(from: bytes::Bytes) -> Result<Self, Self::Error> {
-        Self::parse(Tokenizer::tokenize(&from)?.1)
+        Tokenizer::tokenize(&from)?.1.try_into()
     }
 }
 
-impl<'a> TryFrom<Tokenizer<'a>> for SipMessage {
-    type Error = Error;
+pub mod tokenizer {
+    use super::{request, response, SipMessage};
+    use crate::{Error, NomError};
+    use std::convert::TryInto;
 
-    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
-        Self::parse(tokenizer)
-    }
-}
+    impl<'a> TryInto<SipMessage> for Tokenizer<'a> {
+        type Error = Error;
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum Tokenizer<'a> {
-    Request(request::Tokenizer<'a>),
-    Response(response::Tokenizer<'a>),
-}
-
-impl<'a> From<request::Tokenizer<'a>> for Tokenizer<'a> {
-    fn from(tokenizer: request::Tokenizer<'a>) -> Self {
-        Self::Request(tokenizer)
-    }
-}
-
-impl<'a> From<response::Tokenizer<'a>> for Tokenizer<'a> {
-    fn from(tokenizer: response::Tokenizer<'a>) -> Self {
-        Self::Response(tokenizer)
-    }
-}
-
-impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-        use nom::{branch::alt, combinator::map};
-
-        let (_, message) = alt((
-            map(response::Tokenizer::tokenize, |r| r.into()),
-            map(request::Tokenizer::tokenize, |r| r.into()),
-        ))(part)?;
-
-        Ok((&[], message))
-    }
-}
-
-/*
-impl TryFrom<Bytes> for SipMessage {
-    type Error = String;
-
-    fn try_from(bytes: Bytes) -> Result<Self, Self::Error> {
-        let (_, libsip_sip_message) = libsip::parse_message::<VerboseError<&[u8]>>(&bytes.to_vec())
-            .map_err(|e| format!("could not convert to models::SipMessage from bytes: {}", e))?;
-
-        Ok(libsip_sip_message.try_into()?)
-    }
-}
-
-impl Into<Bytes> for SipMessage {
-    fn into(self) -> Bytes {
-        match self {
-            SipMessage::Request(request) => {
-                Bytes::from(Into::<libsip::SipMessage>::into(request).to_string())
-            }
-            SipMessage::Response(response) => {
-                Bytes::from(Into::<libsip::SipMessage>::into(response).to_string())
+        fn try_into(self) -> Result<SipMessage, Error> {
+            match self {
+                Tokenizer::Request(tokenizer) => Ok(SipMessage::Request(tokenizer.try_into()?)),
+                Tokenizer::Response(tokenizer) => Ok(SipMessage::Response(tokenizer.try_into()?)),
             }
         }
     }
-}
 
-impl TryFrom<String> for SipMessage {
-    type Error = String;
-
-    fn try_from(string: String) -> Result<Self, Self::Error> {
-        let (_, libsip_sip_message) =
-            libsip::parse_message::<VerboseError<&[u8]>>(string.as_bytes()).map_err(|e| {
-                format!("could not convert to models::SipMessage from string: {}", e)
-            })?;
-
-        Ok(libsip_sip_message.try_into()?)
+    #[derive(Debug, PartialEq, Eq)]
+    pub enum Tokenizer<'a> {
+        Request(request::Tokenizer<'a>),
+        Response(response::Tokenizer<'a>),
     }
-}
 
-impl Into<String> for SipMessage {
-    fn into(self) -> String {
-        match self {
-            SipMessage::Request(request) => Into::<libsip::SipMessage>::into(request).to_string(),
-            SipMessage::Response(response) => {
-                Into::<libsip::SipMessage>::into(response).to_string()
-            }
+    impl<'a> From<request::Tokenizer<'a>> for Tokenizer<'a> {
+        fn from(tokenizer: request::Tokenizer<'a>) -> Self {
+            Self::Request(tokenizer)
+        }
+    }
+
+    impl<'a> From<response::Tokenizer<'a>> for Tokenizer<'a> {
+        fn from(tokenizer: response::Tokenizer<'a>) -> Self {
+            Self::Response(tokenizer)
+        }
+    }
+
+    impl<'a> Tokenizer<'a> {
+        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+            use nom::{branch::alt, combinator::map};
+
+            let (_, message) = alt((
+                map(response::Tokenizer::tokenize, |r| r.into()),
+                map(request::Tokenizer::tokenize, |r| r.into()),
+            ))(part)?;
+
+            Ok((&[], message))
         }
     }
 }
-
-impl TryFrom<Vec<u8>> for SipMessage {
-    type Error = String;
-
-    fn try_from(vec: Vec<u8>) -> Result<Self, Self::Error> {
-        let (_, libsip_sip_message) = libsip::parse_message::<VerboseError<&[u8]>>(&vec)
-            .map_err(|e| format!("could not convert to models::SipMessage from vec: {}", e))?;
-
-        Ok(libsip_sip_message.try_into()?)
-    }
-}
-
-impl Into<Vec<u8>> for SipMessage {
-    fn into(self) -> Vec<u8> {
-        match self {
-            SipMessage::Request(request) => Into::<libsip::SipMessage>::into(request)
-                .to_string()
-                .into_bytes(),
-            SipMessage::Response(response) => Into::<libsip::SipMessage>::into(response)
-                .to_string()
-                .into_bytes(),
-        }
-    }
-}
-
-impl TryFrom<&str> for SipMessage {
-    type Error = String;
-
-    fn try_from(slice: &str) -> Result<Self, Self::Error> {
-        let (_, libsip_sip_message) =
-            libsip::parse_message::<VerboseError<&[u8]>>(slice.as_bytes())
-                .map_err(|e| format!("could not convert to models::SipMessage from vec: {}", e))?;
-
-        Ok(libsip_sip_message.try_into()?)
-    }
-}
-
-impl From<Request> for SipMessage {
-    fn from(request: Request) -> Self {
-        SipMessage::Request(request)
-    }
-}
-
-impl From<Response> for SipMessage {
-    fn from(response: Response) -> Self {
-        SipMessage::Response(response)
-    }
-}*/

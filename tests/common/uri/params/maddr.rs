@@ -1,4 +1,5 @@
 use rsip::common::uri::param::maddr::{Maddr, Tokenizer};
+use std::convert::TryInto;
 
 #[test]
 fn tokenizer() {
@@ -35,7 +36,7 @@ fn tokenizer() {
 #[test]
 fn parser() {
     assert_eq!(
-        Maddr::parse("255.255.255.255".as_bytes().into()),
+        Tokenizer::from("255.255.255.255".as_bytes()).try_into(),
         Ok(Maddr::new("255.255.255.255"))
     );
 }

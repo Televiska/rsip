@@ -1,4 +1,5 @@
 use rsip::common::uri::auth::{Auth, Tokenizer};
+use std::convert::TryInto;
 
 #[test]
 fn tokenizer() {
@@ -16,7 +17,7 @@ fn tokenizer() {
 #[test]
 fn parser() {
     assert_eq!(
-        Auth::parse(("user".as_bytes(), Some("password".as_bytes())).into()),
+        Tokenizer::from(("user".as_bytes(), Some("password".as_bytes()))).try_into(),
         Ok(Auth {
             username: "user".into(),
             password: Some("password".into())

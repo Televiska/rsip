@@ -1,4 +1,5 @@
 use rsip::common::uri::schema::{Schema, Tokenizer};
+use std::convert::TryInto;
 
 #[test]
 fn tokenizer() {
@@ -21,6 +22,12 @@ fn tokenizer() {
 
 #[test]
 fn parser() {
-    assert_eq!(Schema::parse("sip".as_bytes().into()), Ok(Schema::Sip));
-    assert_eq!(Schema::parse("sips".as_bytes().into()), Ok(Schema::Sips));
+    assert_eq!(
+        Tokenizer::from("sip".as_bytes()).try_into(),
+        Ok(Schema::Sip)
+    );
+    assert_eq!(
+        Tokenizer::from("sips".as_bytes()).try_into(),
+        Ok(Schema::Sips)
+    );
 }
