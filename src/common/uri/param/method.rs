@@ -1,4 +1,4 @@
-use macros::{Display, FromIntoInner, FromStr, HasValue};
+use macros::{FromIntoInner, FromStr, HasValue, ParamDisplay};
 
-#[derive(HasValue, Display, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(HasValue, ParamDisplay, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
 pub struct Method(String);

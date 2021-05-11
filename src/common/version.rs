@@ -13,6 +13,15 @@ impl Default for Version {
     }
 }
 
+impl std::fmt::Display for Version {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::V1 => write!(f, "SIP/1.0"),
+            Self::V2 => write!(f, "SIP/2.0"),
+        }
+    }
+}
+
 mod tokenizer {
     use super::Version;
     use crate::{Error, NomError};

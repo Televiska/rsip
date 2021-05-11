@@ -7,7 +7,7 @@ pub use tokenizer::Tokenizer;
 
 pub use auth::Auth;
 pub use host_with_port::{Domain, Host, HostWithPort, Port};
-pub use param::{Branch, Param};
+pub use param::Param;
 pub use schema::Schema;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -31,12 +31,15 @@ impl Uri {
     pub fn port(&self) -> Option<&Port> {
         self.host_with_port.port.as_ref()
     }
+}
 
-    pub fn branch(&self) -> Option<&Branch> {
-        self.params.iter().find_map(|param| match param {
-            Param::Branch(branch) => Some(branch),
-            _ => None,
-        })
+//TODO: impl params and headers as well
+impl std::fmt::Display for Uri {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.schema {
+            Some(schema) => write!(f, "{}:{}", schema, self.host_with_port),
+            None => write!(f, "{}", self.host_with_port),
+        }
     }
 }
 
@@ -88,15 +91,8 @@ impl From<std::net::IpAddr> for Uri {
     }
 }
 
-/*
-impl std::fmt::Display for Uri {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", Into::<libsip::uri::Uri>::into(self.clone()))
-    }
-}*/
-
 pub mod tokenizer {
-    use super::{auth, host_with_port, schema, Uri};
+    use super::{auth, host_with_port, param, schema, Uri};
     use crate::{Error, NomError};
     use std::convert::TryInto;
 
@@ -108,7 +104,11 @@ pub mod tokenizer {
                 schema: self.schema.map(TryInto::try_into).transpose()?,
                 auth: self.auth.map(TryInto::try_into).transpose()?,
                 host_with_port: self.host_with_port.try_into()?,
-                params: Default::default(),
+                params: self
+                    .params
+                    .into_iter()
+                    .map(TryInto::try_into)
+                    .collect::<Result<Vec<_>, _>>()?,
                 headers: Default::default(),
             })
         }
@@ -119,17 +119,20 @@ pub mod tokenizer {
         pub schema: Option<schema::Tokenizer<'a>>,
         pub auth: Option<auth::Tokenizer<'a>>,
         pub host_with_port: host_with_port::Tokenizer<'a>,
-        pub params: Option<Vec<&'a [u8]>>,
+        pub params: Vec<param::Tokenizer<'a>>,
         pub headers: Option<Vec<&'a [u8]>>,
     }
 
     impl<'a> Tokenizer<'a> {
         pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-            use nom::combinator::opt;
+            use nom::{character::complete::space0, combinator::opt, multi::many0};
 
             let (rem, schema) = opt(schema::Tokenizer::tokenize)(part)?;
             let (rem, auth) = opt(auth::Tokenizer::tokenize)(rem)?;
             let (rem, host_with_port) = host_with_port::Tokenizer::tokenize(rem)?;
+            let (rem, params) = many0(param::Tokenizer::tokenize)(rem)?;
+            //TODO: remove these smart moves
+            let (rem, _) = opt(space0)(rem)?;
 
             Ok((
                 rem,
@@ -137,7 +140,7 @@ pub mod tokenizer {
                     schema,
                     auth,
                     host_with_port,
-                    params: None,
+                    params,
                     headers: None,
                 },
             ))

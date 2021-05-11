@@ -1,5 +1,3 @@
-pub mod accept;
-
 use rsip::headers::header::Tokenizer;
 
 #[test]

@@ -90,12 +90,12 @@ pub mod tokenizer {
     impl<'a> Tokenizer<'a> {
         //works for request line
         pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-            use crate::parser_utils::{create_error_for, opt_sp};
-            use nom::{bytes::complete::take_until, sequence::tuple};
+            use crate::parser_utils::{create_error_for, is_token, opt_sp};
+            use nom::{bytes::complete::take_while, sequence::tuple};
 
-            let (rem, (method, _)) = tuple((take_until(" "), opt_sp))(part)?;
-            //TODO: helpful to return early in case we parse a response but maybe it should be checked
-            //here though
+            let (rem, (method, _)) = tuple((take_while(is_token), opt_sp))(part)?;
+            //TODO: helpful to return early in case we parse a response but maybe it should not
+            //be checked here though
             if method.starts_with(b"SIP/") {
                 return Err(create_error_for(method, "SIP version found instead"));
             }

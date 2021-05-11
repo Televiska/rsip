@@ -55,6 +55,22 @@ pub fn display_signature(item: TokenStream) -> TokenStream {
     expanded.into()
 }
 
+#[proc_macro_derive(ParamDisplay)]
+pub fn param_display_signature(item: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(item as DeriveInput);
+    let struct_name = &ast.ident;
+
+    let expanded = quote! {
+        impl std::fmt::Display for #struct_name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "{}={}", stringify!(#struct_name), self.value())
+            }
+        }
+    };
+
+    expanded.into()
+}
+
 #[proc_macro_derive(IntoHeader)]
 pub fn into_header_signature(item: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(item as DeriveInput);
@@ -118,6 +134,11 @@ pub fn from_into_inner_signature(item: TokenStream) -> TokenStream {
     expanded.into()
 }
 
+struct FieldType {
+    ident: syn::Ident,
+    is_option: bool,
+}
+
 #[proc_macro_derive(Utf8Tokenizer)]
 pub fn utf8_tokenizer(item: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(item as DeriveInput);
@@ -129,18 +150,39 @@ pub fn utf8_tokenizer(item: TokenStream) -> TokenStream {
         }) => &fields.named,
         _ => panic!("expected a struct with named fields"),
     };
-    let field_name = fields.iter().map(|field| &field.ident);
-    let field_name_cloned = field_name.clone();
+    let fields = fields.iter().map(|field| match field.ty {
+        syn::Type::Path(_) => FieldType {
+            ident: field.ident.clone().expect("expected struct with named fields"),
+            is_option: true,
+        },
+        _ => FieldType {
+            ident: field.ident.clone().expect("expected struct with named fields"),
+            is_option: false,
+        },
+    });
+    let raw_fields: Vec<syn::Ident> = fields
+        .clone()
+        .into_iter()
+        .filter_map(|f| (!f.is_option).then(|| f.ident))
+        .collect();
+    let option_fields: Vec<syn::Ident> = fields
+        .clone()
+        .into_iter()
+        .filter_map(|f| f.is_option.then(|| f.ident))
+        .collect();
 
     let expanded = quote! {
         #[derive(Debug, PartialEq, Eq)]
         pub struct Utf8Tokenizer<'a> {
             #(
-                pub #field_name: &'a str,
+                pub #raw_fields: &'a str,
+            )*
+            #(
+                pub #option_fields: Option<&'a str>,
             )*
         }
 
-        impl<'a> TryFrom<Tokenizer<'a>> for Utf8Tokenizer<'a> {
+        impl<'a> std::convert::TryFrom<Tokenizer<'a>> for Utf8Tokenizer<'a> {
             type Error = crate::Error;
 
             fn try_from(tokenizer: Tokenizer<'a>) -> Result<Self, Self::Error> {
@@ -148,7 +190,10 @@ pub fn utf8_tokenizer(item: TokenStream) -> TokenStream {
 
                 Ok(Self {
                     #(
-                        #field_name_cloned: from_utf8(tokenizer.#field_name_cloned)?,
+                        #raw_fields: from_utf8(tokenizer.#raw_fields)?,
+                    )*
+                    #(
+                        #option_fields: tokenizer.#option_fields.map(from_utf8).transpose()?,
                     )*
                 })
             }

@@ -12,3 +12,10 @@ maybe permutation(take_while(alpha), take_until(":"))~~
 * expand the idea of Utf8Tokenizer
 * remove some tech debt around organization, b"".as_ref() -> as_bytes etc
 * now we have impl only TryInto for Tokenizer, but we should impl instead TryFrom<Tokenizer>
+
+ASAP TODO:
+* expand tokenizer in other uri params, probably through a macro
+* add tests for ^^ and add parser + tests for ^^
+* remove smart moves from tokenizers, will be more reusable
+* continue on display traits
+* via url is very simple, no params or headers, need to take special case on that
