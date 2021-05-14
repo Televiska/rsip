@@ -123,7 +123,7 @@ fn tokenizer() {
                     schema: Some("sip".as_bytes().into()),
                     auth: None,
                     host_with_port: ("server.com".as_bytes(), None).into(),
-                    params: None,
+                    params: vec![],
                     headers: None
                 },
                 version: "SIP/2.0".as_bytes().into(),
@@ -156,7 +156,7 @@ fn tokenizer() {
                     schema: Some("sips".as_bytes().into()),
                     auth: None,
                     host_with_port: ("ss2.biloxi.example.com".as_bytes(), None).into(),
-                    params: None,
+                    params: vec![],
                     headers: None
                 },
                 version: "SIP/2.0".as_bytes().into(),

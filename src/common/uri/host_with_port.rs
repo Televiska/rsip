@@ -20,6 +20,24 @@ pub struct Domain(String);
 #[derive(HasValue, FromIntoInner, Display, Debug, PartialEq, Eq, Clone)]
 pub struct Port(u16);
 
+impl std::fmt::Display for HostWithPort {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match (&self.host, self.port.as_ref()) {
+            (host, None) => write!(f, "{}", host),
+            (host, Some(port)) => write!(f, "{}:{}", host, port),
+        }
+    }
+}
+
+impl std::fmt::Display for Host {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self {
+            Host::Domain(domain) => write!(f, "{}", domain),
+            Host::IpAddr(ip_addr) => write!(f, "{}", ip_addr),
+        }
+    }
+}
+
 impl Default for HostWithPort {
     fn default() -> Self {
         Self {
@@ -133,12 +151,12 @@ pub mod tokenizer {
     impl<'a> Tokenizer<'a> {
         pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
             use nom::{
-                bytes::complete::{tag, take_until},
+                bytes::complete::{tag, take_until, take_till},
                 combinator::rest,
                 sequence::tuple,
             };
 
-            let (rem, (host_with_port, _)) = tuple((take_until(" "), tag(" ")))(part)?;
+            let (rem, host_with_port) = take_till(|c| c == b';' || c == b' ')(part)?;
             let (host, port) =
                 match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(
                     host_with_port,

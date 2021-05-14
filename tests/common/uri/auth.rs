@@ -4,14 +4,14 @@ use std::convert::TryInto;
 #[test]
 fn tokenizer() {
     assert_eq!(
-        Tokenizer::tokenize(b"user:password@server2.com SIP/2.0"),
+        Tokenizer::tokenize(b"user:password@server2.com something"),
         Ok((
-            "server2.com SIP/2.0".as_bytes(),
+            "server2.com something".as_bytes(),
             ("user".as_bytes(), Some("password".as_bytes())).into()
         )),
     );
 
-    assert!(Tokenizer::tokenize(b"server2.com SIP/2.0").is_err());
+    assert!(Tokenizer::tokenize(b"server2.com something").is_err());
 }
 
 #[test]

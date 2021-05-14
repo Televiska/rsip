@@ -6,6 +6,15 @@ pub struct Auth {
     pub password: Option<String>,
 }
 
+impl std::fmt::Display for Auth {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.password {
+            Some(password) => write!(f, "{}:{}", self.username, password),
+            None => write!(f, "{}", self.username),
+        }
+    }
+}
+
 impl<T, S> From<(T, Option<S>)> for Auth
 where
     T: Into<String>,

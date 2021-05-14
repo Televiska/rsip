@@ -1,3 +1,5 @@
+pub use tokenizer::Tokenizer;
+
 pub mod accept;
 pub mod accept_encoding;
 pub mod accept_language;
@@ -92,10 +94,6 @@ pub use via::Via;
 pub use warning::Warning;
 pub use www_authenticate::WwwAuthenticate;
 
-use crate::{Error, NomError};
-use macros::Utf8Tokenizer;
-use std::convert::{TryFrom, TryInto};
-
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Header {
     Accept(Accept),
@@ -147,170 +145,181 @@ pub enum Header {
     WwwAuthenticate(WwwAuthenticate),
 }
 
-impl Header {
-    pub fn parse(tokenizer: Tokenizer) -> Result<Self, Error> {
-        let tokenizer: Utf8Tokenizer = tokenizer.try_into()?;
+pub mod tokenizer {
+    use super::*;
+    use crate::{Error, NomError};
+    use macros::Utf8Tokenizer;
+    use std::convert::TryInto;
 
-        match tokenizer.name {
-            s if s.eq_ignore_ascii_case("Accept") => Ok(Self::Accept(Accept::new(tokenizer.value))),
-            s if s.eq_ignore_ascii_case("Accept-Encoding") => {
-                Ok(Self::AcceptEncoding(AcceptEncoding::new(tokenizer.value)))
+    impl<'a> TryInto<Header> for Tokenizer<'a> {
+        type Error = Error;
+
+        fn try_into(self) -> Result<Header, Error> {
+            let tokenizer: Utf8Tokenizer = self.try_into()?;
+
+            match tokenizer.name {
+                s if s.eq_ignore_ascii_case("Accept") => {
+                    Ok(Header::Accept(Accept::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Accept-Encoding") => {
+                    Ok(Header::AcceptEncoding(AcceptEncoding::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Accept-Language") => {
+                    Ok(Header::AcceptLanguage(AcceptLanguage::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Alert-Info") => {
+                    Ok(Header::AlertInfo(AlertInfo::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Allow") => {
+                    Ok(Header::Allow(Allow::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Authentication-Info") => Ok(
+                    Header::AuthenticationInfo(AuthenticationInfo::new(tokenizer.value)),
+                ),
+                s if s.eq_ignore_ascii_case("Authorization") => {
+                    Ok(Header::Authorization(Authorization::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("CSeq") => Ok(Header::CSeq(CSeq::new(tokenizer.value))),
+                s if s.eq_ignore_ascii_case("Call-Id") => {
+                    Ok(Header::CallId(CallId::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Call-Info") => {
+                    Ok(Header::CallInfo(CallInfo::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Contact") => {
+                    Ok(Header::Contact(Contact::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Content-Disposition") => Ok(
+                    Header::ContentDisposition(ContentDisposition::new(tokenizer.value)),
+                ),
+                s if s.eq_ignore_ascii_case("Content-Encoding") => Ok(Header::ContentEncoding(
+                    ContentEncoding::new(tokenizer.value),
+                )),
+                s if s.eq_ignore_ascii_case("Content-Language") => Ok(Header::ContentLanguage(
+                    ContentLanguage::new(tokenizer.value),
+                )),
+                s if s.eq_ignore_ascii_case("Content-Length") => {
+                    Ok(Header::ContentLength(ContentLength::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Content-Type") => {
+                    Ok(Header::ContentType(ContentType::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Date") => Ok(Header::Date(Date::new(tokenizer.value))),
+                s if s.eq_ignore_ascii_case("Error-Info") => {
+                    Ok(Header::ErrorInfo(ErrorInfo::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Event") => {
+                    Ok(Header::Event(Event::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Expires") => {
+                    Ok(Header::Expires(Expires::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("From") => Ok(Header::From(From::new(tokenizer.value))),
+                s if s.eq_ignore_ascii_case("In-Reply-To") => {
+                    Ok(Header::InReplyTo(InReplyTo::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Max-Forwards") => {
+                    Ok(Header::MaxForwards(MaxForwards::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Mime-Version") => {
+                    Ok(Header::MimeVersion(MimeVersion::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Min-Expires") => {
+                    Ok(Header::MinExpires(MinExpires::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Organization") => {
+                    Ok(Header::Organization(Organization::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Priority") => {
+                    Ok(Header::Priority(Priority::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Proxy-Authenticate") => Ok(Header::ProxyAuthenticate(
+                    ProxyAuthenticate::new(tokenizer.value),
+                )),
+                s if s.eq_ignore_ascii_case("Proxy-Authorization") => Ok(
+                    Header::ProxyAuthorization(ProxyAuthorization::new(tokenizer.value)),
+                ),
+                s if s.eq_ignore_ascii_case("Proxy-Require") => {
+                    Ok(Header::ProxyRequire(ProxyRequire::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Record-Route") => {
+                    Ok(Header::RecordRoute(RecordRoute::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Reply-To") => {
+                    Ok(Header::ReplyTo(ReplyTo::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Require") => {
+                    Ok(Header::Require(Require::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Retry-After") => {
+                    Ok(Header::RetryAfter(RetryAfter::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Route") => {
+                    Ok(Header::Route(Route::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Server") => {
+                    Ok(Header::Server(Server::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Subject") => {
+                    Ok(Header::Subject(Subject::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Supported") => {
+                    Ok(Header::Supported(Supported::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Timestamp") => {
+                    Ok(Header::Timestamp(Timestamp::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("To") => Ok(Header::To(To::new(tokenizer.value))),
+                s if s.eq_ignore_ascii_case("Unsupported") => {
+                    Ok(Header::Unsupported(Unsupported::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("User-Agent") => {
+                    Ok(Header::UserAgent(UserAgent::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("Via") => Ok(Header::Via(Via::new(tokenizer.value))),
+                s if s.eq_ignore_ascii_case("Warning") => {
+                    Ok(Header::Warning(Warning::new(tokenizer.value)))
+                }
+                s if s.eq_ignore_ascii_case("WWW-Authenticate") => Ok(Header::WwwAuthenticate(
+                    WwwAuthenticate::new(tokenizer.value),
+                )),
+                _ => Ok(Header::Other(tokenizer.name.into(), tokenizer.value.into())),
             }
-            s if s.eq_ignore_ascii_case("Accept-Language") => {
-                Ok(Self::AcceptLanguage(AcceptLanguage::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Alert-Info") => {
-                Ok(Self::AlertInfo(AlertInfo::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Allow") => Ok(Self::Allow(Allow::new(tokenizer.value))),
-            s if s.eq_ignore_ascii_case("Authentication-Info") => Ok(Self::AuthenticationInfo(
-                AuthenticationInfo::new(tokenizer.value),
-            )),
-            s if s.eq_ignore_ascii_case("Authorization") => {
-                Ok(Self::Authorization(Authorization::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("CSeq") => Ok(Self::CSeq(CSeq::new(tokenizer.value))),
-            s if s.eq_ignore_ascii_case("Call-Id") => {
-                Ok(Self::CallId(CallId::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Call-Info") => {
-                Ok(Self::CallInfo(CallInfo::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Contact") => {
-                Ok(Self::Contact(Contact::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Content-Disposition") => Ok(Self::ContentDisposition(
-                ContentDisposition::new(tokenizer.value),
-            )),
-            s if s.eq_ignore_ascii_case("Content-Encoding") => {
-                Ok(Self::ContentEncoding(ContentEncoding::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Content-Language") => {
-                Ok(Self::ContentLanguage(ContentLanguage::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Content-Length") => {
-                Ok(Self::ContentLength(ContentLength::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Content-Type") => {
-                Ok(Self::ContentType(ContentType::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Date") => Ok(Self::Date(Date::new(tokenizer.value))),
-            s if s.eq_ignore_ascii_case("Error-Info") => {
-                Ok(Self::ErrorInfo(ErrorInfo::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Event") => Ok(Self::Event(Event::new(tokenizer.value))),
-            s if s.eq_ignore_ascii_case("Expires") => {
-                Ok(Self::Expires(Expires::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("From") => Ok(Self::From(From::new(tokenizer.value))),
-            s if s.eq_ignore_ascii_case("In-Reply-To") => {
-                Ok(Self::InReplyTo(InReplyTo::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Max-Forwards") => {
-                Ok(Self::MaxForwards(MaxForwards::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Mime-Version") => {
-                Ok(Self::MimeVersion(MimeVersion::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Min-Expires") => {
-                Ok(Self::MinExpires(MinExpires::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Organization") => {
-                Ok(Self::Organization(Organization::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Priority") => {
-                Ok(Self::Priority(Priority::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Proxy-Authenticate") => Ok(Self::ProxyAuthenticate(
-                ProxyAuthenticate::new(tokenizer.value),
-            )),
-            s if s.eq_ignore_ascii_case("Proxy-Authorization") => Ok(Self::ProxyAuthorization(
-                ProxyAuthorization::new(tokenizer.value),
-            )),
-            s if s.eq_ignore_ascii_case("Proxy-Require") => {
-                Ok(Self::ProxyRequire(ProxyRequire::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Record-Route") => {
-                Ok(Self::RecordRoute(RecordRoute::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Reply-To") => {
-                Ok(Self::ReplyTo(ReplyTo::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Require") => {
-                Ok(Self::Require(Require::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Retry-After") => {
-                Ok(Self::RetryAfter(RetryAfter::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Route") => Ok(Self::Route(Route::new(tokenizer.value))),
-            s if s.eq_ignore_ascii_case("Server") => Ok(Self::Server(Server::new(tokenizer.value))),
-            s if s.eq_ignore_ascii_case("Subject") => {
-                Ok(Self::Subject(Subject::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Supported") => {
-                Ok(Self::Supported(Supported::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Timestamp") => {
-                Ok(Self::Timestamp(Timestamp::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("To") => Ok(Self::To(To::new(tokenizer.value))),
-            s if s.eq_ignore_ascii_case("Unsupported") => {
-                Ok(Self::Unsupported(Unsupported::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("User-Agent") => {
-                Ok(Self::UserAgent(UserAgent::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("Via") => Ok(Self::Via(Via::new(tokenizer.value))),
-            s if s.eq_ignore_ascii_case("Warning") => {
-                Ok(Self::Warning(Warning::new(tokenizer.value)))
-            }
-            s if s.eq_ignore_ascii_case("WWW-Authenticate") => {
-                Ok(Self::WwwAuthenticate(WwwAuthenticate::new(tokenizer.value)))
-            }
-            _ => Ok(Self::Other(tokenizer.name.into(), tokenizer.value.into())),
         }
     }
-}
 
-impl<'a> TryFrom<Tokenizer<'a>> for Header {
-    type Error = Error;
-
-    fn try_from(tokenizer: Tokenizer) -> Result<Self, Error> {
-        Self::parse(tokenizer)
+    #[derive(Debug, PartialEq, Eq, Utf8Tokenizer)]
+    pub struct Tokenizer<'a> {
+        pub name: &'a [u8],
+        pub value: &'a [u8],
     }
-}
 
-#[derive(Debug, PartialEq, Eq, Utf8Tokenizer)]
-pub struct Tokenizer<'a> {
-    pub name: &'a [u8],
-    pub value: &'a [u8],
-}
+    impl<'a> Tokenizer<'a> {
+        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+            use nom::{
+                bytes::complete::{tag, take_until},
+                character::complete::space0,
+                sequence::tuple,
+            };
 
-impl<'a> Tokenizer<'a> {
-    pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-        use nom::{
-            bytes::complete::{tag, take_until},
-            character::complete::space0,
-            sequence::tuple,
-        };
+            let (rem, (name, _, _, value, _)) = tuple((
+                take_until(":"),
+                tag(":"),
+                space0,
+                take_until("\r\n"),
+                tag("\r\n"),
+            ))(part)?;
 
-        let (rem, (name, _, _, value, _)) = tuple((
-            take_until(":"),
-            tag(":"),
-            space0,
-            take_until("\r\n"),
-            tag("\r\n"),
-        ))(part)?;
-
-        Ok((rem, (name, value).into()))
+            Ok((rem, (name, value).into()))
+        }
     }
-}
 
-impl<'a> std::convert::From<(&'a [u8], &'a [u8])> for Tokenizer<'a> {
-    fn from(tuple: (&'a [u8], &'a [u8])) -> Self {
-        Self {
-            name: tuple.0,
-            value: tuple.1,
+    impl<'a> std::convert::From<(&'a [u8], &'a [u8])> for Tokenizer<'a> {
+        fn from(tuple: (&'a [u8], &'a [u8])) -> Self {
+            Self {
+                name: tuple.0,
+                value: tuple.1,
+            }
         }
     }
 }

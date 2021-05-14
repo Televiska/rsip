@@ -23,6 +23,13 @@ pub(crate) mod parser_utils {
             errors: vec![(rem, nom::error::VerboseErrorKind::Context(error))],
         })
     }
+
+    pub(crate) fn is_token(chr: u8) -> bool {
+        use nom::character::is_alphanumeric;
+
+        is_alphanumeric(chr) || "-.!%*_+`'~".contains(char::from(chr))
+    }
+
     /*
         pub(crate) fn opt_sc<'a>(
             input: &'a [u8],
