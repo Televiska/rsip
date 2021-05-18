@@ -1,18 +1,22 @@
 pub use tokenizer::Tokenizer;
 
+pub mod branch;
 pub mod maddr;
 pub mod method;
+pub mod received;
 pub mod transport;
 pub mod ttl;
 pub mod user;
 
+pub use branch::Branch;
 pub use maddr::Maddr;
 pub use method::Method;
+pub use received::Received;
 pub use transport::Transport;
 pub use ttl::Ttl;
 pub use user::User;
 
-use macros::{ValueDisplay, FromIntoInner, FromStr, HasValue};
+use macros::{FromIntoInner, FromStr, HasValue, ValueDisplay};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Param {
@@ -23,6 +27,8 @@ pub enum Param {
     Ttl(Ttl),
     Maddr(Maddr),
     Lr,
+    Branch(Branch),     //param belonging to Via header but added here for simplicity
+    Received(Received), //param belonging to Via header but added here for simplicity
     Other(OtherParam, Option<OtherParamValue>),
 }
 
@@ -40,6 +46,8 @@ impl std::fmt::Display for Param {
             Self::Ttl(ttl) => write!(f, ";ttl={}", ttl),
             Self::Maddr(maddr) => write!(f, ";maddr={}", maddr),
             Self::Lr => write!(f, ";lr"),
+            Self::Branch(branch) => write!(f, ";branch={}", branch),
+            Self::Received(received) => write!(f, ";received={}", received),
             Self::Other(name, Some(value)) => write!(f, ";{}={}", name, value),
             Self::Other(name, None) => write!(f, ";{}", name),
         }
@@ -59,7 +67,7 @@ pub mod tokenizer {
             let tokenizer: Utf8Tokenizer = self.try_into()?;
 
             match (tokenizer.name, tokenizer.value) {
-                (s, Some(v)) if s.eq_ignore_ascii_case("branch") => {
+                (s, Some(v)) if s.eq_ignore_ascii_case("transport") => {
                     Ok(Param::Transport(Transport::new(v)))
                 }
                 (s, Some(v)) if s.eq_ignore_ascii_case("user") => Ok(Param::User(User::new(v))),
@@ -68,6 +76,12 @@ pub mod tokenizer {
                 }
                 (s, Some(v)) if s.eq_ignore_ascii_case("ttl") => Ok(Param::Ttl(Ttl::new(v))),
                 (s, Some(v)) if s.eq_ignore_ascii_case("maddr") => Ok(Param::Maddr(Maddr::new(v))),
+                (s, Some(v)) if s.eq_ignore_ascii_case("branch") => {
+                    Ok(Param::Branch(Branch::new(v)))
+                }
+                (s, Some(v)) if s.eq_ignore_ascii_case("received") => {
+                    Ok(Param::Received(Received::new(v)))
+                }
                 (s, None) if s.eq_ignore_ascii_case("lr") => Ok(Param::Lr),
                 (s, v) => Ok(Param::Other(s.into(), v.map(Into::into))),
             }

@@ -104,21 +104,21 @@ impl TryFrom<bytes::Bytes> for SipMessage {
     }
 }
 
-impl Into<String> for SipMessage {
-    fn into(self) -> String {
-        self.to_string()
+impl From<SipMessage> for String {
+    fn from(msg: SipMessage) -> Self {
+        msg.to_string()
     }
 }
 
-impl Into<Vec<u8>> for SipMessage {
-    fn into(self) -> Vec<u8> {
-        self.to_string().into_bytes()
+impl From<SipMessage> for Vec<u8> {
+    fn from(msg: SipMessage) -> Self {
+        msg.to_string().into_bytes()
     }
 }
 
-impl Into<bytes::Bytes> for SipMessage {
-    fn into(self) -> bytes::Bytes {
-        bytes::Bytes::from(self.to_string())
+impl From<SipMessage> for bytes::Bytes {
+    fn from(msg: SipMessage) -> Self {
+        bytes::Bytes::from(msg.to_string())
     }
 }
 

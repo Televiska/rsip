@@ -1,6 +1,6 @@
 pub use tokenizer::Tokenizer;
 
-use macros::{ValueDisplay, FromIntoInner, FromStr, HasValue};
+use macros::{FromIntoInner, FromStr, HasValue, ValueDisplay};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -151,7 +151,7 @@ pub mod tokenizer {
     impl<'a> Tokenizer<'a> {
         pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
             use nom::{
-                bytes::complete::{tag, take_until, take_till},
+                bytes::complete::{tag, take_till, take_until},
                 combinator::rest,
                 sequence::tuple,
             };

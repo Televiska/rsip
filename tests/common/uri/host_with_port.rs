@@ -7,7 +7,8 @@ fn display() {
         HostWithPort {
             host: Host::Domain("server2.com".into()),
             port: None
-        }.to_string(),
+        }
+        .to_string(),
         String::from("server2.com")
     );
 
@@ -15,7 +16,8 @@ fn display() {
         HostWithPort {
             host: Host::Domain("server2.com".into()),
             port: Some(5060.into())
-        }.to_string(),
+        }
+        .to_string(),
         String::from("server2.com:5060")
     );
 }

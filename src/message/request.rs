@@ -117,21 +117,21 @@ impl TryFrom<bytes::Bytes> for Request {
     }
 }
 
-impl Into<String> for Request {
-    fn into(self) -> String {
-        self.to_string()
+impl From<Request> for String {
+    fn from(req: Request) -> Self {
+        req.to_string()
     }
 }
 
-impl Into<Vec<u8>> for Request {
-    fn into(self) -> Vec<u8> {
-        self.to_string().into_bytes()
+impl From<Request> for Vec<u8> {
+    fn from(req: Request) -> Self {
+        req.to_string().into_bytes()
     }
 }
 
-impl Into<bytes::Bytes> for Request {
-    fn into(self) -> bytes::Bytes {
-        bytes::Bytes::from(self.to_string())
+impl From<Request> for bytes::Bytes {
+    fn from(req: Request) -> Self {
+        Self::from(req.to_string())
     }
 }
 
@@ -172,10 +172,11 @@ pub mod tokenizer {
         pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
             use nom::{bytes::complete::tag, multi::many0, sequence::tuple};
 
-            let (rem, (method, uri, version)) = tuple((
+            let (rem, (method, uri, version, _)) = tuple((
                 method::Tokenizer::tokenize,
                 uri::Tokenizer::tokenize,
                 version::Tokenizer::tokenize,
+                tag("\r\n"),
             ))(part)?;
             let (rem, headers) = many0(header::Tokenizer::tokenize)(rem)?;
             let (body, _) = tag("\r\n")(rem)?;

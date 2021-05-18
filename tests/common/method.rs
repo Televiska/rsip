@@ -3,10 +3,7 @@ use std::convert::TryInto;
 
 #[test]
 fn display() {
-    assert_eq!(
-        Method::Register.to_string(),
-        String::from("REGISTER")
-    );
+    assert_eq!(Method::Register.to_string(), String::from("REGISTER"));
 }
 
 #[test]

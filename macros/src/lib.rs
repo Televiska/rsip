@@ -46,16 +46,19 @@ pub fn display_signature(item: TokenStream) -> TokenStream {
     let struct_name = &ast.ident;
     let struct_name_str_chars: Vec<char> = struct_name.to_string().chars().collect();
     let mut dashed_struct_name: Vec<char> = Vec::new();
-    struct_name_str_chars.iter().enumerate().for_each(|(index, c)| {
-        if c.is_ascii_uppercase()
-            && (index > 0)
-            && !(struct_name_str_chars[index - 1].is_ascii_uppercase())
-        {
-            dashed_struct_name.extend(vec!['-', *c].iter());
-        } else {
-            dashed_struct_name.push(*c);
-        }
-    });
+    struct_name_str_chars
+        .iter()
+        .enumerate()
+        .for_each(|(index, c)| {
+            if c.is_ascii_uppercase()
+                && (index > 0)
+                && !(struct_name_str_chars[index - 1].is_ascii_uppercase())
+            {
+                dashed_struct_name.extend(vec!['-', *c].iter());
+            } else {
+                dashed_struct_name.push(*c);
+            }
+        });
     let dashed_struct_name: String = dashed_struct_name.into_iter().collect::<String>();
 
     let expanded = quote! {
@@ -110,6 +113,56 @@ pub fn from_strs_signature(item: TokenStream) -> TokenStream {
         impl<'a> std::convert::From<&str> for #struct_name {
             fn from(from: &str) -> Self {
                 Self(from.into())
+            }
+        }
+    };
+
+    expanded.into()
+}
+
+#[proc_macro_derive(FromValue)]
+pub fn from_value_signature(item: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(item as DeriveInput);
+    let struct_name = &ast.ident;
+
+    let expanded = quote! {
+        impl<'a> std::convert::From<&'a str> for #struct_name<'a> {
+            fn from(value: &'a str) -> Self {
+                Self { value }
+            }
+        }
+    };
+
+    expanded.into()
+}
+
+#[proc_macro_derive(Typed)]
+pub fn typed_signature(item: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(item as DeriveInput);
+    let struct_name = &ast.ident;
+
+    let expanded = quote! {
+        impl #struct_name {
+            pub fn typed(self) -> Result<typed::#struct_name, crate::Error> {
+                self.try_into()
+            }
+        }
+    };
+
+    expanded.into()
+}
+
+#[proc_macro_derive(FromUntyped)]
+pub fn from_untyped_signature(item: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(item as DeriveInput);
+    let struct_name = &ast.ident;
+
+    let expanded = quote! {
+        impl TryFrom<super::#struct_name> for #struct_name {
+            type Error = crate::Error;
+
+            fn try_from(untyped: super::#struct_name) -> Result<Self, Self::Error> {
+                Tokenizer::tokenize(untyped.value())?.try_into()
             }
         }
     };

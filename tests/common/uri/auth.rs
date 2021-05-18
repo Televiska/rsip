@@ -7,7 +7,8 @@ fn display() {
         Auth {
             username: "user".into(),
             password: None
-        }.to_string(),
+        }
+        .to_string(),
         String::from("user")
     );
 
@@ -15,7 +16,8 @@ fn display() {
         Auth {
             username: "user".into(),
             password: Some("password".into())
-        }.to_string(),
+        }
+        .to_string(),
         String::from("user:password")
     );
 }

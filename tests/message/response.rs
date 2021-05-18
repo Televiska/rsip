@@ -109,7 +109,7 @@ fn tokenizer() {
         Ok((
             "".as_bytes(),
             Tokenizer {
-                version: "SIP/2.0".as_bytes().into(),
+                version: "2".as_bytes().into(),
                 status_code: ("401".as_bytes(), "Unauthorized".as_bytes()).into(),
                 headers: vec![].into(),
                 body: &[]
@@ -133,7 +133,7 @@ fn tokenizer() {
         Ok((
             "".as_bytes(),
             Tokenizer {
-                version: "SIP/2.0".as_bytes().into(),
+                version: "2".as_bytes().into(),
                 status_code: ("401".as_bytes(), "Unauthorized".as_bytes()).into(),
                 headers: vec![
                     ("Via".as_bytes(), "SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashds7;received=192.0.2.201".as_bytes()).into(),
