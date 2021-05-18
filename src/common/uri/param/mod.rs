@@ -12,24 +12,39 @@ pub use transport::Transport;
 pub use ttl::Ttl;
 pub use user::User;
 
-use macros::{Display, FromIntoInner, FromStr, HasValue};
+use macros::{ValueDisplay, FromIntoInner, FromStr, HasValue};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Param {
     Transport(Transport),
     User(User),
+    //TODO: should use regular method here
     Method(Method),
     Ttl(Ttl),
     Maddr(Maddr),
     Lr,
-    //TODO: value should be an option here
     Other(OtherParam, Option<OtherParamValue>),
 }
 
-#[derive(HasValue, Display, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(HasValue, ValueDisplay, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
 pub struct OtherParam(String);
-#[derive(HasValue, Display, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(HasValue, ValueDisplay, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
 pub struct OtherParamValue(String);
+
+impl std::fmt::Display for Param {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self {
+            Self::Transport(transport) => write!(f, ";transport={}", transport),
+            Self::User(user) => write!(f, ";user={}", user),
+            Self::Method(method) => write!(f, ";method={}", method),
+            Self::Ttl(ttl) => write!(f, ";ttl={}", ttl),
+            Self::Maddr(maddr) => write!(f, ";maddr={}", maddr),
+            Self::Lr => write!(f, ";lr"),
+            Self::Other(name, Some(value)) => write!(f, ";{}={}", name, value),
+            Self::Other(name, None) => write!(f, ";{}", name),
+        }
+    }
+}
 
 pub mod tokenizer {
     use super::*;

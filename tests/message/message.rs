@@ -7,6 +7,33 @@ use rsip::{
 use std::convert::TryFrom;
 
 #[test]
+fn bytes() {
+    assert_eq!(
+        Into::<bytes::Bytes>::into(SipMessage::Response(Response {
+            status_code: common::StatusCode::Unauthorized,
+            version: common::Version::V2,
+            headers: vec![].into(),
+            body: vec![]
+        })),
+        bytes::Bytes::from(String::from("SIP/2.0 401 Unauthorized\r\n\r\n"))
+    );
+}
+
+#[test]
+fn display() {
+    assert_eq!(
+        SipMessage::Response(Response {
+            status_code: common::StatusCode::Unauthorized,
+            version: common::Version::V2,
+            headers: vec![].into(),
+            body: vec![]
+        })
+        .to_string(),
+        String::from("SIP/2.0 401 Unauthorized\r\n\r\n")
+    );
+}
+
+#[test]
 fn parser() {
     assert_eq!(
         SipMessage::try_from("REGISTER sip:server.com SIP/2.0\r\n\r\n".as_bytes()),
@@ -61,7 +88,7 @@ fn parser() {
                 MaxForwards::new("70").into(),
                 From::new("Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH").into(),
                 To::new("Bob <sips:bob@biloxi.example.com>").into(),
-                CallId::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
+                CallID::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
                 CSeq::new("2 REGISTER").into(),
                 Contact::new("<sips:bob@client.biloxi.example.com>").into(),
                 Authorization::new("Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"").into(),
@@ -101,7 +128,7 @@ fn parser() {
                 Via::new("SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashds7;received=192.0.2.201").into(),
                 From::new("Bob <sips:bob@biloxi.example.com>;tag=a73kszlfl").into(),
                 To::new("Bob <sips:bob@biloxi.example.com>;tag=1410948204").into(),
-                CallId::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
+                CallID::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
                 CSeq::new("1 REGISTER").into(),
                 WwwAuthenticate::new("Digest realm=\"atlanta.example.com\", qop=\"auth\", nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\", stale=FALSE, algorithm=MD5").into(),
                 ContentLength::new("0").into(),

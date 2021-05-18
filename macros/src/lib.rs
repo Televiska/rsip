@@ -39,15 +39,29 @@ pub fn has_value_signature(item: TokenStream) -> TokenStream {
     expanded.into()
 }
 
+//TODO: improve PamelCase to Kebab-Case impl here
 #[proc_macro_derive(Display)]
 pub fn display_signature(item: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(item as DeriveInput);
     let struct_name = &ast.ident;
+    let struct_name_str_chars: Vec<char> = struct_name.to_string().chars().collect();
+    let mut dashed_struct_name: Vec<char> = Vec::new();
+    struct_name_str_chars.iter().enumerate().for_each(|(index, c)| {
+        if c.is_ascii_uppercase()
+            && (index > 0)
+            && !(struct_name_str_chars[index - 1].is_ascii_uppercase())
+        {
+            dashed_struct_name.extend(vec!['-', *c].iter());
+        } else {
+            dashed_struct_name.push(*c);
+        }
+    });
+    let dashed_struct_name: String = dashed_struct_name.into_iter().collect::<String>();
 
     let expanded = quote! {
         impl std::fmt::Display for #struct_name {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(f, "{}: {}", stringify!(#struct_name), self.value())
+                write!(f, "{}: {}", #dashed_struct_name, self.value())
             }
         }
     };
@@ -55,15 +69,15 @@ pub fn display_signature(item: TokenStream) -> TokenStream {
     expanded.into()
 }
 
-#[proc_macro_derive(ParamDisplay)]
-pub fn param_display_signature(item: TokenStream) -> TokenStream {
+#[proc_macro_derive(ValueDisplay)]
+pub fn value_display_signature(item: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(item as DeriveInput);
     let struct_name = &ast.ident;
 
     let expanded = quote! {
         impl std::fmt::Display for #struct_name {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(f, "{}={}", stringify!(#struct_name), self.value())
+                write!(f, "{}", self.value())
             }
         }
     };
@@ -152,11 +166,17 @@ pub fn utf8_tokenizer(item: TokenStream) -> TokenStream {
     };
     let fields = fields.iter().map(|field| match field.ty {
         syn::Type::Path(_) => FieldType {
-            ident: field.ident.clone().expect("expected struct with named fields"),
+            ident: field
+                .ident
+                .clone()
+                .expect("expected struct with named fields"),
             is_option: true,
         },
         _ => FieldType {
-            ident: field.ident.clone().expect("expected struct with named fields"),
+            ident: field
+                .ident
+                .clone()
+                .expect("expected struct with named fields"),
             is_option: false,
         },
     });

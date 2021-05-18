@@ -1,4 +1,4 @@
-use macros::{FromIntoInner, FromStr, HasValue, ParamDisplay};
+use macros::{FromIntoInner, FromStr, HasValue, ValueDisplay};
 
-#[derive(HasValue, ParamDisplay, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(HasValue, ValueDisplay, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
 pub struct Ttl(String);

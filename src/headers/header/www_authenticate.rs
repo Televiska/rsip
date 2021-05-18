@@ -1,5 +1,11 @@
 use crate::headers::Header;
-use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader};
+use macros::{FromIntoInner, FromStr, HasValue, IntoHeader};
 
-#[derive(HasValue, Display, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(HasValue, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
 pub struct WwwAuthenticate(String);
+
+impl std::fmt::Display for WwwAuthenticate {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "WWW-Authenticate: {}", self.value())
+    }
+}

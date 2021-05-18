@@ -33,13 +33,30 @@ impl Uri {
     }
 }
 
-//TODO: impl params and headers as well
+//TODO: improve impl here to remove clones
 impl std::fmt::Display for Uri {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self.schema {
-            Some(schema) => write!(f, "{}:{}", schema, self.host_with_port),
-            None => write!(f, "{}", self.host_with_port),
-        }
+        let schema = match &self.schema {
+            Some(schema) => format!("{}:", schema),
+            None => format!(""),
+        };
+        let auth = match &self.auth {
+            Some(auth) => format!("{}@", auth),
+            None => format!(""),
+        };
+
+        write!(
+            f,
+            "{}{}{}{}",
+            schema,
+            auth,
+            self.host_with_port,
+            self.params
+                .iter()
+                .map(|p| p.to_string())
+                .collect::<Vec<_>>()
+                .join("")
+        )
     }
 }
 

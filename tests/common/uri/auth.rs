@@ -2,16 +2,22 @@ use rsip::common::uri::auth::{Auth, Tokenizer};
 use std::convert::TryInto;
 
 #[test]
-fn tokenizer() {
+fn display() {
     assert_eq!(
-        Tokenizer::tokenize(b"user:password@server2.com something"),
-        Ok((
-            "server2.com something".as_bytes(),
-            ("user".as_bytes(), Some("password".as_bytes())).into()
-        )),
+        Auth {
+            username: "user".into(),
+            password: None
+        }.to_string(),
+        String::from("user")
     );
 
-    assert!(Tokenizer::tokenize(b"server2.com something").is_err());
+    assert_eq!(
+        Auth {
+            username: "user".into(),
+            password: Some("password".into())
+        }.to_string(),
+        String::from("user:password")
+    );
 }
 
 #[test]
@@ -23,4 +29,17 @@ fn parser() {
             password: Some("password".into())
         }),
     );
+}
+
+#[test]
+fn tokenizer() {
+    assert_eq!(
+        Tokenizer::tokenize(b"user:password@server2.com something"),
+        Ok((
+            "server2.com something".as_bytes(),
+            ("user".as_bytes(), Some("password".as_bytes())).into()
+        )),
+    );
+
+    assert!(Tokenizer::tokenize(b"server2.com something").is_err());
 }

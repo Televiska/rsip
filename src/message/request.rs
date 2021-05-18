@@ -50,6 +50,20 @@ impl Request {
     }
 }
 
+impl std::fmt::Display for Request {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} {} {}\r\n{}\r\n{}",
+            self.method,
+            self.uri,
+            self.version,
+            self.headers,
+            String::from_utf8_lossy(&self.body)
+        )
+    }
+}
+
 impl TryFrom<SipMessage> for Request {
     type Error = &'static str;
 
@@ -100,6 +114,24 @@ impl TryFrom<bytes::Bytes> for Request {
 
     fn try_from(from: bytes::Bytes) -> Result<Self, Self::Error> {
         Tokenizer::tokenize(&from)?.1.try_into()
+    }
+}
+
+impl Into<String> for Request {
+    fn into(self) -> String {
+        self.to_string()
+    }
+}
+
+impl Into<Vec<u8>> for Request {
+    fn into(self) -> Vec<u8> {
+        self.to_string().into_bytes()
+    }
+}
+
+impl Into<bytes::Bytes> for Request {
+    fn into(self) -> bytes::Bytes {
+        bytes::Bytes::from(self.to_string())
     }
 }
 

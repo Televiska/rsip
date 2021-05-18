@@ -1,6 +1,6 @@
 pub use tokenizer::Tokenizer;
 
-#[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone)]
 pub enum StatusCode {
     Trying,
     Ringing,
@@ -75,7 +75,7 @@ pub enum StatusCode {
     DoesNotExistAnywhere,
     NotAcceptableGlobal,
     Unwanted,
-    Other(u16),
+    Other(u16, String),
 }
 
 #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone, Copy)]
@@ -91,7 +91,7 @@ pub enum StatusCodeKind {
 
 impl StatusCode {
     pub fn kind(&self) -> StatusCodeKind {
-        let code = Into::<u16>::into(*self);
+        let code = self.code();
         match code {
             code if (100..200).contains(&code) => StatusCodeKind::Provisional,
             code if (200..300).contains(&code) => StatusCodeKind::Successful,
@@ -106,166 +106,87 @@ impl StatusCode {
 
 impl From<StatusCode> for u16 {
     fn from(from: StatusCode) -> u16 {
-        use StatusCode::*;
-
-        match from {
-            Trying => 100,
-            Ringing => 180,
-            CallIsBeingForwarded => 181,
-            Queued => 182,
-            SessionProgress => 183,
-            EarlyDialogTerminated => 199,
-            Ok => 200,
-            Accepted => 201,
-            NoNotification => 204,
-            MultipleChoices => 300,
-            MovedPermanently => 301,
-            MovedTemporarily => 302,
-            UseProxy => 305,
-            AlternativeService => 380,
-            BadRequest => 400,
-            Unauthorized => 401,
-            PaymentRequired => 402,
-            Forbidden => 403,
-            NotFound => 404,
-            MethodNotAllowed => 405,
-            NotAcceptable => 406,
-            ProxyAuthenticationRequired => 407,
-            RequestTimeout => 408,
-            Conflict => 409,
-            Gone => 410,
-            LengthRequired => 411,
-            ConditionalRequestFailed => 412,
-            RequestEntityTooLarge => 413,
-            RequestUriTooLong => 414,
-            UnsupportedMediaType => 415,
-            UnsupportedUriScheme => 416,
-            UnknownResourcePriority => 417,
-            BadExtension => 420,
-            ExtensionRequired => 421,
-            SessionIntervalTooSmall => 422,
-            IntervalTooBrief => 423,
-            BadLocationInformation => 424,
-            UseIdentityHeader => 428,
-            ProvideReferrerIdentity => 429,
-            AnonymityDisallowed => 433,
-            BadIdentityInfo => 436,
-            UnsupportedCertificate => 437,
-            InvalidIdentityHeader => 438,
-            FirstHopLacksOutboundSupport => 439,
-            MaxBreadthExceeded => 440,
-            BadInfoPackage => 469,
-            ConsentNeeded => 470,
-            TemporarilyUnavailable => 480,
-            CallTransactionDoesNotExist => 481,
-            LoopDetected => 482,
-            TooManyHops => 483,
-            AddressIncomplete => 484,
-            Ambiguous => 485,
-            BusyHere => 486,
-            RequestTerminated => 487,
-            NotAcceptableHere => 488,
-            BadEvent => 489,
-            RequestPending => 491,
-            Undecipherable => 493,
-            SecurityAgreementRequired => 494,
-            ServerInternalError => 500,
-            NotImplemented => 501,
-            BadGateway => 502,
-            ServiceUnavailable => 503,
-            ServerTimeOut => 504,
-            VersionNotSupported => 505,
-            MessageTooLarge => 513,
-            PreconditionFailure => 580,
-            BusyEverywhere => 600,
-            Decline => 603,
-            DoesNotExistAnywhere => 604,
-            NotAcceptableGlobal => 606,
-            Unwanted => 607,
-            Other(code) => code,
-        }
+        from.code()
     }
 }
 
-impl From<u16> for StatusCode {
-    fn from(from: u16) -> Self {
-        use StatusCode::*;
-
-        match from {
-            100 => Trying,
-            180 => Ringing,
-            181 => CallIsBeingForwarded,
-            182 => Queued,
-            183 => SessionProgress,
-            199 => EarlyDialogTerminated,
-            200 => Ok,
-            201 => Accepted,
-            204 => NoNotification,
-            300 => MultipleChoices,
-            301 => MovedPermanently,
-            302 => MovedTemporarily,
-            305 => UseProxy,
-            380 => AlternativeService,
-            400 => BadRequest,
-            401 => Unauthorized,
-            402 => PaymentRequired,
-            403 => Forbidden,
-            404 => NotFound,
-            405 => MethodNotAllowed,
-            406 => NotAcceptable,
-            407 => ProxyAuthenticationRequired,
-            408 => RequestTimeout,
-            409 => Conflict,
-            410 => Gone,
-            411 => LengthRequired,
-            412 => ConditionalRequestFailed,
-            413 => RequestEntityTooLarge,
-            414 => RequestUriTooLong,
-            415 => UnsupportedMediaType,
-            416 => UnsupportedUriScheme,
-            417 => UnknownResourcePriority,
-            420 => BadExtension,
-            421 => ExtensionRequired,
-            422 => SessionIntervalTooSmall,
-            423 => IntervalTooBrief,
-            424 => BadLocationInformation,
-            428 => UseIdentityHeader,
-            429 => ProvideReferrerIdentity,
-            433 => AnonymityDisallowed,
-            436 => BadIdentityInfo,
-            437 => UnsupportedCertificate,
-            438 => InvalidIdentityHeader,
-            439 => FirstHopLacksOutboundSupport,
-            440 => MaxBreadthExceeded,
-            469 => BadInfoPackage,
-            470 => ConsentNeeded,
-            480 => TemporarilyUnavailable,
-            481 => CallTransactionDoesNotExist,
-            482 => LoopDetected,
-            483 => TooManyHops,
-            484 => AddressIncomplete,
-            485 => Ambiguous,
-            486 => BusyHere,
-            487 => RequestTerminated,
-            488 => NotAcceptableHere,
-            489 => BadEvent,
-            491 => RequestPending,
-            493 => Undecipherable,
-            494 => SecurityAgreementRequired,
-            500 => ServerInternalError,
-            501 => NotImplemented,
-            502 => BadGateway,
-            503 => ServiceUnavailable,
-            504 => ServerTimeOut,
-            505 => VersionNotSupported,
-            513 => MessageTooLarge,
-            580 => PreconditionFailure,
-            600 => BusyEverywhere,
-            603 => Decline,
-            604 => DoesNotExistAnywhere,
-            606 => NotAcceptableGlobal,
-            607 => Unwanted,
-            code => Other(code),
+impl StatusCode {
+    pub fn code(&self) -> u16 {
+        match self {
+            Self::Trying => 100,
+            Self::Ringing => 180,
+            Self::CallIsBeingForwarded => 181,
+            Self::Queued => 182,
+            Self::SessionProgress => 183,
+            Self::EarlyDialogTerminated => 199,
+            Self::Ok => 200,
+            Self::Accepted => 201,
+            Self::NoNotification => 204,
+            Self::MultipleChoices => 300,
+            Self::MovedPermanently => 301,
+            Self::MovedTemporarily => 302,
+            Self::UseProxy => 305,
+            Self::AlternativeService => 380,
+            Self::BadRequest => 400,
+            Self::Unauthorized => 401,
+            Self::PaymentRequired => 402,
+            Self::Forbidden => 403,
+            Self::NotFound => 404,
+            Self::MethodNotAllowed => 405,
+            Self::NotAcceptable => 406,
+            Self::ProxyAuthenticationRequired => 407,
+            Self::RequestTimeout => 408,
+            Self::Conflict => 409,
+            Self::Gone => 410,
+            Self::LengthRequired => 411,
+            Self::ConditionalRequestFailed => 412,
+            Self::RequestEntityTooLarge => 413,
+            Self::RequestUriTooLong => 414,
+            Self::UnsupportedMediaType => 415,
+            Self::UnsupportedUriScheme => 416,
+            Self::UnknownResourcePriority => 417,
+            Self::BadExtension => 420,
+            Self::ExtensionRequired => 421,
+            Self::SessionIntervalTooSmall => 422,
+            Self::IntervalTooBrief => 423,
+            Self::BadLocationInformation => 424,
+            Self::UseIdentityHeader => 428,
+            Self::ProvideReferrerIdentity => 429,
+            Self::AnonymityDisallowed => 433,
+            Self::BadIdentityInfo => 436,
+            Self::UnsupportedCertificate => 437,
+            Self::InvalidIdentityHeader => 438,
+            Self::FirstHopLacksOutboundSupport => 439,
+            Self::MaxBreadthExceeded => 440,
+            Self::BadInfoPackage => 469,
+            Self::ConsentNeeded => 470,
+            Self::TemporarilyUnavailable => 480,
+            Self::CallTransactionDoesNotExist => 481,
+            Self::LoopDetected => 482,
+            Self::TooManyHops => 483,
+            Self::AddressIncomplete => 484,
+            Self::Ambiguous => 485,
+            Self::BusyHere => 486,
+            Self::RequestTerminated => 487,
+            Self::NotAcceptableHere => 488,
+            Self::BadEvent => 489,
+            Self::RequestPending => 491,
+            Self::Undecipherable => 493,
+            Self::SecurityAgreementRequired => 494,
+            Self::ServerInternalError => 500,
+            Self::NotImplemented => 501,
+            Self::BadGateway => 502,
+            Self::ServiceUnavailable => 503,
+            Self::ServerTimeOut => 504,
+            Self::VersionNotSupported => 505,
+            Self::MessageTooLarge => 513,
+            Self::PreconditionFailure => 580,
+            Self::BusyEverywhere => 600,
+            Self::Decline => 603,
+            Self::DoesNotExistAnywhere => 604,
+            Self::NotAcceptableGlobal => 606,
+            Self::Unwanted => 607,
+            Self::Other(code, _) => *code,
         }
     }
 }
@@ -278,10 +199,86 @@ impl Default for StatusCode {
 
 impl std::fmt::Display for StatusCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", Into::<u16>::into(*self))
+        match self {
+            Self::Trying => write!(f, "100 Trying"),
+            Self::Ringing => write!(f, "180 Ringing"),
+            Self::CallIsBeingForwarded => write!(f, "180 CallIsBeingForwarded"),
+            Self::Queued => write!(f, "182 Queued"),
+            Self::SessionProgress => write!(f, "183 SessionProgress"),
+            Self::EarlyDialogTerminated => write!(f, "199 EarlyDialogTerminated"),
+            Self::Ok => write!(f, "200 OK"),
+            Self::Accepted => write!(f, "201 Accepted"),
+            Self::NoNotification => write!(f, "204 NoNotification"),
+            Self::MultipleChoices => write!(f, "300 MultipleChoices"),
+            Self::MovedPermanently => write!(f, "301 MovedPermanently"),
+            Self::MovedTemporarily => write!(f, "302 MovedTemporarily"),
+            Self::UseProxy => write!(f, "305 UseProxy"),
+            Self::AlternativeService => write!(f, "380 AlternativeService"),
+            Self::BadRequest => write!(f, "400 BadRequest"),
+            Self::Unauthorized => write!(f, "401 Unauthorized"),
+            Self::PaymentRequired => write!(f, "402 PaymentRequired"),
+            Self::Forbidden => write!(f, "403 PaymentRequired"),
+            Self::NotFound => write!(f, "404 NotFound"),
+            Self::MethodNotAllowed => write!(f, "405 MethodNotAllowed"),
+            Self::NotAcceptable => write!(f, "406 NotAcceptable"),
+            Self::ProxyAuthenticationRequired => write!(f, "407 ProxyAuthenticationRequired"),
+            Self::RequestTimeout => write!(f, "408 RequestTimeout"),
+            Self::Conflict => write!(f, "409 Conflict"),
+            Self::Gone => write!(f, "410 Gone"),
+            Self::LengthRequired => write!(f, "411 LengthRequired"),
+            Self::ConditionalRequestFailed => write!(f, "412 ConditionalRequestFailed"),
+            Self::RequestEntityTooLarge => write!(f, "413 RequestEntityTooLarge"),
+            Self::RequestUriTooLong => write!(f, "414 RequestUriTooLong"),
+            Self::UnsupportedMediaType => write!(f, "415 UnsupportedMediaType"),
+            Self::UnsupportedUriScheme => write!(f, "416 UnsupportedUriScheme"),
+            Self::UnknownResourcePriority => write!(f, "417 UnknownResourcePriority"),
+            Self::BadExtension => write!(f, "420 BadExtension"),
+            Self::ExtensionRequired => write!(f, "421 ExtensionRequired"),
+            Self::SessionIntervalTooSmall => write!(f, "422 SessionIntervalTooSmall"),
+            Self::IntervalTooBrief => write!(f, "423 IntervalTooBrief"),
+            Self::BadLocationInformation => write!(f, "424 BadLocationInformation"),
+            Self::UseIdentityHeader => write!(f, "428 UseIdentityHeader"),
+            Self::ProvideReferrerIdentity => write!(f, "429 ProvideReferrerIdentity"),
+            Self::AnonymityDisallowed => write!(f, "433 AnonymityDisallowed"),
+            Self::BadIdentityInfo => write!(f, "436 BadIdentityInfo"),
+            Self::UnsupportedCertificate => write!(f, "437 UnsupportedCertificate"),
+            Self::InvalidIdentityHeader => write!(f, "438 InvalidIdentityHeader"),
+            Self::FirstHopLacksOutboundSupport => write!(f, "439 FirstHopLacksOutboundSupport"),
+            Self::MaxBreadthExceeded => write!(f, "440 MaxBreadthExceeded"),
+            Self::BadInfoPackage => write!(f, "469 BadInfoPackage"),
+            Self::ConsentNeeded => write!(f, "470 ConsentNeeded"),
+            Self::TemporarilyUnavailable => write!(f, "480 TemporarilyUnavailable"),
+            Self::CallTransactionDoesNotExist => write!(f, "481 CallTransactionDoesNotExist"),
+            Self::LoopDetected => write!(f, "482 LoopDetected"),
+            Self::TooManyHops => write!(f, "483 TooManyHops"),
+            Self::AddressIncomplete => write!(f, "484 AddressIncomplete"),
+            Self::Ambiguous => write!(f, "485 Ambiguous"),
+            Self::BusyHere => write!(f, "486 BusyHere"),
+            Self::RequestTerminated => write!(f, "487 RequestTerminated"),
+            Self::NotAcceptableHere => write!(f, "488 NotAcceptableHere"),
+            Self::BadEvent => write!(f, "489 BadEvent"),
+            Self::RequestPending => write!(f, "491 RequestPending"),
+            Self::Undecipherable => write!(f, "493 Undecipherable"),
+            Self::SecurityAgreementRequired => write!(f, "494 SecurityAgreementRequired"),
+            Self::ServerInternalError => write!(f, "500 ServerInternalError"),
+            Self::NotImplemented => write!(f, "501 NotImplemented"),
+            Self::BadGateway => write!(f, "502 BadGateway"),
+            Self::ServiceUnavailable => write!(f, "503 ServiceUnavailable"),
+            Self::ServerTimeOut => write!(f, "504 ServerTimeOut"),
+            Self::VersionNotSupported => write!(f, "505 VersionNotSupported"),
+            Self::MessageTooLarge => write!(f, "513 MessageTooLarge"),
+            Self::PreconditionFailure => write!(f, "580 PreconditionFailure"),
+            Self::BusyEverywhere => write!(f, "600 BusyEverywhere"),
+            Self::Decline => write!(f, "603 Decline"),
+            Self::DoesNotExistAnywhere => write!(f, "604 DoesNotExistAnywhere"),
+            Self::NotAcceptableGlobal => write!(f, "606 NotAcceptableGlobal"),
+            Self::Unwanted => write!(f, "607 Unwanted"),
+            Self::Other(code, reason) => write!(f, "{} {}", code, reason),
+        }
     }
 }
 
+//Here we decide to completely ignore the reason if the code can be mapped to a well known status
 pub mod tokenizer {
     use super::StatusCode;
     use crate::{Error, NomError};
@@ -293,33 +290,93 @@ pub mod tokenizer {
         fn try_into(self) -> Result<StatusCode, Error> {
             use std::str::from_utf8;
 
-            Ok(from_utf8(self.code)?.parse::<u16>()?.into())
+            match (from_utf8(self.code)?.parse::<u16>()?, self.reason) {
+                (100, _) => Ok(StatusCode::Trying),
+                (180, _) => Ok(StatusCode::Ringing),
+                (181, _) => Ok(StatusCode::CallIsBeingForwarded),
+                (182, _) => Ok(StatusCode::Queued),
+                (183, _) => Ok(StatusCode::SessionProgress),
+                (199, _) => Ok(StatusCode::EarlyDialogTerminated),
+                (200, _) => Ok(StatusCode::Ok),
+                (201, _) => Ok(StatusCode::Accepted),
+                (204, _) => Ok(StatusCode::NoNotification),
+                (300, _) => Ok(StatusCode::MultipleChoices),
+                (301, _) => Ok(StatusCode::MovedPermanently),
+                (302, _) => Ok(StatusCode::MovedTemporarily),
+                (305, _) => Ok(StatusCode::UseProxy),
+                (380, _) => Ok(StatusCode::AlternativeService),
+                (400, _) => Ok(StatusCode::BadRequest),
+                (401, _) => Ok(StatusCode::Unauthorized),
+                (402, _) => Ok(StatusCode::PaymentRequired),
+                (403, _) => Ok(StatusCode::Forbidden),
+                (404, _) => Ok(StatusCode::NotFound),
+                (405, _) => Ok(StatusCode::MethodNotAllowed),
+                (406, _) => Ok(StatusCode::NotAcceptable),
+                (407, _) => Ok(StatusCode::ProxyAuthenticationRequired),
+                (408, _) => Ok(StatusCode::RequestTimeout),
+                (409, _) => Ok(StatusCode::Conflict),
+                (410, _) => Ok(StatusCode::Gone),
+                (411, _) => Ok(StatusCode::LengthRequired),
+                (412, _) => Ok(StatusCode::ConditionalRequestFailed),
+                (413, _) => Ok(StatusCode::RequestEntityTooLarge),
+                (414, _) => Ok(StatusCode::RequestUriTooLong),
+                (415, _) => Ok(StatusCode::UnsupportedMediaType),
+                (416, _) => Ok(StatusCode::UnsupportedUriScheme),
+                (417, _) => Ok(StatusCode::UnknownResourcePriority),
+                (420, _) => Ok(StatusCode::BadExtension),
+                (421, _) => Ok(StatusCode::ExtensionRequired),
+                (422, _) => Ok(StatusCode::SessionIntervalTooSmall),
+                (423, _) => Ok(StatusCode::IntervalTooBrief),
+                (424, _) => Ok(StatusCode::BadLocationInformation),
+                (428, _) => Ok(StatusCode::UseIdentityHeader),
+                (429, _) => Ok(StatusCode::ProvideReferrerIdentity),
+                (433, _) => Ok(StatusCode::AnonymityDisallowed),
+                (436, _) => Ok(StatusCode::BadIdentityInfo),
+                (437, _) => Ok(StatusCode::UnsupportedCertificate),
+                (438, _) => Ok(StatusCode::InvalidIdentityHeader),
+                (439, _) => Ok(StatusCode::FirstHopLacksOutboundSupport),
+                (440, _) => Ok(StatusCode::MaxBreadthExceeded),
+                (469, _) => Ok(StatusCode::BadInfoPackage),
+                (470, _) => Ok(StatusCode::ConsentNeeded),
+                (480, _) => Ok(StatusCode::TemporarilyUnavailable),
+                (481, _) => Ok(StatusCode::CallTransactionDoesNotExist),
+                (482, _) => Ok(StatusCode::LoopDetected),
+                (483, _) => Ok(StatusCode::TooManyHops),
+                (484, _) => Ok(StatusCode::AddressIncomplete),
+                (485, _) => Ok(StatusCode::Ambiguous),
+                (486, _) => Ok(StatusCode::BusyHere),
+                (487, _) => Ok(StatusCode::RequestTerminated),
+                (488, _) => Ok(StatusCode::NotAcceptableHere),
+                (489, _) => Ok(StatusCode::BadEvent),
+                (491, _) => Ok(StatusCode::RequestPending),
+                (493, _) => Ok(StatusCode::Undecipherable),
+                (494, _) => Ok(StatusCode::SecurityAgreementRequired),
+                (500, _) => Ok(StatusCode::ServerInternalError),
+                (501, _) => Ok(StatusCode::NotImplemented),
+                (502, _) => Ok(StatusCode::BadGateway),
+                (503, _) => Ok(StatusCode::ServiceUnavailable),
+                (504, _) => Ok(StatusCode::ServerTimeOut),
+                (505, _) => Ok(StatusCode::VersionNotSupported),
+                (513, _) => Ok(StatusCode::MessageTooLarge),
+                (580, _) => Ok(StatusCode::PreconditionFailure),
+                (600, _) => Ok(StatusCode::BusyEverywhere),
+                (603, _) => Ok(StatusCode::Decline),
+                (604, _) => Ok(StatusCode::DoesNotExistAnywhere),
+                (606, _) => Ok(StatusCode::NotAcceptableGlobal),
+                (607, _) => Ok(StatusCode::Unwanted),
+                (code, reason) => Ok(StatusCode::Other(code, from_utf8(reason)?.into())),
+            }
         }
     }
 
     #[derive(Debug, PartialEq, Eq, Clone)]
     pub struct Tokenizer<'a> {
         pub code: &'a [u8],
-        pub reason: Option<&'a [u8]>,
-    }
-
-    impl<'a> From<&'a [u8]> for Tokenizer<'a> {
-        fn from(code: &'a [u8]) -> Self {
-            Self { code, reason: None }
-        }
+        pub reason: &'a [u8],
     }
 
     impl<'a> From<(&'a [u8], &'a [u8])> for Tokenizer<'a> {
         fn from(tuple: (&'a [u8], &'a [u8])) -> Self {
-            Self {
-                code: tuple.0,
-                reason: Some(tuple.1),
-            }
-        }
-    }
-
-    impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
-        fn from(tuple: (&'a [u8], Option<&'a [u8]>)) -> Self {
             Self {
                 code: tuple.0,
                 reason: tuple.1,
@@ -329,15 +386,6 @@ pub mod tokenizer {
 
     impl<'a> Tokenizer<'a> {
         pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-            use crate::parser_utils::opt_sp;
-            use nom::{character::complete::digit1, sequence::tuple};
-
-            let (rem, (code, _)) = tuple((digit1, opt_sp))(part)?;
-
-            Ok((rem, code.into()))
-        }
-
-        pub fn tokenize_with_reason(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
             use nom::{
                 bytes::complete::{tag, take_until},
                 character::complete::digit1,
@@ -347,13 +395,7 @@ pub mod tokenizer {
             let (rem, (code, _, reason, _)) =
                 tuple((digit1, tag(" "), take_until("\r\n"), tag("\r\n")))(part)?;
 
-            Ok((
-                rem,
-                Self {
-                    code,
-                    reason: Some(reason),
-                },
-            ))
+            Ok((rem, Self { code, reason }))
         }
     }
 }

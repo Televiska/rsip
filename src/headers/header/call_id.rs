@@ -2,4 +2,4 @@ use crate::headers::Header;
 use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader};
 
 #[derive(HasValue, Display, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
-pub struct CallId(String);
+pub struct CallID(String);
