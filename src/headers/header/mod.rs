@@ -54,7 +54,7 @@ pub use alert_info::AlertInfo;
 pub use allow::Allow;
 pub use authentication_info::AuthenticationInfo;
 pub use authorization::Authorization;
-pub use call_id::CallId;
+pub use call_id::CallID;
 pub use call_info::CallInfo;
 pub use contact::Contact;
 pub use content_disposition::ContentDisposition;
@@ -104,7 +104,7 @@ pub enum Header {
     AuthenticationInfo(AuthenticationInfo),
     Authorization(Authorization),
     CSeq(CSeq),
-    CallId(CallId),
+    CallID(CallID),
     CallInfo(CallInfo),
     Contact(Contact),
     ContentDisposition(ContentDisposition),
@@ -145,6 +145,60 @@ pub enum Header {
     WwwAuthenticate(WwwAuthenticate),
 }
 
+impl std::fmt::Display for Header {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Accept(inner) => write!(f, "{}", inner),
+            Self::AcceptEncoding(inner) => write!(f, "{}", inner),
+            Self::AcceptLanguage(inner) => write!(f, "{}", inner),
+            Self::AlertInfo(inner) => write!(f, "{}", inner),
+            Self::Allow(inner) => write!(f, "{}", inner),
+            Self::AuthenticationInfo(inner) => write!(f, "{}", inner),
+            Self::Authorization(inner) => write!(f, "{}", inner),
+            Self::CSeq(inner) => write!(f, "{}", inner),
+            Self::CallID(inner) => write!(f, "{}", inner),
+            Self::CallInfo(inner) => write!(f, "{}", inner),
+            Self::Contact(inner) => write!(f, "{}", inner),
+            Self::ContentDisposition(inner) => write!(f, "{}", inner),
+            Self::ContentEncoding(inner) => write!(f, "{}", inner),
+            Self::ContentLanguage(inner) => write!(f, "{}", inner),
+            Self::ContentLength(inner) => write!(f, "{}", inner),
+            Self::ContentType(inner) => write!(f, "{}", inner),
+            Self::Date(inner) => write!(f, "{}", inner),
+            Self::ErrorInfo(inner) => write!(f, "{}", inner),
+            Self::Event(inner) => write!(f, "{}", inner),
+            Self::Expires(inner) => write!(f, "{}", inner),
+            Self::From(inner) => write!(f, "{}", inner),
+            Self::InReplyTo(inner) => write!(f, "{}", inner),
+            Self::MaxForwards(inner) => write!(f, "{}", inner),
+            Self::MimeVersion(inner) => write!(f, "{}", inner),
+            Self::MinExpires(inner) => write!(f, "{}", inner),
+            Self::Organization(inner) => write!(f, "{}", inner),
+            Self::Other(key, value) => write!(f, "{}: {}", key, value),
+            Self::Priority(inner) => write!(f, "{}", inner),
+            Self::ProxyAuthenticate(inner) => write!(f, "{}", inner),
+            Self::ProxyAuthorization(inner) => write!(f, "{}", inner),
+            Self::ProxyRequire(inner) => write!(f, "{}", inner),
+            Self::RecordRoute(inner) => write!(f, "{}", inner),
+            Self::ReplyTo(inner) => write!(f, "{}", inner),
+            Self::Require(inner) => write!(f, "{}", inner),
+            Self::RetryAfter(inner) => write!(f, "{}", inner),
+            Self::Route(inner) => write!(f, "{}", inner),
+            Self::Server(inner) => write!(f, "{}", inner),
+            Self::Subject(inner) => write!(f, "{}", inner),
+            Self::SubscriptionState(inner) => write!(f, "{}", inner),
+            Self::Supported(inner) => write!(f, "{}", inner),
+            Self::Timestamp(inner) => write!(f, "{}", inner),
+            Self::To(inner) => write!(f, "{}", inner),
+            Self::Unsupported(inner) => write!(f, "{}", inner),
+            Self::UserAgent(inner) => write!(f, "{}", inner),
+            Self::Via(inner) => write!(f, "{}", inner),
+            Self::Warning(inner) => write!(f, "{}", inner),
+            Self::WwwAuthenticate(inner) => write!(f, "{}", inner),
+        }
+    }
+}
+
 pub mod tokenizer {
     use super::*;
     use crate::{Error, NomError};
@@ -181,7 +235,7 @@ pub mod tokenizer {
                 }
                 s if s.eq_ignore_ascii_case("CSeq") => Ok(Header::CSeq(CSeq::new(tokenizer.value))),
                 s if s.eq_ignore_ascii_case("Call-Id") => {
-                    Ok(Header::CallId(CallId::new(tokenizer.value)))
+                    Ok(Header::CallID(CallID::new(tokenizer.value)))
                 }
                 s if s.eq_ignore_ascii_case("Call-Info") => {
                     Ok(Header::CallInfo(CallInfo::new(tokenizer.value)))

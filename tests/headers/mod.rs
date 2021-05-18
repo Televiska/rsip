@@ -1,4 +1,19 @@
-use rsip::headers::header::Tokenizer;
+pub mod accept;
+
+use rsip::headers::header::{Accept, Header, Tokenizer};
+
+#[test]
+fn display() {
+    assert_eq!(
+        Header::Accept(Accept::new("REGISTER, INVITE")).to_string(),
+        String::from("Accept: REGISTER, INVITE")
+    );
+
+    assert_eq!(
+        Header::Other("X-Forward".into(), "202.45.213.14".into()).to_string(),
+        String::from("X-Forward: 202.45.213.14")
+    );
+}
 
 #[test]
 fn tokenizer() {
@@ -13,12 +28,3 @@ fn tokenizer() {
         )),
     );
 }
-
-/*
-#[test]
-fn parser() {
-    assert_eq!(
-        Accept::parse(b"REGISTER, INVITE".as_bytes().into()),
-        Ok(Accept::new("REGISTER, INVITE")),
-    );
-}*/

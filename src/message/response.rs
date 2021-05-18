@@ -44,6 +44,19 @@ impl Response {
     }
 }
 
+impl std::fmt::Display for Response {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} {}\r\n{}\r\n{}",
+            self.version,
+            self.status_code,
+            self.headers,
+            String::from_utf8_lossy(&self.body)
+        )
+    }
+}
+
 impl TryFrom<SipMessage> for Response {
     type Error = &'static str;
 
@@ -97,6 +110,24 @@ impl TryFrom<bytes::Bytes> for Response {
     }
 }
 
+impl Into<String> for Response {
+    fn into(self) -> String {
+        self.to_string()
+    }
+}
+
+impl Into<Vec<u8>> for Response {
+    fn into(self) -> Vec<u8> {
+        self.to_string().into_bytes()
+    }
+}
+
+impl Into<bytes::Bytes> for Response {
+    fn into(self) -> bytes::Bytes {
+        bytes::Bytes::from(self.to_string())
+    }
+}
+
 pub mod tokenizer {
     use super::{header, status_code, version, Response};
     use crate::{Error, NomError};
@@ -134,7 +165,7 @@ pub mod tokenizer {
 
             let (rem, (version, status_code)) = tuple((
                 version::Tokenizer::tokenize,
-                status_code::Tokenizer::tokenize_with_reason,
+                status_code::Tokenizer::tokenize,
             ))(part)?;
             let (rem, headers) = many0(header::Tokenizer::tokenize)(rem)?;
             let (body, _) = tag("\r\n")(rem)?;

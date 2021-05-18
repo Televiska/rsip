@@ -41,7 +41,22 @@ impl Method {
 
 impl std::fmt::Display for Method {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        match self {
+            Self::Ack => write!(f, "ACK"),
+            Self::Bye => write!(f, "BYE"),
+            Self::Cancel => write!(f, "CANCEL"),
+            Self::Info => write!(f, "INFO"),
+            Self::Invite => write!(f, "INVITE"),
+            Self::Message => write!(f, "MESSAGE"),
+            Self::Notify => write!(f, "NOTIFY"),
+            Self::Options => write!(f, "OPTIONS"),
+            Self::PRack => write!(f, "PRACK"),
+            Self::Publish => write!(f, "Publish"),
+            Self::Refer => write!(f, "REFER"),
+            Self::Register => write!(f, "REGISTER"),
+            Self::Subscribe => write!(f, "SUBSCRIBE"),
+            Self::Update => write!(f, "UPDATE")
+        }
     }
 }
 

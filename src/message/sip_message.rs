@@ -55,6 +55,15 @@ impl SipMessage {
     }
 }
 
+impl std::fmt::Display for SipMessage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Request(request) => write!(f, "{}", request),
+            Self::Response(response) => write!(f, "{}", response),
+        }
+    }
+}
+
 impl TryFrom<&[u8]> for SipMessage {
     type Error = Error;
 
@@ -92,6 +101,24 @@ impl TryFrom<bytes::Bytes> for SipMessage {
 
     fn try_from(from: bytes::Bytes) -> Result<Self, Self::Error> {
         Tokenizer::tokenize(&from)?.1.try_into()
+    }
+}
+
+impl Into<String> for SipMessage {
+    fn into(self) -> String {
+        self.to_string()
+    }
+}
+
+impl Into<Vec<u8>> for SipMessage {
+    fn into(self) -> Vec<u8> {
+        self.to_string().into_bytes()
+    }
+}
+
+impl Into<bytes::Bytes> for SipMessage {
+    fn into(self) -> bytes::Bytes {
+        bytes::Bytes::from(self.to_string())
     }
 }
 

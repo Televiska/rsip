@@ -29,6 +29,10 @@ impl Headers {
         self.0.iter_mut()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     pub fn retain<F>(&mut self, f: F)
     where
         F: FnMut(&Header) -> bool,
@@ -64,11 +68,19 @@ impl std::convert::From<Headers> for Vec<Header> {
     }
 }
 
-/*
 impl std::fmt::Display for Headers {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use libsip::core::message::display_headers_and_body;
-        display_headers_and_body(f, &Into::<libsip::Headers>::into(self.clone()), &[])
+        if self.is_empty() {
+            write!(f, "")
+        } else {
+            write!(
+                f,
+                "{}\r\n",
+                self.iter()
+                    .map(|s| s.to_string())
+                    .collect::<Vec<_>>()
+                    .join("\r\n")
+            )
+        }
     }
 }
-*/
