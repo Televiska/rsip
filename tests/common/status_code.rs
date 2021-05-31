@@ -33,6 +33,9 @@ fn parser() {
 fn tokenizer() {
     assert_eq!(
         Tokenizer::tokenize(b"200 OK\r\nsomething"),
-        Ok(("something".as_bytes(), ("200".as_bytes(), "OK".as_bytes()).into())),
+        Ok((
+            "something".as_bytes(),
+            ("200".as_bytes(), "OK".as_bytes()).into()
+        )),
     );
 }

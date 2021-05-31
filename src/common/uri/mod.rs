@@ -137,6 +137,7 @@ pub mod tokenizer {
         pub auth: Option<auth::Tokenizer<'a>>,
         pub host_with_port: host_with_port::Tokenizer<'a>,
         pub params: Vec<param::Tokenizer<'a>>,
+        //TODO: why option here?
         pub headers: Option<Vec<&'a [u8]>>,
     }
 
@@ -158,6 +159,26 @@ pub mod tokenizer {
                     auth,
                     host_with_port,
                     params,
+                    //TODO: support headers in the uri
+                    headers: None,
+                },
+            ))
+        }
+
+        pub fn tokenize_without_params(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+            use nom::combinator::opt;
+
+            let (rem, schema) = opt(schema::Tokenizer::tokenize)(part)?;
+            let (rem, auth) = opt(auth::Tokenizer::tokenize)(rem)?;
+            let (rem, host_with_port) = host_with_port::Tokenizer::tokenize(rem)?;
+
+            Ok((
+                rem,
+                Self {
+                    schema,
+                    auth,
+                    host_with_port,
+                    params: vec![],
                     headers: None,
                 },
             ))

@@ -31,10 +31,7 @@ mod tokenizer {
         type Error = Error;
 
         fn try_into(self) -> Result<Version, Error> {
-            use nom::{bytes::complete::tag, character::complete::digit1, sequence::tuple};
-            let (_, (_, major, _, _)) = tuple((tag("SIP/"), digit1, tag("."), digit1))(self.value)?;
-
-            match major {
+            match self.major {
                 b"1" => Ok(Version::V1),
                 b"2" => Ok(Version::V2),
                 _ => Err(Error::ParseError("Unrecognized SIP version".into())),
@@ -44,26 +41,32 @@ mod tokenizer {
 
     #[derive(Debug, PartialEq, Eq, Clone)]
     pub struct Tokenizer<'a> {
-        pub value: &'a [u8],
+        pub major: &'a [u8],
+        pub minor: &'a [u8],
+    }
+
+    impl<'a> From<(&'a [u8], &'a [u8])> for Tokenizer<'a> {
+        fn from(tuple: (&'a [u8], &'a [u8])) -> Self {
+            Self {
+                major: tuple.0,
+                minor: tuple.1,
+            }
+        }
     }
 
     impl<'a> From<&'a [u8]> for Tokenizer<'a> {
-        fn from(value: &'a [u8]) -> Self {
-            Self { value }
+        fn from(major: &'a [u8]) -> Self {
+            Self { major, minor: b"0" }
         }
     }
 
     impl<'a> Tokenizer<'a> {
         pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-            use nom::{
-                branch::alt,
-                bytes::complete::{tag, take_till},
-            };
+            use nom::{bytes::complete::tag, character::complete::digit1, sequence::tuple};
 
-            let (rem, version) = take_till(|c| c == b' ' || c == b'\r')(part)?;
-            let (rem, _) = alt((tag(" "), tag("\r\n")))(rem)?;
+            let (rem, (_, major, _, minor)) = tuple((tag("SIP/"), digit1, tag("."), digit1))(part)?;
 
-            Ok((rem, version.into()))
+            Ok((rem, (major, minor).into()))
         }
     }
 }

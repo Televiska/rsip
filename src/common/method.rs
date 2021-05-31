@@ -55,8 +55,22 @@ impl std::fmt::Display for Method {
             Self::Refer => write!(f, "REFER"),
             Self::Register => write!(f, "REGISTER"),
             Self::Subscribe => write!(f, "SUBSCRIBE"),
-            Self::Update => write!(f, "UPDATE")
+            Self::Update => write!(f, "UPDATE"),
         }
+    }
+}
+
+//TODO: not ideal performance here
+impl std::str::FromStr for Method {
+    type Err = crate::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use std::convert::TryInto;
+
+        tokenizer::Tokenizer {
+            value: s.as_bytes(),
+        }
+        .try_into()
     }
 }
 

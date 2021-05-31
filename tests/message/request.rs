@@ -174,7 +174,7 @@ fn tokenizer() {
                     params: vec![],
                     headers: None
                 },
-                version: "SIP/2.0".as_bytes().into(),
+                version: "2".as_bytes().into(),
                 headers: vec![].into(),
                 body: &[]
             }
@@ -207,7 +207,7 @@ fn tokenizer() {
                 params: vec![],
                     headers: None
                 },
-                version: "SIP/2.0".as_bytes().into(),
+                version: "2".as_bytes().into(),
                 headers: vec![
                     ("Via".as_bytes(), "SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashd92".as_bytes()).into(),
                     ("Max-Forwards".as_bytes(), "70".as_bytes()).into(),

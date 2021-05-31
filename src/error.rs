@@ -112,6 +112,25 @@ impl From<nom::Err<VerboseError<&[u8]>>> for Error {
     }
 }
 
+impl From<nom::Err<VerboseError<&str>>> for Error {
+    fn from(error: nom::Err<VerboseError<&str>>) -> Self {
+        let transform_errors = |error: VerboseError<&str>| {
+            error
+                .errors
+                .iter()
+                .map(|error_item| format!("{:?}: {}", error_item.1, error_item.0))
+                .collect::<Vec<String>>()
+                .join(", ")
+        };
+
+        match error {
+            nom::Err::Failure(e) => Error::ParseError(transform_errors(e)),
+            nom::Err::Error(e) => Error::ParseError(transform_errors(e)),
+            _ => Error::Unexpected(error.to_string()),
+        }
+    }
+}
+
 impl From<std::str::Utf8Error> for Error {
     fn from(error: std::str::Utf8Error) -> Self {
         Self::Utf8Error(Header::Status, error.to_string())
