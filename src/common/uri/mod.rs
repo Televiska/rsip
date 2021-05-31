@@ -131,7 +131,7 @@ pub mod tokenizer {
         }
     }
 
-    #[derive(Debug, PartialEq, Eq)]
+    #[derive(Debug, PartialEq, Eq, Clone)]
     pub struct Tokenizer<'a> {
         pub schema: Option<schema::Tokenizer<'a>>,
         pub auth: Option<auth::Tokenizer<'a>>,
