@@ -1,23 +1,30 @@
 pub use tokenizer::Tokenizer;
 
 pub mod branch;
+pub mod expires;
 pub mod maddr;
 pub mod method;
+pub mod q;
 pub mod received;
+pub mod tag;
 pub mod transport;
 pub mod ttl;
 pub mod user;
 
 pub use branch::Branch;
+pub use expires::Expires;
 pub use maddr::Maddr;
 pub use method::Method;
+pub use q::Q;
 pub use received::Received;
+pub use tag::Tag;
 pub use transport::Transport;
 pub use ttl::Ttl;
 pub use user::User;
 
 use macros::{FromIntoInner, FromStr, HasValue, ValueDisplay};
 
+//TODO: move out Via/From/etc params from here, but keep the same tokenizer
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Param {
     Transport(Transport),
@@ -29,6 +36,9 @@ pub enum Param {
     Lr,
     Branch(Branch),     //param belonging to Via header but added here for simplicity
     Received(Received), //param belonging to Via header but added here for simplicity
+    Tag(Tag),           //param belonging to From header but added here for simplicity
+    Expires(Expires),   //param belonging to Contact header but added here for simplicity
+    Q(Q),               //param belonging to Contact header but added here for simplicity
     Other(OtherParam, Option<OtherParamValue>),
 }
 
@@ -48,6 +58,9 @@ impl std::fmt::Display for Param {
             Self::Lr => write!(f, ";lr"),
             Self::Branch(branch) => write!(f, ";branch={}", branch),
             Self::Received(received) => write!(f, ";received={}", received),
+            Self::Tag(tag) => write!(f, ";tag={}", tag),
+            Self::Expires(expires) => write!(f, ";expires={}", expires),
+            Self::Q(q) => write!(f, ";q={}", q),
             Self::Other(name, Some(value)) => write!(f, ";{}={}", name, value),
             Self::Other(name, None) => write!(f, ";{}", name),
         }
@@ -82,13 +95,18 @@ pub mod tokenizer {
                 (s, Some(v)) if s.eq_ignore_ascii_case("received") => {
                     Ok(Param::Received(Received::new(v)))
                 }
+                (s, Some(v)) if s.eq_ignore_ascii_case("tag") => Ok(Param::Tag(Tag::new(v))),
+                (s, Some(v)) if s.eq_ignore_ascii_case("expires") => {
+                    Ok(Param::Expires(Expires::new(v)))
+                }
+                (s, Some(v)) if s.eq_ignore_ascii_case("q") => Ok(Param::Q(Q::new(v))),
                 (s, None) if s.eq_ignore_ascii_case("lr") => Ok(Param::Lr),
                 (s, v) => Ok(Param::Other(s.into(), v.map(Into::into))),
             }
         }
     }
 
-    #[derive(Debug, PartialEq, Eq, Utf8Tokenizer)]
+    #[derive(Debug, PartialEq, Eq, Utf8Tokenizer, Clone)]
     pub struct Tokenizer<'a> {
         pub name: &'a [u8],
         pub value: Option<&'a [u8]>,

@@ -1,9 +1,12 @@
 use crate::headers::Header;
-use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader};
+use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader, Typed};
+use std::convert::TryInto;
 
 pub use tokenizer::Tokenizer;
 
-#[derive(HasValue, Display, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(
+    HasValue, Display, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone, Typed,
+)]
 pub struct Via(String);
 
 pub mod tokenizer {

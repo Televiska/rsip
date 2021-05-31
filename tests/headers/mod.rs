@@ -1,7 +1,10 @@
 pub mod accept;
+pub mod contact;
 pub mod content_length;
 pub mod cseq;
+pub mod from;
 pub mod max_forwards;
+pub mod to;
 pub mod via;
 
 use rsip::headers::header::{Accept, Header, Tokenizer};
