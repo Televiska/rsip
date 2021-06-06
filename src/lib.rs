@@ -8,6 +8,27 @@ pub use headers::{Header, Headers};
 pub use message::{Request, Response, SipMessage};
 
 pub(crate) type NomError<'a> = nom::Err<nom::error::VerboseError<&'a [u8]>>;
+pub(crate) type GenericNomError<'a, T> = nom::Err<nom::error::VerboseError<T>>;
+
+pub trait AbstractInput<'a>:
+    nom::InputTakeAtPosition
+    + nom::InputTake
+    + Clone
+    + nom::FindSubstring<&'a str>
+    + nom::Slice<nom::lib::std::ops::RangeFrom<usize>>
+    + nom::InputLength
+{
+}
+
+impl<'a, T> AbstractInput<'a> for T where
+    T: nom::InputTakeAtPosition
+        + nom::InputTake
+        + Clone
+        + nom::FindSubstring<&'a str>
+        + nom::Slice<nom::lib::std::ops::RangeFrom<usize>>
+        + nom::InputLength
+{
+}
 
 pub(crate) mod utils {
     pub fn opt_trim(input: &str) -> Option<&str> {

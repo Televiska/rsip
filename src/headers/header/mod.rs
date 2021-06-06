@@ -54,7 +54,7 @@ pub use alert_info::AlertInfo;
 pub use allow::Allow;
 pub use authentication_info::AuthenticationInfo;
 pub use authorization::Authorization;
-pub use call_id::CallID;
+pub use call_id::CallId;
 pub use call_info::CallInfo;
 pub use contact::Contact;
 pub use content_disposition::ContentDisposition;
@@ -94,6 +94,45 @@ pub use via::Via;
 pub use warning::Warning;
 pub use www_authenticate::WwwAuthenticate;
 
+pub trait UntypedHeader<'a>:
+    std::fmt::Debug
+    + std::fmt::Display
+    + std::cmp::PartialEq
+    + std::cmp::Eq
+    + std::clone::Clone
+    + std::convert::From<String>
+    + std::convert::Into<String>
+    + std::convert::From<&'a str>
+    + std::convert::Into<Header>
+    + std::convert::TryInto<Self::Typed, Error = crate::Error>
+{
+    type Typed: TypedHeader<'a> + Into<Self>;
+    fn new(value: impl Into<String>) -> Self;
+    fn value(&self) -> &str;
+    fn typed(self) -> Result<Self::Typed, crate::Error> {
+        self.try_into()
+    }
+}
+
+pub trait TypedHeader<'a>:
+    std::fmt::Debug
+    + std::fmt::Display
+    + std::cmp::PartialEq
+    + std::cmp::Eq
+    + std::clone::Clone
+    + std::convert::TryFrom<Self::Tokenizer, Error = crate::Error>
+    + Into<String>
+    + Into<Header>
+{
+    type Tokenizer: Tokenize<'a>;
+}
+
+pub trait Tokenize<'a> {
+    fn tokenize(part: &'a str) -> Result<Self, crate::Error>
+    where
+        Self: Sized;
+}
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Header {
     Accept(Accept),
@@ -104,7 +143,7 @@ pub enum Header {
     AuthenticationInfo(AuthenticationInfo),
     Authorization(Authorization),
     CSeq(CSeq),
-    CallID(CallID),
+    CallId(CallId),
     CallInfo(CallInfo),
     Contact(Contact),
     ContentDisposition(ContentDisposition),
@@ -156,7 +195,7 @@ impl std::fmt::Display for Header {
             Self::AuthenticationInfo(inner) => write!(f, "{}", inner),
             Self::Authorization(inner) => write!(f, "{}", inner),
             Self::CSeq(inner) => write!(f, "{}", inner),
-            Self::CallID(inner) => write!(f, "{}", inner),
+            Self::CallId(inner) => write!(f, "{}", inner),
             Self::CallInfo(inner) => write!(f, "{}", inner),
             Self::Contact(inner) => write!(f, "{}", inner),
             Self::ContentDisposition(inner) => write!(f, "{}", inner),
@@ -235,7 +274,7 @@ pub mod tokenizer {
                 }
                 s if s.eq_ignore_ascii_case("CSeq") => Ok(Header::CSeq(CSeq::new(tokenizer.value))),
                 s if s.eq_ignore_ascii_case("Call-Id") => {
-                    Ok(Header::CallID(CallID::new(tokenizer.value)))
+                    Ok(Header::CallId(CallId::new(tokenizer.value)))
                 }
                 s if s.eq_ignore_ascii_case("Call-Info") => {
                     Ok(Header::CallInfo(CallInfo::new(tokenizer.value)))

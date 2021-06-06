@@ -1,23 +1,22 @@
-use crate::headers::Header;
-use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader, Typed};
-use std::convert::TryInto;
+use macros::UntypedHeader;
 
 pub use tokenizer::Tokenizer;
 
-#[derive(
-    HasValue, Display, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone, Typed,
-)]
+#[derive(UntypedHeader, Debug, PartialEq, Eq, Clone)]
+#[header(display_name = "CSeq")]
 pub struct CSeq(String);
 
 pub mod tokenizer {
+    use crate::headers::header::Tokenize;
+
     #[derive(Eq, PartialEq, Clone, Debug)]
     pub struct Tokenizer<'a> {
         pub seq: &'a str,
         pub method: &'a str,
     }
 
-    impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a str) -> Result<Self, crate::Error> {
+    impl<'a> Tokenize<'a> for Tokenizer<'a> {
+        fn tokenize(part: &'a str) -> Result<Self, crate::Error> {
             use nom::{
                 bytes::complete::take_until, character::complete::space1, combinator::rest,
                 error::VerboseError, sequence::tuple,
@@ -34,10 +33,10 @@ pub mod tokenizer {
 pub mod typed {
     use super::Tokenizer;
     use crate::common::Method;
-    use macros::FromUntyped;
-    use std::convert::{TryFrom, TryInto};
+    use macros::TypedHeader;
+    use std::convert::TryFrom;
 
-    #[derive(FromUntyped, Eq, PartialEq, Clone, Debug)]
+    #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
     pub struct CSeq {
         pub seq: u16,
         pub method: Method,
@@ -51,6 +50,12 @@ pub mod typed {
                 seq: tokenizer.seq.parse::<u16>()?,
                 method: tokenizer.method.parse::<Method>()?,
             })
+        }
+    }
+
+    impl std::fmt::Display for CSeq {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{} {}", self.seq, self.method)
         }
     }
 }

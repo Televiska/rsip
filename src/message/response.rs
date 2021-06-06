@@ -27,20 +27,22 @@ impl Response {
         &self.version
     }
 
-    pub fn headers(&self) -> &Headers {
-        &self.headers
-    }
-
-    pub fn headers_mut(&mut self) -> &mut Headers {
-        &mut self.headers
-    }
-
     pub fn body(&self) -> &Vec<u8> {
         &self.body
     }
 
     pub fn body_mut(&mut self) -> &mut Vec<u8> {
         &mut self.body
+    }
+}
+
+impl super::HasHeaders for Response {
+    fn headers(&self) -> &Headers {
+        &self.headers
+    }
+
+    fn headers_mut(&mut self) -> &mut Headers {
+        &mut self.headers
     }
 }
 
