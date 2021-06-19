@@ -1,4 +1,4 @@
-use macros::{Display, FromIntoInner, FromStr, HasValue};
+use macros::NewType;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ContentType {
@@ -6,5 +6,5 @@ pub enum ContentType {
     Other(OtherContentType),
 }
 
-#[derive(HasValue, Display, FromStr, FromIntoInner, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, Debug, PartialEq, Eq, Clone)]
 pub struct OtherContentType(String);

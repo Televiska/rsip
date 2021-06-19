@@ -22,7 +22,7 @@ pub use transport::Transport;
 pub use ttl::Ttl;
 pub use user::User;
 
-use macros::{FromIntoInner, FromStr, HasValue, ValueDisplay};
+use macros::NewType;
 
 //TODO: move out Via/From/etc params from here, but keep the same tokenizer
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -42,9 +42,9 @@ pub enum Param {
     Other(OtherParam, Option<OtherParamValue>),
 }
 
-#[derive(HasValue, ValueDisplay, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, Debug, PartialEq, Eq, Clone)]
 pub struct OtherParam(String);
-#[derive(HasValue, ValueDisplay, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, Debug, PartialEq, Eq, Clone)]
 pub struct OtherParamValue(String);
 
 impl std::fmt::Display for Param {

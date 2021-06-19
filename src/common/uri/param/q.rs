@@ -1,5 +1,5 @@
-use macros::{FromIntoInner, FromStr, HasValue, ValueDisplay};
+use macros::NewType;
 
 //TODO: add typed + default
-#[derive(HasValue, ValueDisplay, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, Debug, PartialEq, Eq, Clone)]
 pub struct Q(String);

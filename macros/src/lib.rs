@@ -3,8 +3,9 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
 
-mod typed;
-mod untyped;
+mod newtype;
+mod typed_header;
+mod untyped_header;
 
 #[derive(FromDeriveInput, Default)]
 #[darling(default, attributes(header))]
@@ -24,11 +25,11 @@ pub fn untyped_header_signature(item: TokenStream) -> TokenStream {
     //let field_type = field_type(ast.data);
     //let field_name = field_type_name(field_type.clone());
 
-    let untyped_methods = untyped::trait_methods(struct_name.clone());
-    let display = untyped::display(struct_name.clone(), opts.display_name);
-    let into_header = untyped::into_header(struct_name.clone());
-    let from_into_string = untyped::from_into_string(struct_name.clone());
-    let from_str = untyped::from_str(struct_name.clone());
+    let untyped_methods = untyped_header::trait_methods(&struct_name);
+    let display = untyped_header::display(&struct_name, opts.display_name);
+    let into_header = untyped_header::into_header(&struct_name);
+    let from_into_string = untyped_header::from_into_string(&struct_name);
+    let from_str = untyped_header::from_str(&struct_name);
 
     let expanded = quote! {
         #untyped_methods
@@ -49,11 +50,11 @@ pub fn typed_header_signature(item: TokenStream) -> TokenStream {
     //let field_type = field_type(ast.data);
     //let field_name = field_type_name(field_type.clone());
 
-    let typed_methods = typed::trait_methods(struct_name.clone());
-    let into_string = typed::into_string(struct_name.clone());
-    let into_untyped = typed::into_untyped(struct_name.clone());
-    let into_header = typed::into_header(struct_name.clone());
-    let try_from_untyped = typed::try_from_untyped(struct_name.clone());
+    let typed_methods = typed_header::trait_methods(&struct_name);
+    let into_string = typed_header::into_string(&struct_name);
+    let into_untyped = typed_header::into_untyped(&struct_name);
+    let into_header = typed_header::into_header(&struct_name);
+    let try_from_untyped = typed_header::try_from_untyped(&struct_name);
 
     let expanded = quote! {
         #typed_methods
@@ -71,7 +72,7 @@ pub fn string_typed_header_signature(item: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(item as DeriveInput);
     let struct_name = &ast.ident;
 
-    let expanded = typed::string_typed_mods(struct_name.clone());
+    let expanded = typed_header::string_typed_mods(&struct_name);
 
     expanded.into()
 }
@@ -84,189 +85,37 @@ pub fn integer_typed_header_signature(item: TokenStream) -> TokenStream {
     let integer_type = HeaderOpts::from_derive_input(&ast)
         .expect("Wrong options")
         .integer_type
-        .unwrap_or_else(|| "i32".into());
+        .expect("not specified integer type");
 
-    let expanded = typed::integer_typed_mods(struct_name.clone(), integer_type);
-
-    expanded.into()
-}
-
-#[proc_macro_derive(HasValue)]
-pub fn has_value_signature(item: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(item as DeriveInput);
-    let struct_name = &ast.ident;
-
-    let field_type = field_type(ast.data);
-    let field_name = field_type_name(field_type.clone());
-
-    let expanded = if field_name == "String" {
-        quote! {
-            impl #struct_name {
-                pub fn new(value: impl Into<#field_type>) -> Self {
-                    Self(value.into())
-                }
-
-                pub fn value(&self) -> &str {
-                    &self.0
-                }
-            }
-        }
-    } else {
-        quote! {
-            impl #struct_name {
-                pub fn new(value: impl Into<#field_type>) -> Self {
-                    Self(value.into())
-                }
-
-                pub fn value(&self) -> &#field_type {
-                    &self.0
-                }
-            }
-        }
-    };
+    let expanded = typed_header::integer_typed_mods(&struct_name, &integer_type);
 
     expanded.into()
 }
 
-//TODO: improve PamelCase to Kebab-Case impl here
-#[proc_macro_derive(Display)]
-pub fn display_signature(item: TokenStream) -> TokenStream {
+#[proc_macro_derive(NewType)]
+pub fn new_type_signature(item: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(item as DeriveInput);
     let struct_name = &ast.ident;
-    let struct_name_str_chars: Vec<char> = struct_name.to_string().chars().collect();
-    let mut dashed_struct_name: Vec<char> = Vec::new();
-    struct_name_str_chars
-        .iter()
-        .enumerate()
-        .for_each(|(index, c)| {
-            if c.is_ascii_uppercase()
-                && (index > 0)
-                && !(struct_name_str_chars[index - 1].is_ascii_uppercase())
-            {
-                dashed_struct_name.extend(vec!['-', *c].iter());
-            } else {
-                dashed_struct_name.push(*c);
-            }
-        });
-    let dashed_struct_name: String = dashed_struct_name.into_iter().collect::<String>();
+    let field_type = field_type(ast.data.clone());
 
-    let expanded = quote! {
-        impl std::fmt::Display for #struct_name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(f, "{}: {}", #dashed_struct_name, self.value())
-            }
-        }
-    };
+    let new_signature = newtype::new_signature(&struct_name, &field_type);
+    let value_signature = newtype::value_signature(&struct_name, &field_type);
+    let display_signature = newtype::display_signature(&struct_name);
+    let from_inner_signature = newtype::from_inner_signature(&struct_name, &field_type);
+    let into_inner_signature = newtype::into_inner_signature(&struct_name, &field_type);
 
-    expanded.into()
-}
-
-#[proc_macro_derive(ValueDisplay)]
-pub fn value_display_signature(item: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(item as DeriveInput);
-    let struct_name = &ast.ident;
-
-    let expanded = quote! {
-        impl std::fmt::Display for #struct_name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(f, "{}", self.value())
-            }
-        }
-    };
-
-    expanded.into()
-}
-
-#[proc_macro_derive(IntoHeader)]
-pub fn into_header_signature(item: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(item as DeriveInput);
-    let struct_name = &ast.ident;
-
-    let expanded = quote! {
-        impl std::convert::From<#struct_name> for Header {
-            fn from(from: #struct_name) -> Self {
-                Header::#struct_name(from)
-            }
-        }
-    };
-
-    expanded.into()
-}
-
-#[proc_macro_derive(FromStr)]
-pub fn from_strs_signature(item: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(item as DeriveInput);
-    let struct_name = &ast.ident;
-
-    let expanded = quote! {
-        impl<'a> std::convert::From<&str> for #struct_name {
-            fn from(from: &str) -> Self {
-                Self(from.into())
-            }
-        }
-    };
-
-    expanded.into()
-}
-
-#[proc_macro_derive(FromValue)]
-pub fn from_value_signature(item: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(item as DeriveInput);
-    let struct_name = &ast.ident;
-
-    let expanded = quote! {
-        impl<'a> std::convert::From<&'a str> for #struct_name<'a> {
-            fn from(value: &'a str) -> Self {
-                Self { value }
-            }
-        }
-    };
-
-    expanded.into()
-}
-
-#[proc_macro_derive(Typed)]
-pub fn typed_signature(item: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(item as DeriveInput);
-    let struct_name = &ast.ident;
-
-    let expanded = quote! {
-        impl #struct_name {
-            pub fn typed(self) -> Result<typed::#struct_name, crate::Error> {
-                self.try_into()
-            }
-        }
-    };
-
-    expanded.into()
-}
-
-#[proc_macro_derive(FromIntoInner)]
-pub fn from_into_inner_signature(item: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(item as DeriveInput);
-    let struct_name = &ast.ident;
-
-    let field_type = field_type(ast.data);
-
-    let from = quote! {
-        impl<'a> std::convert::From<#field_type> for #struct_name {
-            fn from(from: #field_type) -> Self {
-                Self(from)
-            }
-        }
-    };
-
-    let from_value = quote! {
-        impl<'a> std::convert::From<#struct_name> for #field_type {
-            fn from(from: #struct_name) -> Self {
-                from.value().clone().into()
-            }
-        }
+    let from_str_signature = match is_string(field_type) {
+        true => newtype::from_str_signature(&struct_name),
+        false => quote! {},
     };
 
     let expanded = quote! {
-        #from
-        #from_value
+        #new_signature
+        #value_signature
+        #display_signature
+        #from_inner_signature
+        #into_inner_signature
+        #from_str_signature
     };
 
     expanded.into()
@@ -347,7 +196,7 @@ pub fn utf8_tokenizer(item: TokenStream) -> TokenStream {
     expanded.into()
 }
 
-fn field_type_name(field_type: syn::Type) -> syn::Ident {
+pub(crate) fn field_type_name(field_type: syn::Type) -> syn::Ident {
     match field_type {
         syn::Type::Reference(syn::TypeReference { elem, .. }) => match *elem {
             syn::Type::Path(syn::TypePath { path, .. }) => {
@@ -360,7 +209,7 @@ fn field_type_name(field_type: syn::Type) -> syn::Ident {
     }
 }
 
-fn field_type(ast_data: syn::Data) -> syn::Type {
+pub(crate) fn field_type(ast_data: syn::Data) -> syn::Type {
     match ast_data {
         syn::Data::Struct(syn::DataStruct {
             fields: syn::Fields::Unnamed(syn::FieldsUnnamed { unnamed, .. }),
@@ -373,6 +222,12 @@ fn field_type(ast_data: syn::Data) -> syn::Type {
         }
         _ => panic!("Expected a tuple struct"),
     }
+}
+
+pub(crate) fn is_string(field_type: syn::Type) -> bool {
+    let field_type_name = field_type_name(field_type);
+
+    matches!(field_type_name, typ if typ == "String")
 }
 
 pub(crate) fn kebab_case(struct_name: String) -> String {
