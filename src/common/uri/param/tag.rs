@@ -1,6 +1,6 @@
-use macros::{FromIntoInner, FromStr, HasValue, ValueDisplay};
+use macros::NewType;
 
-#[derive(HasValue, ValueDisplay, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, Debug, PartialEq, Eq, Clone)]
 pub struct Tag(String);
 
 impl<'a> Default for Tag {

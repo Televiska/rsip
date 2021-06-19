@@ -1,4 +1,4 @@
-use macros::{Display, FromIntoInner, FromStr, HasValue};
+use macros::NewType;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Language {
@@ -6,5 +6,5 @@ pub enum Language {
     Other(OtherLanguage),
 }
 
-#[derive(HasValue, Display, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, Debug, PartialEq, Eq, Clone)]
 pub struct OtherLanguage(String);

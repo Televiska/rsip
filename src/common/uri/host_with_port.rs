@@ -1,6 +1,6 @@
 pub use tokenizer::Tokenizer;
 
-use macros::{FromIntoInner, FromStr, HasValue, ValueDisplay};
+use macros::NewType;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -15,9 +15,9 @@ pub enum Host {
     IpAddr(IpAddr),
 }
 
-#[derive(HasValue, FromIntoInner, FromStr, ValueDisplay, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, Debug, PartialEq, Eq, Clone)]
 pub struct Domain(String);
-#[derive(HasValue, FromIntoInner, ValueDisplay, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, Debug, PartialEq, Eq, Clone)]
 pub struct Port(u16);
 
 impl std::fmt::Display for HostWithPort {

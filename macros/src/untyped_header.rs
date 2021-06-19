@@ -1,6 +1,6 @@
 use quote::quote;
 
-pub fn trait_methods(struct_name: syn::Ident) -> proc_macro2::TokenStream {
+pub fn trait_methods(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
         impl<'a> crate::headers::header::UntypedHeader<'a> for #struct_name {
             type Typed = typed::#struct_name;
@@ -21,7 +21,7 @@ pub fn trait_methods(struct_name: syn::Ident) -> proc_macro2::TokenStream {
 }
 
 //TODO: are we sure that we want here the {}: {} ? Maybe Header should do that
-pub fn display(struct_name: syn::Ident, display_name: Option<String>) -> proc_macro2::TokenStream {
+pub fn display(struct_name: &syn::Ident, display_name: Option<String>) -> proc_macro2::TokenStream {
     let name = match display_name {
         Some(display_name) => display_name,
         None => crate::kebab_case(struct_name.to_string()),
@@ -38,7 +38,7 @@ pub fn display(struct_name: syn::Ident, display_name: Option<String>) -> proc_ma
     }
 }
 
-pub fn into_header(struct_name: syn::Ident) -> proc_macro2::TokenStream {
+pub fn into_header(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
         impl std::convert::From<#struct_name> for crate::Header {
             fn from(from: #struct_name) -> Self {
@@ -49,7 +49,7 @@ pub fn into_header(struct_name: syn::Ident) -> proc_macro2::TokenStream {
 }
 
 //TODO: this shouldn't be needed once specialization lands
-pub fn from_into_string(struct_name: syn::Ident) -> proc_macro2::TokenStream {
+pub fn from_into_string(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     let from = quote! {
         impl<'a> std::convert::From<String> for #struct_name {
             fn from(from: String) -> Self {
@@ -75,7 +75,7 @@ pub fn from_into_string(struct_name: syn::Ident) -> proc_macro2::TokenStream {
 }
 
 //TODO: this shouldn't be needed once specialization lands
-pub fn from_str(struct_name: syn::Ident) -> proc_macro2::TokenStream {
+pub fn from_str(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
         impl<'a> std::convert::From<&str> for #struct_name {
             fn from(from: &str) -> Self {

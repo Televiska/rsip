@@ -1,6 +1,6 @@
-use macros::{FromIntoInner, FromStr, HasValue, ValueDisplay};
+use macros::NewType;
 
-#[derive(HasValue, ValueDisplay, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, Debug, PartialEq, Eq, Clone)]
 pub struct Branch(String);
 
 impl<'a> Default for Branch {

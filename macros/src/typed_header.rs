@@ -1,6 +1,6 @@
 use quote::quote;
 
-pub fn trait_methods(struct_name: syn::Ident) -> proc_macro2::TokenStream {
+pub fn trait_methods(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
         impl<'a> crate::headers::header::TypedHeader<'a> for #struct_name {
             type Tokenizer = super::Tokenizer<'a>;
@@ -9,7 +9,7 @@ pub fn trait_methods(struct_name: syn::Ident) -> proc_macro2::TokenStream {
 }
 
 //TODO: this shouldn't be needed once specialization lands
-pub fn into_untyped(struct_name: syn::Ident) -> proc_macro2::TokenStream {
+pub fn into_untyped(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
         impl std::convert::From<#struct_name> for super::#struct_name {
             fn from(typed: #struct_name) -> Self {
@@ -20,7 +20,7 @@ pub fn into_untyped(struct_name: syn::Ident) -> proc_macro2::TokenStream {
 }
 
 //TODO: this shouldn't be needed once specialization lands
-pub fn into_string(struct_name: syn::Ident) -> proc_macro2::TokenStream {
+pub fn into_string(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
         impl std::convert::From<#struct_name> for String {
             fn from(typed: #struct_name) -> Self {
@@ -30,7 +30,7 @@ pub fn into_string(struct_name: syn::Ident) -> proc_macro2::TokenStream {
     }
 }
 
-pub fn into_header(struct_name: syn::Ident) -> proc_macro2::TokenStream {
+pub fn into_header(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
         impl std::convert::From<#struct_name> for crate::Header {
             fn from(typed: #struct_name) -> Self {
@@ -41,7 +41,7 @@ pub fn into_header(struct_name: syn::Ident) -> proc_macro2::TokenStream {
 }
 
 //TODO: this should be needed once specialization lands
-pub fn try_from_untyped(struct_name: syn::Ident) -> proc_macro2::TokenStream {
+pub fn try_from_untyped(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
         impl std::convert::TryFrom<super::#struct_name> for #struct_name {
             type Error = crate::Error;
@@ -57,8 +57,8 @@ pub fn try_from_untyped(struct_name: syn::Ident) -> proc_macro2::TokenStream {
 }
 
 pub fn integer_typed_mods(
-    struct_name: syn::Ident,
-    integer_type: String,
+    struct_name: &syn::Ident,
+    integer_type: &str,
 ) -> proc_macro2::TokenStream {
     let default_tokenizer = default_tokenizer();
     let integer_type = quote::format_ident!("{}", integer_type);
@@ -68,11 +68,21 @@ pub fn integer_typed_mods(
 
         pub mod typed {
             use super::Tokenizer;
-            use macros::{HasValue, TypedHeader};
+            use macros::TypedHeader;
 
             //TODO: reorganize HasValue, reuse custom Display macro
-            #[derive(TypedHeader, HasValue, Eq, PartialEq, Clone, Debug)]
+            #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
             pub struct #struct_name(#integer_type);
+
+            impl #struct_name {
+                pub fn new(value: impl Into<#integer_type>) -> Self {
+                    Self(value.into())
+                }
+
+                pub fn value(&self) -> &#integer_type {
+                    &self.0
+                }
+            }
 
             impl<'a> std::convert::TryFrom<Tokenizer<'a>> for #struct_name {
                 type Error = crate::Error;
@@ -91,7 +101,7 @@ pub fn integer_typed_mods(
     }
 }
 
-pub fn string_typed_mods(struct_name: syn::Ident) -> proc_macro2::TokenStream {
+pub fn string_typed_mods(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     let default_tokenizer = default_tokenizer();
 
     quote! {
@@ -99,11 +109,21 @@ pub fn string_typed_mods(struct_name: syn::Ident) -> proc_macro2::TokenStream {
 
         pub mod typed {
             use super::Tokenizer;
-            use macros::{TypedHeader, HasValue};
+            use macros::TypedHeader;
 
             //TODO: reorganize HasValue, reuse custom Display macro
-            #[derive(TypedHeader, HasValue, Eq, PartialEq, Clone, Debug)]
+            #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
             pub struct #struct_name(String);
+
+            impl #struct_name {
+                pub fn new(value: impl Into<String>) -> Self {
+                    Self(value.into())
+                }
+
+                pub fn value(&self) -> &str {
+                    &self.0
+                }
+            }
 
             impl<'a> std::convert::TryFrom<Tokenizer<'a>> for #struct_name {
                 type Error = crate::Error;
