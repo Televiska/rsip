@@ -6,6 +6,7 @@ pub mod status_code;
 pub mod transport;
 pub mod uri;
 pub mod version;
+//pub mod auth_scheme;
 
 pub use content_type::ContentType;
 pub use language::Language;

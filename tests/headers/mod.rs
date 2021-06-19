@@ -1,4 +1,7 @@
+use rsip::headers::header::UntypedHeader;
+
 pub mod accept;
+pub mod authorization;
 pub mod contact;
 pub mod content_length;
 pub mod cseq;
@@ -6,6 +9,7 @@ pub mod from;
 pub mod max_forwards;
 pub mod to;
 pub mod via;
+pub mod www_authenticate;
 
 use rsip::headers::header::{Accept, Header, Tokenizer};
 

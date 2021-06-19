@@ -6,6 +6,45 @@ use rsip::{
 use std::convert::TryFrom;
 
 #[test]
+fn methods() {
+    let uri = uri::Uri {
+        schema: Some(uri::schema::Schema::Sips),
+        auth: None,
+        host_with_port: uri::HostWithPort {
+            host: uri::Host::Domain("ss2.biloxi.example.com".into()),
+            port: None,
+        },
+        params: vec![],
+        headers: vec![].into(),
+    };
+    let headers: rsip::headers::Headers = vec![
+                Via::new("SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashd92").into(),
+                MaxForwards::new("70").into(),
+                From::new("Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH").into(),
+                To::new("Bob <sips:bob@biloxi.example.com>").into(),
+                CallId::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
+                CSeq::new("2 REGISTER").into(),
+                Contact::new("<sips:bob@client.biloxi.example.com>").into(),
+                Authorization::new("Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"").into(),
+                ContentLength::new("0").into(),
+            ].into();
+    let request = Request {
+        method: common::method::Method::Register,
+        uri: uri.clone(),
+        version: common::version::Version::V2,
+        headers: headers.clone(),
+        body: vec![1, 2, 3],
+    };
+
+    assert_eq!(request.method(), &common::method::Method::Register);
+    assert_eq!(request.uri(), &uri);
+    assert_eq!(request.version(), &common::version::Version::V2);
+    assert_eq!(request.body(), &vec![1, 2, 3]);
+    //TODO: how do I test mut signatures (mut_body & mut_headers) ?
+    assert_eq!(rsip::message::HasHeaders::headers(&request), &headers);
+}
+
+#[test]
 fn bytes() {
     assert_eq!(
         Into::<bytes::Bytes>::into(Request {
@@ -70,7 +109,7 @@ fn display() {
                 MaxForwards::new("70").into(),
                 From::new("Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH").into(),
                 To::new("Bob <sips:bob@biloxi.example.com>").into(),
-                CallID::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
+                CallId::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
                 CSeq::new("2 REGISTER").into(),
                 Contact::new("<sips:bob@client.biloxi.example.com>").into(),
                 Authorization::new("Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"").into(),
@@ -148,7 +187,7 @@ fn parser() {
                 MaxForwards::new("70").into(),
                 From::new("Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH").into(),
                 To::new("Bob <sips:bob@biloxi.example.com>").into(),
-                CallID::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
+                CallId::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
                 CSeq::new("2 REGISTER").into(),
                 Contact::new("<sips:bob@client.biloxi.example.com>").into(),
                 Authorization::new("Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"").into(),

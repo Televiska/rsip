@@ -1,16 +1,13 @@
-use crate::headers::Header;
-use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader, Typed};
-use std::convert::TryInto;
+use macros::UntypedHeader;
 
 pub use tokenizer::Tokenizer;
 
-#[derive(
-    HasValue, Display, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone, Typed,
-)]
+#[derive(UntypedHeader, Debug, PartialEq, Eq, Clone)]
 pub struct To(String);
 
 pub mod tokenizer {
     use crate::common::uri;
+    use crate::headers::header::Tokenize;
 
     #[derive(Eq, PartialEq, Clone, Debug)]
     pub struct Tokenizer<'a> {
@@ -19,8 +16,8 @@ pub mod tokenizer {
         pub params: Vec<uri::param::Tokenizer<'a>>,
     }
 
-    impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a str) -> Result<Self, crate::Error> {
+    impl<'a> Tokenize<'a> for Tokenizer<'a> {
+        fn tokenize(part: &'a str) -> Result<Self, crate::Error> {
             use nom::{
                 bytes::complete::{tag, take_until},
                 combinator::rest,
@@ -57,11 +54,12 @@ pub mod tokenizer {
 
 pub mod typed {
     use super::Tokenizer;
+    use crate::common::uri::param::Tag;
     use crate::common::{uri::Param, Uri};
-    use macros::FromUntyped;
+    use macros::TypedHeader;
     use std::convert::{TryFrom, TryInto};
 
-    #[derive(FromUntyped, Eq, PartialEq, Clone, Debug)]
+    #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
     pub struct To {
         pub display_name: Option<String>,
         pub uri: Uri,
@@ -81,6 +79,43 @@ pub mod typed {
                     .map(TryInto::try_into)
                     .collect::<Result<Vec<_>, _>>()?,
             })
+        }
+    }
+
+    impl To {
+        pub fn tag(&self) -> Option<&Tag> {
+            self.params.iter().find_map(|param| match param {
+                Param::Tag(tag) => Some(tag),
+                _ => None,
+            })
+        }
+    }
+
+    impl std::fmt::Display for To {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            match &self.display_name {
+                Some(display_name) => write!(
+                    f,
+                    "{} <{}>{}",
+                    display_name,
+                    self.uri,
+                    self.params
+                        .iter()
+                        .map(|s| s.to_string())
+                        .collect::<Vec<_>>()
+                        .join("")
+                ),
+                None => write!(
+                    f,
+                    "{}{}",
+                    self.uri,
+                    self.params
+                        .iter()
+                        .map(|s| s.to_string())
+                        .collect::<Vec<_>>()
+                        .join("")
+                ),
+            }
         }
     }
 }

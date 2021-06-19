@@ -6,6 +6,31 @@ use rsip::{
 use std::convert::TryFrom;
 
 #[test]
+fn methods() {
+    let headers: rsip::headers::Headers = vec![
+                Via::new("SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashds7;received=192.0.2.201").into(),
+                From::new("Bob <sips:bob@biloxi.example.com>;tag=a73kszlfl").into(),
+                To::new("Bob <sips:bob@biloxi.example.com>;tag=1410948204").into(),
+                CallId::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
+                CSeq::new("1 REGISTER").into(),
+                WwwAuthenticate::new("Digest realm=\"atlanta.example.com\", qop=\"auth\", nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\", stale=FALSE, algorithm=MD5").into(),
+                ContentLength::new("0").into(),
+            ].into();
+    let response = Response {
+        status_code: common::StatusCode::Unauthorized,
+        version: common::Version::V2,
+        headers: headers.clone(),
+        body: vec![1, 2, 3],
+    };
+
+    assert_eq!(response.status_code(), &common::StatusCode::Unauthorized);
+    assert_eq!(response.version(), &common::version::Version::V2);
+    assert_eq!(response.body(), &vec![1, 2, 3]);
+    //TODO: how do I test mut signatures (mut_body & mut_headers) ?
+    assert_eq!(rsip::message::HasHeaders::headers(&response), &headers);
+}
+
+#[test]
 fn bytes() {
     assert_eq!(
         Into::<bytes::Bytes>::into(Response {
@@ -39,7 +64,7 @@ fn display() {
                 Via::new("SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashds7;received=192.0.2.201").into(),
                 From::new("Bob <sips:bob@biloxi.example.com>;tag=a73kszlfl").into(),
                 To::new("Bob <sips:bob@biloxi.example.com>;tag=1410948204").into(),
-                CallID::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
+                CallId::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
                 CSeq::new("1 REGISTER").into(),
                 WwwAuthenticate::new("Digest realm=\"atlanta.example.com\", qop=\"auth\", nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\", stale=FALSE, algorithm=MD5").into(),
                 ContentLength::new("0").into(),
@@ -92,7 +117,7 @@ fn parser() {
                 Via::new("SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashds7;received=192.0.2.201").into(),
                 From::new("Bob <sips:bob@biloxi.example.com>;tag=a73kszlfl").into(),
                 To::new("Bob <sips:bob@biloxi.example.com>;tag=1410948204").into(),
-                CallID::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
+                CallId::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
                 CSeq::new("1 REGISTER").into(),
                 WwwAuthenticate::new("Digest realm=\"atlanta.example.com\", qop=\"auth\", nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\", stale=FALSE, algorithm=MD5").into(),
                 ContentLength::new("0").into(),

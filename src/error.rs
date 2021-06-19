@@ -4,7 +4,7 @@ use nom::error::VerboseError;
 use std::{error::Error as StdError, fmt};
 
 //TODO: add tokenizer error for nom errors and use parse errors for u8 -> type errors
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Error {
     MissingHeader(Header),
     InvalidParam(String),
@@ -33,7 +33,7 @@ impl fmt::Display for Error {
 impl StdError for Error {}
 
 //TODO: move out of here
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Header {
     To,
     Contact,

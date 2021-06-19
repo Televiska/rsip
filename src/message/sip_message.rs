@@ -26,20 +26,6 @@ impl SipMessage {
         }
     }
 
-    pub fn headers(&self) -> &Headers {
-        match self {
-            Self::Request(request) => request.headers(),
-            Self::Response(response) => response.headers(),
-        }
-    }
-
-    pub fn headers_mut(&mut self) -> &mut Headers {
-        match self {
-            Self::Request(request) => request.headers_mut(),
-            Self::Response(response) => response.headers_mut(),
-        }
-    }
-
     pub fn body(&self) -> &Vec<u8> {
         match self {
             Self::Request(request) => request.body(),
@@ -51,6 +37,22 @@ impl SipMessage {
         match self {
             Self::Request(request) => request.body_mut(),
             Self::Response(response) => response.body_mut(),
+        }
+    }
+}
+
+impl super::HasHeaders for SipMessage {
+    fn headers(&self) -> &Headers {
+        match self {
+            Self::Request(request) => request.headers(),
+            Self::Response(response) => response.headers(),
+        }
+    }
+
+    fn headers_mut(&mut self) -> &mut Headers {
+        match self {
+            Self::Request(request) => request.headers_mut(),
+            Self::Response(response) => response.headers_mut(),
         }
     }
 }

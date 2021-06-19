@@ -1,19 +1,18 @@
-use crate::headers::Header;
-use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader, Typed};
-use std::convert::TryInto;
+use macros::UntypedHeader;
 
 pub use tokenizer::Tokenizer;
 
-#[derive(
-    HasValue, Display, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone, Typed,
-)]
+#[derive(UntypedHeader, Debug, PartialEq, Eq, Clone)]
 pub struct Via(String);
 
 pub mod tokenizer {
-    use crate::common::{
-        transport,
-        uri::{self, param},
-        version,
+    use crate::{
+        common::{
+            transport,
+            uri::{self, param},
+            version,
+        },
+        headers::header::Tokenize,
     };
 
     #[derive(Eq, PartialEq, Debug)]
@@ -24,8 +23,8 @@ pub mod tokenizer {
         pub params: Vec<param::Tokenizer<'a>>,
     }
 
-    impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a str) -> Result<Self, crate::Error> {
+    impl<'a> Tokenize<'a> for Tokenizer<'a> {
+        fn tokenize(part: &'a str) -> Result<Self, crate::Error> {
             use nom::{
                 bytes::complete::tag, character::complete::space1, multi::many0, sequence::tuple,
             };
@@ -55,10 +54,10 @@ pub mod typed {
         uri::{self, Uri},
         Transport, Version,
     };
-    use macros::FromUntyped;
+    use macros::TypedHeader;
     use std::convert::{TryFrom, TryInto};
 
-    #[derive(FromUntyped, Eq, PartialEq, Clone, Debug)]
+    #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
     pub struct Via {
         pub version: Version,
         pub transport: Transport,
@@ -80,6 +79,23 @@ pub mod typed {
                     .map(TryInto::try_into)
                     .collect::<Result<Vec<_>, _>>()?,
             })
+        }
+    }
+
+    impl std::fmt::Display for Via {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(
+                f,
+                "{}/{} {}{}",
+                self.version,
+                self.transport,
+                self.uri,
+                self.params
+                    .iter()
+                    .map(|s| s.to_string())
+                    .collect::<Vec<_>>()
+                    .join("")
+            )
         }
     }
 }

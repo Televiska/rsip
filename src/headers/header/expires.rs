@@ -1,5 +1,5 @@
-use crate::headers::Header;
-use macros::{Display, FromIntoInner, FromStr, HasValue, IntoHeader};
+use macros::{IntegerTyped, UntypedHeader};
 
-#[derive(HasValue, Display, IntoHeader, FromIntoInner, FromStr, Debug, PartialEq, Eq, Clone)]
+#[derive(UntypedHeader, IntegerTyped, Debug, PartialEq, Eq, Clone)]
+#[header(integer_type = "u32")]
 pub struct Expires(String);

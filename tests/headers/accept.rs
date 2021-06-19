@@ -1,4 +1,5 @@
 use rsip::headers::header::Accept;
+use rsip::headers::header::UntypedHeader;
 
 #[test]
 fn display() {
