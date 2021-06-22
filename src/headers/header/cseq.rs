@@ -42,6 +42,12 @@ pub mod typed {
         pub method: Method,
     }
 
+    impl From<(u16, Method)> for CSeq {
+        fn from(tuple: (u16, Method)) -> Self {
+            Self { seq: tuple.0, method: tuple.1 }
+        }
+    }
+
     impl<'a> TryFrom<Tokenizer<'a>> for CSeq {
         type Error = crate::Error;
 

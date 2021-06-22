@@ -53,6 +53,7 @@ pub fn typed_header_signature(item: TokenStream) -> TokenStream {
     let typed_methods = typed_header::trait_methods(&struct_name);
     let into_string = typed_header::into_string(&struct_name);
     let into_untyped = typed_header::into_untyped(&struct_name);
+    let untyped = typed_header::untyped(&struct_name);
     let into_header = typed_header::into_header(&struct_name);
     let try_from_untyped = typed_header::try_from_untyped(&struct_name);
 
@@ -60,6 +61,7 @@ pub fn typed_header_signature(item: TokenStream) -> TokenStream {
         #typed_methods
         #into_string
         #into_untyped
+        #untyped
         #into_header
         #try_from_untyped
     };
@@ -116,6 +118,25 @@ pub fn new_type_signature(item: TokenStream) -> TokenStream {
         #from_inner_signature
         #into_inner_signature
         #from_str_signature
+    };
+
+    expanded.into()
+}
+
+#[proc_macro_derive(IntoParam)]
+pub fn into_param_signature(item: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(item as DeriveInput);
+    let struct_name = &ast.ident;
+
+    //let field_type = field_type(ast.data);
+    //let field_name = field_type_name(field_type.clone());
+
+    let expanded = quote! {
+        impl std::convert::From<#struct_name> for crate::common::uri::Param {
+            fn from(param: #struct_name) -> Self {
+                crate::common::uri::Param::#struct_name(param)
+            }
+        }
     };
 
     expanded.into()

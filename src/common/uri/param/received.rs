@@ -1,4 +1,4 @@
-use macros::NewType;
+use macros::{NewType, IntoParam};
 
-#[derive(NewType, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, IntoParam, Debug, PartialEq, Eq, Clone)]
 pub struct Received(String);

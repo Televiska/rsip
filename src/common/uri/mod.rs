@@ -84,6 +84,18 @@ impl From<HostWithPort> for Uri {
     }
 }
 
+impl From<(Schema, Host)> for Uri {
+    fn from(tuple: (Schema, Host)) -> Self {
+        Self {
+            schema: Some(tuple.0),
+            host_with_port: tuple.1.into(),
+            auth: None,
+            params: Default::default(),
+            headers: Default::default(),
+        }
+    }
+}
+
 impl From<std::net::SocketAddr> for Uri {
     fn from(socket_addr: std::net::SocketAddr) -> Self {
         Self {

@@ -38,12 +38,27 @@ impl std::fmt::Display for Host {
     }
 }
 
+impl<T> From<T> for Host
+where
+    T: Into<String>,
+{
+    fn from(from: T) -> Self {
+        Self::Domain(from.into().into())
+    }
+}
+
 impl Default for HostWithPort {
     fn default() -> Self {
         Self {
             host: Host::IpAddr(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1))),
             port: None,
         }
+    }
+}
+
+impl From<Host> for HostWithPort {
+    fn from(host: Host) -> Self {
+        Self { host, port: None }
     }
 }
 

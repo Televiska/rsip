@@ -59,7 +59,7 @@ mod typed {
                 scheme: "Digest".into(),
                 params: vec![
                     ("realm", "testrealm@host.com"),
-                    ("qop", "auth,auth-int"),
+                    ("qop", "auth"),
                     ("nonce", "dcd98b7102dd2f0e8b11d0f600bfb0c093"),
                     ("opaque", "5ccc069c403ebaf9f0171e9517f40e41"),
                 ],
@@ -73,7 +73,7 @@ mod typed {
                 opaque: Some("5ccc069c403ebaf9f0171e9517f40e41".into()),
                 stale: None,
                 algorithm: None,
-                qop: Some("auth,auth-int".into()),
+                qop: Some("auth".try_into().expect("auth qop")),
                 charset: None
             })
         );

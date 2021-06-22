@@ -63,6 +63,7 @@ pub mod tokenizer {
 
 pub mod typed {
     use super::Tokenizer;
+    use crate::common::auth::{Algorithm, Qop};
     use crate::{common::auth, Error};
     use macros::TypedHeader;
     use std::convert::{TryFrom, TryInto};
@@ -75,8 +76,9 @@ pub mod typed {
         pub nonce: String,
         pub opaque: Option<String>,
         pub stale: Option<String>,
-        pub algorithm: Option<String>,
-        pub qop: Option<String>,
+        pub algorithm: Option<Algorithm>,
+        //TODO: support multiple Qop
+        pub qop: Option<Qop>,
         pub charset: Option<String>,
         //pub userhash: Option<bool>,
     }
@@ -96,8 +98,12 @@ pub mod typed {
                     .into(),
                 opaque: find_param(&tokenizer.params, "opaque").map(Into::into),
                 stale: find_param(&tokenizer.params, "stale").map(Into::into),
-                algorithm: find_param(&tokenizer.params, "algorithm").map(Into::into),
-                qop: find_param(&tokenizer.params, "qop").map(Into::into),
+                algorithm: find_param(&tokenizer.params, "algorithm")
+                    .map(TryInto::try_into)
+                    .transpose()?,
+                qop: find_param(&tokenizer.params, "qop")
+                    .map(TryInto::try_into)
+                    .transpose()?,
                 charset: find_param(&tokenizer.params, "charset").map(Into::into),
             })
         }
