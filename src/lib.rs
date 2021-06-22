@@ -2,6 +2,7 @@ pub mod common;
 mod error;
 pub mod headers;
 pub mod message;
+pub mod services;
 
 pub use error::Error;
 pub use headers::{Header, Headers};

@@ -51,7 +51,7 @@ pub mod tokenizer {
 pub mod typed {
     use super::Tokenizer;
     use crate::common::{
-        uri::{self, Uri},
+        uri::{self, param::Branch, Param, Uri},
         Transport, Version,
     };
     use macros::TypedHeader;
@@ -63,6 +63,15 @@ pub mod typed {
         pub transport: Transport,
         pub uri: Uri,
         pub params: Vec<uri::Param>,
+    }
+
+    impl Via {
+        pub fn branch(&self) -> Option<&Branch> {
+            self.params.iter().find_map(|param| match param {
+                Param::Branch(branch) => Some(branch),
+                _ => None,
+            })
+        }
     }
 
     impl<'a> TryFrom<Tokenizer<'a>> for Via {

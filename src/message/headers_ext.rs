@@ -143,6 +143,19 @@ pub trait HeadersExt: super::HasHeaders {
         )
     }
 
+    fn transaction_id(&self) -> Result<String, Error> {
+        use crate::headers::header::UntypedHeader;
+
+        Ok(format!(
+            "{}",
+            self.via_header()?
+                .clone()
+                .typed()?
+                .branch()
+                .ok_or_else(|| Error::Unexpected("missing branch in via header!".into()))?
+        ))
+    }
+
     fn dialog_id(&self) -> Result<Option<String>, Error> {
         //use crate::common::uri::param::Tag;
         /*
@@ -170,3 +183,7 @@ pub trait HeadersExt: super::HasHeaders {
         Ok(None)
     }
 }
+
+impl HeadersExt for crate::Request {}
+impl HeadersExt for crate::Response {}
+impl HeadersExt for crate::SipMessage {}

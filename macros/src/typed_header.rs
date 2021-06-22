@@ -19,6 +19,16 @@ pub fn into_untyped(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     }
 }
 
+pub fn untyped(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
+    quote! {
+        impl #struct_name {
+            pub fn untyped(self) -> super::#struct_name {
+                super::#struct_name(self.into())
+            }
+        }
+    }
+}
+
 //TODO: this shouldn't be needed once specialization lands
 pub fn into_string(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {

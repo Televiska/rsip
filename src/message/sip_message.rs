@@ -41,6 +41,18 @@ impl SipMessage {
     }
 }
 
+impl From<Request> for SipMessage {
+    fn from(request: Request) -> Self {
+        Self::Request(request)
+    }
+}
+
+impl From<Response> for SipMessage {
+    fn from(response: Response) -> Self {
+        Self::Response(response)
+    }
+}
+
 impl super::HasHeaders for SipMessage {
     fn headers(&self) -> &Headers {
         match self {

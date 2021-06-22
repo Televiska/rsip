@@ -7,6 +7,7 @@ pub struct Authorization(String);
 
 pub mod typed {
     use super::Tokenizer;
+    use crate::common::auth::{Algorithm, Qop};
     use crate::{common::auth, Error};
     use macros::TypedHeader;
     use std::convert::{TryFrom, TryInto};
@@ -19,14 +20,15 @@ pub mod typed {
         pub nonce: String,
         pub uri: String,
         pub response: String,
-        pub algorithm: Option<String>,
+        pub algorithm: Option<Algorithm>,
         //TODO: support username* here in combination with userhash
         //TODO: this qop is not optional in rfc7616
         //also the cnonce and nc optional depends on qop
         //we should use an enum Qop with cnonce & nc fields instead
         pub cnonce: Option<String>,
         pub opaque: Option<String>,
-        pub qop: Option<String>,
+        //TODO: support multiple Qop
+        pub qop: Option<Qop>,
         pub nc: Option<String>,
         //TODO: enable this in combination with username*
         //pub userhash: Option<bool>,
@@ -53,10 +55,14 @@ pub mod typed {
                 response: find_param(&tokenizer.params, "response")
                     .ok_or_else(|| Error::InvalidParam("missing response".into()))?
                     .into(),
-                algorithm: find_param(&tokenizer.params, "algorithm").map(Into::into),
+                algorithm: find_param(&tokenizer.params, "algorithm")
+                    .map(TryInto::try_into)
+                    .transpose()?,
                 cnonce: find_param(&tokenizer.params, "cnonce").map(Into::into),
                 opaque: find_param(&tokenizer.params, "opaque").map(Into::into),
-                qop: find_param(&tokenizer.params, "qop").map(Into::into),
+                qop: find_param(&tokenizer.params, "qop")
+                    .map(TryInto::try_into)
+                    .transpose()?,
                 nc: find_param(&tokenizer.params, "nc").map(Into::into),
             })
         }

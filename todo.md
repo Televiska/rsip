@@ -10,8 +10,8 @@ for instance in schema we should fail as soon as we find a char that is not alph
 maybe permutation(take_while(alpha), take_until(":"))~~
 * ~~in URI: do alt(((tag_no_case("sip:"), tag_no_case("sips:"), ((take_until("://"), tag("://"))))~~
 * expand the idea of Utf8Tokenizer
-* generalize all Tokenizers around AbstractInput trait
 * convert all TryInto for Tokenizer to TryFrom<Tokenizer> for Type
+* generalize all Tokenizers around AbstractInput trait
 
 More:
 * remove smart moves from tokenizers, will be more reusable
