@@ -1,4 +1,3 @@
-#[macro_export]
 macro_rules! header {
     ($iter:expr, $header:path, $error:expr) => {
         $iter
@@ -27,7 +26,6 @@ macro_rules! all_headers {
     };
 }
 
-#[macro_export]
 macro_rules! header_opt {
     ($iter:expr, $header:path) => {
         $iter.find_map(|header| {

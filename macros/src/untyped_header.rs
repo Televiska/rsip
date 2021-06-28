@@ -13,7 +13,11 @@ pub fn trait_methods(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
                 &self.0
             }
 
-            fn typed(self) -> Result<typed::#struct_name, crate::Error> {
+            fn typed(&self) -> Result<typed::#struct_name, crate::Error> {
+                std::convert::TryInto::try_into(self.clone())
+            }
+
+            fn into_typed(self) -> Result<typed::#struct_name, crate::Error> {
                 std::convert::TryInto::try_into(self)
             }
         }

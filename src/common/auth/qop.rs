@@ -4,12 +4,6 @@ pub enum Qop {
     AuthInt,
 }
 
-impl Default for Qop {
-    fn default() -> Self {
-        Self::Auth
-    }
-}
-
 impl std::fmt::Display for Qop {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -39,4 +33,10 @@ impl std::convert::TryFrom<&str> for Qop {
             s => Err(crate::Error::ParseError(format!("invalid Qop `{}`", s))),
         }
     }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum AuthQop {
+    Auth { cnonce: String, nc: u8 },
+    AuthInt { cnonce: String, nc: u8 },
 }

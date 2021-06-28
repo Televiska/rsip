@@ -3,7 +3,7 @@ use std::convert::TryInto;
 
 #[test]
 fn display() {
-    assert_eq!(StatusCode::Ok.to_string(), String::from("200 OK"));
+    assert_eq!(StatusCode::OK.to_string(), String::from("200 OK"));
 
     assert_eq!(
         StatusCode::Other(700, "Something".into()).to_string(),
@@ -15,12 +15,12 @@ fn display() {
 fn parser() {
     assert_eq!(
         Tokenizer::from(("200".as_bytes(), "OK".as_bytes())).try_into(),
-        Ok(StatusCode::Ok)
+        Ok(StatusCode::OK)
     );
 
     assert_eq!(
         Tokenizer::from(("200".as_bytes(), "NOTOK".as_bytes())).try_into(),
-        Ok(StatusCode::Ok)
+        Ok(StatusCode::OK)
     );
 
     assert_eq!(

@@ -1,7 +1,7 @@
-pub mod scheme;
-pub mod qop;
 pub mod algorithm;
+pub mod qop;
+pub mod scheme;
 
-pub use scheme::Scheme;
-pub use qop::Qop;
 pub use algorithm::Algorithm;
+pub use qop::{AuthQop, Qop};
+pub use scheme::Scheme;

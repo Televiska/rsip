@@ -10,6 +10,8 @@ pub use host_with_port::{Domain, Host, HostWithPort, Port};
 pub use param::Param;
 pub use schema::Schema;
 
+use std::convert::{TryFrom, TryInto};
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Uri {
     pub schema: Option<Schema>,
@@ -57,6 +59,22 @@ impl std::fmt::Display for Uri {
                 .collect::<Vec<_>>()
                 .join("")
         )
+    }
+}
+
+impl TryFrom<String> for Uri {
+    type Error = crate::Error;
+
+    fn try_from(from: String) -> Result<Self, Self::Error> {
+        Tokenizer::tokenize(from.as_bytes())?.1.try_into()
+    }
+}
+
+impl TryFrom<&str> for Uri {
+    type Error = crate::Error;
+
+    fn try_from(from: &str) -> Result<Self, Self::Error> {
+        Tokenizer::tokenize(from.as_bytes())?.1.try_into()
     }
 }
 

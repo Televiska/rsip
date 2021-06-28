@@ -7,8 +7,13 @@ pub struct Authorization(String);
 
 pub mod typed {
     use super::Tokenizer;
-    use crate::common::auth::{Algorithm, Qop};
-    use crate::{common::auth, Error};
+    use crate::{
+        common::{
+            auth::{self, Algorithm, AuthQop},
+            Uri,
+        },
+        Error,
+    };
     use macros::TypedHeader;
     use std::convert::{TryFrom, TryInto};
 
@@ -18,18 +23,19 @@ pub mod typed {
         pub username: String,
         pub realm: String,
         pub nonce: String,
-        pub uri: String,
+        pub uri: Uri,
         pub response: String,
         pub algorithm: Option<Algorithm>,
         //TODO: support username* here in combination with userhash
         //TODO: this qop is not optional in rfc7616
         //also the cnonce and nc optional depends on qop
         //we should use an enum Qop with cnonce & nc fields instead
-        pub cnonce: Option<String>,
+        //pub cnonce: Option<String>,
         pub opaque: Option<String>,
         //TODO: support multiple Qop
-        pub qop: Option<Qop>,
-        pub nc: Option<String>,
+        pub qop: Option<AuthQop>,
+        //TODO: this needs to be a u8
+        //pub nc: Option<String>,
         //TODO: enable this in combination with username*
         //pub userhash: Option<bool>,
     }
@@ -51,19 +57,15 @@ pub mod typed {
                     .into(),
                 uri: find_param(&tokenizer.params, "uri")
                     .ok_or_else(|| Error::InvalidParam("missing uri".into()))?
-                    .into(),
+                    .try_into()?,
                 response: find_param(&tokenizer.params, "response")
                     .ok_or_else(|| Error::InvalidParam("missing response".into()))?
                     .into(),
                 algorithm: find_param(&tokenizer.params, "algorithm")
                     .map(TryInto::try_into)
                     .transpose()?,
-                cnonce: find_param(&tokenizer.params, "cnonce").map(Into::into),
                 opaque: find_param(&tokenizer.params, "opaque").map(Into::into),
-                qop: find_param(&tokenizer.params, "qop")
-                    .map(TryInto::try_into)
-                    .transpose()?,
-                nc: find_param(&tokenizer.params, "nc").map(Into::into),
+                qop: find_qop(&tokenizer.params)?,
             })
         }
     }
@@ -81,6 +83,29 @@ pub mod typed {
             } else {
                 None
             }
+        })
+    }
+
+    fn find_qop<'a>(params: &[(&'a str, &'a str)]) -> Result<Option<AuthQop>, Error> {
+        Ok(match find_param(params, "qop") {
+            Some(qop) if qop.eq_ignore_ascii_case("auth") => Some(AuthQop::Auth {
+                cnonce: find_param(params, "cnonce")
+                    .ok_or_else(|| Error::InvalidParam("Found qop, but missing cnonce".into()))?
+                    .into(),
+                nc: find_param(params, "nc")
+                    .ok_or_else(|| Error::InvalidParam("Found qop, but missing nc".into()))?
+                    .parse::<u8>()?,
+            }),
+            Some(qop) if qop.eq_ignore_ascii_case("auth-int") => Some(AuthQop::AuthInt {
+                cnonce: find_param(params, "cnonce")
+                    .ok_or_else(|| Error::InvalidParam("Found qop, but missing cnonce".into()))?
+                    .into(),
+                nc: find_param(params, "nc")
+                    .ok_or_else(|| Error::InvalidParam("Found qop, but missing nc".into()))?
+                    .parse::<u8>()?,
+            }),
+            Some(qop) => return Err(Error::InvalidParam(format!("Found unknown qop: {}", qop))),
+            None => None,
         })
     }
 }

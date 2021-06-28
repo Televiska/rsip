@@ -68,7 +68,7 @@ pub mod typed {
     use macros::TypedHeader;
     use std::convert::{TryFrom, TryInto};
 
-    #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
+    #[derive(TypedHeader, Eq, PartialEq, Clone, Debug, Default)]
     pub struct WwwAuthenticate {
         pub scheme: auth::Scheme,
         pub realm: String,
