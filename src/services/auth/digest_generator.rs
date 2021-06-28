@@ -1,32 +1,64 @@
-use crate::common::{
-    auth::{Algorithm, Qop},
-    uri::Uri,
-    Method,
+use crate::{
+    common::{
+        auth::{Algorithm, AuthQop},
+        uri::Uri,
+        Method,
+    },
+    headers::header::authorization,
 };
 
 pub struct DigestGenerator<'a> {
     pub username: &'a str,
     pub password: &'a str,
     pub nonce: &'a str,
-    pub cnonce: &'a str,
-    pub nc: u32,
     pub uri: &'a Uri,
     pub realm: &'a str,
-    pub method: Method,
-    pub qop: Option<Qop>,
+    pub method: &'a Method,
+    pub qop: Option<&'a AuthQop>,
     pub algorithm: Algorithm,
 }
 
 impl<'a> DigestGenerator<'a> {
+    //TODO: log if scheme is not digest
+    pub fn from(
+        auth: &'a authorization::typed::Authorization,
+        password: &'a str,
+        method: &'a Method,
+    ) -> Self {
+        Self {
+            username: &auth.username,
+            password,
+            nonce: &auth.nonce,
+            uri: &auth.uri,
+            realm: &auth.realm,
+            method: &method,
+            qop: auth.qop.as_ref(),
+            algorithm: auth.algorithm.unwrap_or(Algorithm::Md5),
+        }
+    }
+
+    pub fn verify(&self, response: &'a str) -> bool {
+        self.compute() == response
+    }
+
     pub fn compute(&self) -> String {
         let value = match self.qop {
-            Some(ref qop) => format!(
+            Some(AuthQop::Auth { cnonce, nc }) => format!(
                 "{}:{}:{:08}:{}:{}:{}",
                 self.ha1(),
                 self.nonce,
-                self.nc,
-                self.cnonce,
-                qop,
+                nc,
+                cnonce,
+                "auth",
+                self.ha2()
+            ),
+            Some(AuthQop::AuthInt { cnonce, nc }) => format!(
+                "{}:{}:{:08}:{}:{}:{}",
+                self.ha1(),
+                self.nonce,
+                nc,
+                cnonce,
+                "auth-int",
                 self.ha2()
             ),
             None => format!("{}:{}:{}", self.ha1(), self.nonce, self.ha2()),
@@ -43,7 +75,7 @@ impl<'a> DigestGenerator<'a> {
 
     fn ha2(&self) -> String {
         let value = match self.qop {
-            None | Some(Qop::Auth) => format!("{}:{}", self.method, self.uri),
+            None | Some(AuthQop::Auth { .. }) => format!("{}:{}", self.method, self.uri),
             _ => format!(
                 "{}:{}:d41d8cd98f00b204e9800998ecf8427e",
                 self.method, self.uri

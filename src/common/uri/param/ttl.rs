@@ -1,4 +1,4 @@
-use macros::{NewType, IntoParam};
+use macros::{IntoParam, NewType};
 
 #[derive(NewType, IntoParam, Debug, PartialEq, Eq, Clone)]
 pub struct Ttl(String);

@@ -8,6 +8,21 @@ pub use error::Error;
 pub use headers::{Header, Headers};
 pub use message::{Request, Response, SipMessage};
 
+pub mod prelude {
+    pub mod rsip {
+        pub use crate::*;
+
+        pub mod header {
+            pub use crate::headers::header::*;
+        }
+    }
+
+    pub use crate::{
+        headers::header::{TypedHeader, UntypedHeader},
+        message::{HasHeaders, HeadersExt},
+    };
+}
+
 pub(crate) type NomError<'a> = nom::Err<nom::error::VerboseError<&'a [u8]>>;
 pub(crate) type GenericNomError<'a, T> = nom::Err<nom::error::VerboseError<T>>;
 

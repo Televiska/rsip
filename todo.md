@@ -13,6 +13,11 @@ maybe permutation(take_while(alpha), take_until(":"))~~
 * convert all TryInto for Tokenizer to TryFrom<Tokenizer> for Type
 * generalize all Tokenizers around AbstractInput trait
 
+
+* fixed typed to clone as well
+* fix status code to use macros + be able to do 401.into()
+* add a full prelude
+
 More:
 * remove smart moves from tokenizers, will be more reusable
 * via url is very simple, no params or headers, need to take special case on that

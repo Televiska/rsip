@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Algorithm {
     Md5,
     Md5Sess,

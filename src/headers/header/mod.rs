@@ -109,7 +109,10 @@ pub trait UntypedHeader<'a>:
     type Typed: TypedHeader<'a> + Into<Self>;
     fn new(value: impl Into<String>) -> Self;
     fn value(&self) -> &str;
-    fn typed(self) -> Result<Self::Typed, crate::Error> {
+    fn typed(&self) -> Result<Self::Typed, crate::Error> {
+        self.clone().try_into()
+    }
+    fn into_typed(self) -> Result<Self::Typed, crate::Error> {
         self.try_into()
     }
 }

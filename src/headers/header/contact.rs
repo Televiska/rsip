@@ -54,7 +54,10 @@ pub mod tokenizer {
 
 pub mod typed {
     use super::Tokenizer;
-    use crate::common::{uri::Param, Uri};
+    use crate::common::{
+        uri::{param, Param},
+        Uri,
+    };
     use macros::TypedHeader;
     use std::convert::{TryFrom, TryInto};
 
@@ -63,6 +66,15 @@ pub mod typed {
         pub display_name: Option<String>,
         pub uri: Uri,
         pub params: Vec<Param>,
+    }
+
+    impl Contact {
+        pub fn expires(&self) -> Option<&param::Expires> {
+            self.params.iter().find_map(|param| match param {
+                Param::Expires(expires) => Some(expires),
+                _ => None,
+            })
+        }
     }
 
     impl<'a> TryFrom<Tokenizer<'a>> for Contact {

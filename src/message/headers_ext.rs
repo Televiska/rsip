@@ -127,12 +127,8 @@ pub trait HeadersExt: super::HasHeaders {
         header_opt!(self.headers().iter(), Header::Authorization)
     }
 
-    fn expires_header(&self) -> Result<&headers::Expires, Error> {
-        header!(
-            self.headers().iter(),
-            Header::Expires,
-            Error::MissingHeader(ErrorHeader::Expires)
-        )
+    fn expires_header(&self) -> Option<&headers::Expires> {
+        header_opt!(self.headers().iter(), Header::Expires)
     }
 
     fn min_expires_header(&self) -> Result<&headers::MinExpires, Error> {

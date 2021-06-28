@@ -44,7 +44,10 @@ pub mod typed {
 
     impl From<(u16, Method)> for CSeq {
         fn from(tuple: (u16, Method)) -> Self {
-            Self { seq: tuple.0, method: tuple.1 }
+            Self {
+                seq: tuple.0,
+                method: tuple.1,
+            }
         }
     }
 

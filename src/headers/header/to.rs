@@ -91,7 +91,8 @@ pub mod typed {
         }
 
         pub fn with_tag(&mut self, tag: impl Into<Tag>) {
-            self.params.retain(|param| !matches!(param, Param::Tag(Tag { .. })));
+            self.params
+                .retain(|param| !matches!(param, Param::Tag(Tag { .. })));
 
             self.params.push(Tag::new(tag.into()).into());
         }
