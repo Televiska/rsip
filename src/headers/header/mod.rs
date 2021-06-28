@@ -94,6 +94,27 @@ pub use via::Via;
 pub use warning::Warning;
 pub use www_authenticate::WwwAuthenticate;
 
+pub trait HeaderExt<'a>:
+    std::fmt::Debug
+    + std::fmt::Display
+    + std::cmp::PartialEq
+    + std::cmp::Eq
+    + std::clone::Clone
+    //+ std::convert::From<String>
+    //+ std::convert::Into<String>
+    //+ std::convert::From<&'a str>
+    + std::convert::Into<Header>
+    + std::convert::TryFrom<Self::Tokenizer, Error = crate::Error>
+{
+    type Tokenizer: Tokenize<'a>;
+
+    fn new(input: &'a str) -> Result<Self, crate::Error> {
+        use std::convert::TryInto;
+
+        Self::Tokenizer::tokenize(input)?.try_into()
+    }
+}
+
 pub trait UntypedHeader<'a>:
     std::fmt::Debug
     + std::fmt::Display
@@ -130,6 +151,7 @@ pub trait TypedHeader<'a>:
     type Tokenizer: Tokenize<'a>;
 }
 
+//TODO: this should be &str or &[u8], using the AbstractInput in scheme.rs
 pub trait Tokenize<'a> {
     fn tokenize(part: &'a str) -> Result<Self, crate::Error>
     where
@@ -275,7 +297,9 @@ pub mod tokenizer {
                 s if s.eq_ignore_ascii_case("Authorization") => {
                     Ok(Header::Authorization(Authorization::new(tokenizer.value)))
                 }
-                s if s.eq_ignore_ascii_case("CSeq") => Ok(Header::CSeq(CSeq::new(tokenizer.value))),
+                s if s.eq_ignore_ascii_case("CSeq") => Ok(Header::CSeq(
+                    cseq::Tokenizer::tokenize(tokenizer.value)?.try_into()?,
+                )),
                 s if s.eq_ignore_ascii_case("Call-Id") => {
                     Ok(Header::CallId(CallId::new(tokenizer.value)))
                 }

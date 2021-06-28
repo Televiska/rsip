@@ -66,7 +66,7 @@ pub trait HeadersExt: super::HasHeaders {
             Error::MissingHeader(ErrorHeader::CallId)
         )
     }
-
+/*
     fn cseq_header(&self) -> Result<&headers::CSeq, Error> {
         header!(
             self.headers().iter(),
@@ -81,6 +81,7 @@ pub trait HeadersExt: super::HasHeaders {
             Error::MissingHeader(ErrorHeader::CSeq)
         )
     }
+*/
 
     fn max_forwards_header(&self) -> Result<&headers::MaxForwards, Error> {
         header!(

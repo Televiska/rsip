@@ -6,6 +6,7 @@ use syn::{parse_macro_input, DeriveInput};
 mod newtype;
 mod typed_header;
 mod untyped_header;
+mod header_ext_impl;
 
 #[derive(FromDeriveInput, Default)]
 #[darling(default, attributes(header))]
@@ -13,6 +14,22 @@ struct HeaderOpts {
     display_name: Option<String>,
     //TODO: this should be an enum with parse trait for better safety
     integer_type: Option<String>,
+}
+
+#[proc_macro_derive(HeaderExtImpl)]
+pub fn header_ext_impl_signature(item: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(item as DeriveInput);
+    let struct_name = &ast.ident;
+
+    let trait_tokenizer_type = header_ext_impl::trait_tokenizer_type(&struct_name);
+    let into_header = header_ext_impl::into_header(&struct_name);
+
+    let expanded = quote! {
+        #trait_tokenizer_type
+        #into_header
+    };
+
+    expanded.into()
 }
 
 #[proc_macro_derive(UntypedHeader, attributes(header))]
