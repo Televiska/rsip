@@ -1,7 +1,7 @@
-use macros::{IntegerTyped, UntypedHeader};
+use macros::{DefaultTokenizer, HeaderExtImpl, HeaderNewType};
 
-#[derive(UntypedHeader, IntegerTyped, Debug, PartialEq, Eq, Clone)]
-#[header(integer_type = "u32")]
+#[derive(HeaderNewType, DefaultTokenizer, HeaderExtImpl, Debug, PartialEq, Eq, Clone)]
+//#[header(integer_type = "u32")]
 pub struct ContentLength(String);
 
 impl Default for ContentLength {

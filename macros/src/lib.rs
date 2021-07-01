@@ -4,9 +4,9 @@ use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
 
 mod newtype;
-mod typed_header;
-mod untyped_header;
-mod header_ext_impl;
+//mod typed_header;
+//mod untyped_header;
+mod headers;
 
 #[derive(FromDeriveInput, Default)]
 #[darling(default, attributes(header))]
@@ -21,8 +21,8 @@ pub fn header_ext_impl_signature(item: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(item as DeriveInput);
     let struct_name = &ast.ident;
 
-    let trait_tokenizer_type = header_ext_impl::trait_tokenizer_type(&struct_name);
-    let into_header = header_ext_impl::into_header(&struct_name);
+    let trait_tokenizer_type = headers::trait_tokenizer_type(&struct_name);
+    let into_header = headers::into_header(&struct_name);
 
     let expanded = quote! {
         #trait_tokenizer_type
@@ -32,81 +32,55 @@ pub fn header_ext_impl_signature(item: TokenStream) -> TokenStream {
     expanded.into()
 }
 
-#[proc_macro_derive(UntypedHeader, attributes(header))]
-pub fn untyped_header_signature(item: TokenStream) -> TokenStream {
+#[proc_macro_derive(DefaultTokenizer)]
+pub fn default_tokenizer_header_signature(item: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(item as DeriveInput);
+    let struct_name = &ast.ident;
+
+    let default_tokenizer = headers::default_tokenizer();
+
+    let expanded = quote! {
+        #default_tokenizer
+
+        impl<'a> std::convert::TryFrom<Tokenizer<'a>> for #struct_name {
+            type Error = crate::Error;
+
+            fn try_from(tokenizer: Tokenizer) -> Result<Self, Self::Error> {
+                Ok(Self(tokenizer.part.into()))
+            }
+        }
+    };
+
+    expanded.into()
+}
+
+//different from NewType in terms of display
+#[proc_macro_derive(HeaderNewType, attributes(header))]
+pub fn header_new_type_signature(item: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(item as DeriveInput);
+    let struct_name = &ast.ident;
+    let field_type = field_type(ast.data.clone());
     let opts = HeaderOpts::from_derive_input(&ast).expect("Wrong options");
 
-    let struct_name = &ast.ident;
+    let new_signature = newtype::new_signature(&struct_name, &field_type);
+    let value_signature = newtype::value_signature(&struct_name, &field_type);
+    let display_signature = headers::display_signature(&struct_name, opts.display_name);
+    let from_inner_signature = newtype::from_inner_signature(&struct_name, &field_type);
+    let into_inner_signature = newtype::into_inner_signature(&struct_name, &field_type);
 
-    //let field_type = field_type(ast.data);
-    //let field_name = field_type_name(field_type.clone());
-
-    let untyped_methods = untyped_header::trait_methods(&struct_name);
-    let display = untyped_header::display(&struct_name, opts.display_name);
-    let into_header = untyped_header::into_header(&struct_name);
-    let from_into_string = untyped_header::from_into_string(&struct_name);
-    let from_str = untyped_header::from_str(&struct_name);
-
-    let expanded = quote! {
-        #untyped_methods
-        #display
-        #into_header
-        #from_into_string
-        #from_str
+    let from_str_signature = match is_string(field_type) {
+        true => newtype::from_str_signature(&struct_name),
+        false => quote! {},
     };
 
-    expanded.into()
-}
-
-#[proc_macro_derive(TypedHeader)]
-pub fn typed_header_signature(item: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(item as DeriveInput);
-    let struct_name = &ast.ident;
-
-    //let field_type = field_type(ast.data);
-    //let field_name = field_type_name(field_type.clone());
-
-    let typed_methods = typed_header::trait_methods(&struct_name);
-    let into_string = typed_header::into_string(&struct_name);
-    let into_untyped = typed_header::into_untyped(&struct_name);
-    let untyped = typed_header::untyped(&struct_name);
-    let into_header = typed_header::into_header(&struct_name);
-    let try_from_untyped = typed_header::try_from_untyped(&struct_name);
-
     let expanded = quote! {
-        #typed_methods
-        #into_string
-        #into_untyped
-        #untyped
-        #into_header
-        #try_from_untyped
+        #new_signature
+        #value_signature
+        #display_signature
+        #from_inner_signature
+        #into_inner_signature
+        #from_str_signature
     };
-
-    expanded.into()
-}
-
-#[proc_macro_derive(StringTyped)]
-pub fn string_typed_header_signature(item: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(item as DeriveInput);
-    let struct_name = &ast.ident;
-
-    let expanded = typed_header::string_typed_mods(&struct_name);
-
-    expanded.into()
-}
-
-#[proc_macro_derive(IntegerTyped, attributes(header))]
-pub fn integer_typed_header_signature(item: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(item as DeriveInput);
-    let struct_name = &ast.ident;
-
-    let integer_type = HeaderOpts::from_derive_input(&ast)
-        .expect("Wrong options")
-        .integer_type
-        .expect("not specified integer type");
-
-    let expanded = typed_header::integer_typed_mods(&struct_name, &integer_type);
 
     expanded.into()
 }

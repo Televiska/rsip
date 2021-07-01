@@ -1,7 +1,7 @@
-use macros::{IntegerTyped, UntypedHeader};
+use macros::{DefaultTokenizer, HeaderExtImpl, HeaderNewType};
 
-#[derive(UntypedHeader, IntegerTyped, Debug, PartialEq, Eq, Clone)]
-#[header(integer_type = "u16")]
+#[derive(HeaderNewType, DefaultTokenizer, HeaderExtImpl, Debug, PartialEq, Eq, Clone)]
+//#[header(integer_type = "u16")]
 pub struct MaxForwards(String);
 
 impl Default for MaxForwards {

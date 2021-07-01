@@ -1,4 +1,4 @@
-use macros::{StringTyped, UntypedHeader};
+use macros::{DefaultTokenizer, HeaderExtImpl, HeaderNewType};
 
-#[derive(UntypedHeader, StringTyped, Debug, PartialEq, Eq, Clone)]
+#[derive(HeaderNewType, DefaultTokenizer, HeaderExtImpl, Debug, PartialEq, Eq, Clone)]
 pub struct AlertInfo(String);

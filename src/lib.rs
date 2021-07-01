@@ -17,10 +17,7 @@ pub mod prelude {
         }
     }
 
-    pub use crate::{
-        headers::header::{TypedHeader, UntypedHeader},
-        message::{HasHeaders, HeadersExt},
-    };
+    pub use crate::message::{HasHeaders, MessageExt};
 }
 
 pub(crate) type NomError<'a> = nom::Err<nom::error::VerboseError<&'a [u8]>>;

@@ -152,23 +152,3 @@ pub fn string_typed_mods(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     }
 }
 
-fn default_tokenizer() -> proc_macro2::TokenStream {
-    quote! {
-        pub use tokenizer::Tokenizer;
-
-        pub mod tokenizer {
-            use crate::headers::header::Tokenize;
-
-            #[derive(Eq, PartialEq, Clone, Debug)]
-            pub struct Tokenizer<'a> {
-                pub part: &'a str,
-            }
-
-            impl<'a> Tokenize<'a> for Tokenizer<'a> {
-                fn tokenize(part: &'a str) -> Result<Self, crate::Error> {
-                    Ok(Self { part })
-                }
-            }
-        }
-    }
-}

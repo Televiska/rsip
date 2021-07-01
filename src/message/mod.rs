@@ -2,14 +2,14 @@
 pub mod header_macros;
 //mod debug_ext;
 //mod expires_ext;
-pub mod headers_ext;
+pub mod message_ext;
 pub mod request;
 pub mod response;
 pub mod sip_message;
 
 //pub use debug_ext::DebugExt;
 //pub use expires_ext::ExpiresExt;
-pub use headers_ext::HeadersExt;
+pub use message_ext::MessageExt;
 pub use request::Request;
 pub use response::Response;
 pub use sip_message::{SipMessage, Tokenizer};

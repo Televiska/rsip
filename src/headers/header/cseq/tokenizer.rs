@@ -19,4 +19,3 @@ impl<'a> Tokenize<'a> for Tokenizer<'a> {
         Ok(Self { seq, method })
     }
 }
-

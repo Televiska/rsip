@@ -21,7 +21,7 @@ pub struct DigestGenerator<'a> {
 impl<'a> DigestGenerator<'a> {
     //TODO: log if scheme is not digest
     pub fn from(
-        auth: &'a authorization::typed::Authorization,
+        auth: &'a authorization::Authorization,
         password: &'a str,
         method: &'a Method,
     ) -> Self {

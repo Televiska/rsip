@@ -4,7 +4,7 @@ use crate::{
     Error,
 };
 
-pub trait HeadersExt: super::HasHeaders {
+pub trait MessageExt: super::HasHeaders {
     fn to_header(&self) -> Result<&headers::To, Error> {
         header!(
             self.headers().iter(),
@@ -66,22 +66,22 @@ pub trait HeadersExt: super::HasHeaders {
             Error::MissingHeader(ErrorHeader::CallId)
         )
     }
-/*
-    fn cseq_header(&self) -> Result<&headers::CSeq, Error> {
-        header!(
-            self.headers().iter(),
-            Header::CSeq,
-            Error::MissingHeader(ErrorHeader::CSeq)
-        )
-    }
-    fn cseq_header_mut(&mut self) -> Result<&mut headers::CSeq, Error> {
-        header!(
-            self.headers_mut().iter_mut(),
-            Header::CSeq,
-            Error::MissingHeader(ErrorHeader::CSeq)
-        )
-    }
-*/
+    /*
+        fn cseq_header(&self) -> Result<&headers::CSeq, Error> {
+            header!(
+                self.headers().iter(),
+                Header::CSeq,
+                Error::MissingHeader(ErrorHeader::CSeq)
+            )
+        }
+        fn cseq_header_mut(&mut self) -> Result<&mut headers::CSeq, Error> {
+            header!(
+                self.headers_mut().iter_mut(),
+                Header::CSeq,
+                Error::MissingHeader(ErrorHeader::CSeq)
+            )
+        }
+    */
 
     fn max_forwards_header(&self) -> Result<&headers::MaxForwards, Error> {
         header!(
@@ -141,13 +141,9 @@ pub trait HeadersExt: super::HasHeaders {
     }
 
     fn transaction_id(&self) -> Result<String, Error> {
-        use crate::headers::header::UntypedHeader;
-
         Ok(format!(
             "{}",
             self.via_header()?
-                .clone()
-                .typed()?
                 .branch()
                 .ok_or_else(|| Error::Unexpected("missing branch in via header!".into()))?
         ))
@@ -181,6 +177,6 @@ pub trait HeadersExt: super::HasHeaders {
     }
 }
 
-impl HeadersExt for crate::Request {}
-impl HeadersExt for crate::Response {}
-impl HeadersExt for crate::SipMessage {}
+impl MessageExt for crate::Request {}
+impl MessageExt for crate::Response {}
+impl MessageExt for crate::SipMessage {}

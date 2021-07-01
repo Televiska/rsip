@@ -6,7 +6,6 @@ use crate::common::Method;
 use macros::HeaderExtImpl;
 use std::convert::TryFrom;
 
-
 #[derive(HeaderExtImpl, Eq, PartialEq, Clone, Debug)]
 pub struct CSeq {
     pub seq: u16,
