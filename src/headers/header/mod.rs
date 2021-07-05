@@ -115,6 +115,7 @@ pub trait UntypedHeader<'a>:
     fn into_typed(self) -> Result<Self::Typed, crate::Error> {
         self.try_into()
     }
+    fn replace(&mut self, new_value: impl Into<String>);
 }
 
 pub trait TypedHeader<'a>:

@@ -13,11 +13,23 @@ maybe permutation(take_while(alpha), take_until(":"))~~
 * convert all TryInto for Tokenizer to TryFrom<Tokenizer> for Type
 * generalize all Tokenizers around AbstractInput trait
 
+* break the UntypedHeader trait to 2, one for plain Untyped and one for Untyped
+  headers that have typed
+* also Debug trait (to_string) is in form `Header: Value..` and From<String> for Header is `Value..`
+  sounds like a problem, in combination with ::new() that accepts impl Into<String>.
+* move the typed headers to different folder maybe
+* move tokenizers to different files
+* ~~ease mutability of headers (in typed headers via_header.uri requires a move,
+  maybe add a uri_ref() methods ?)~~
+* ~~start using ? in tests in viska to avoid lengthy expects~~
+* ~~add mut helpers in Uri and headers that include uri (from/to/via/contact etc)
+  also mut helpers for headers that include params (from/to/via/contact etc)~~
+* ~~check again that viska adds correct params to header params and not uri params~~
 
-* fixed typed to clone as well
-* fix status code to use macros + be able to do 401.into()
-* add a full prelude
+
+* ~~fix typed to clone as well~~
+* ~~fix status code to use macros + be able to do 401.into()~~
 
 More:
-* remove smart moves from tokenizers, will be more reusable
-* via url is very simple, no params or headers, need to take special case on that
+* ~~remove smart moves from tokenizers, will be more reusable~~
+* ~~via url is very simple, no params or headers, need to take special case on that~~

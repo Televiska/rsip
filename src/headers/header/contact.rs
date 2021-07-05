@@ -58,10 +58,10 @@ pub mod typed {
         uri::{param, Param},
         Uri,
     };
-    use macros::TypedHeader;
+    use macros::{TypedHeader, UriAndParamsHelpers};
     use std::convert::{TryFrom, TryInto};
 
-    #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
+    #[derive(TypedHeader, UriAndParamsHelpers, Eq, PartialEq, Clone, Debug)]
     pub struct Contact {
         pub display_name: Option<String>,
         pub uri: Uri,
@@ -117,6 +117,16 @@ pub mod typed {
                         .collect::<Vec<_>>()
                         .join("")
                 ),
+            }
+        }
+    }
+
+    impl std::convert::From<crate::common::Uri> for Contact {
+        fn from(uri: crate::common::Uri) -> Self {
+            Self {
+                display_name: None,
+                uri,
+                params: Default::default(),
             }
         }
     }

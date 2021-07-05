@@ -56,10 +56,10 @@ pub mod typed {
     use super::Tokenizer;
     use crate::common::uri::param::Tag;
     use crate::common::{uri::Param, Uri};
-    use macros::TypedHeader;
+    use macros::{TypedHeader, UriAndParamsHelpers};
     use std::convert::{TryFrom, TryInto};
 
-    #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
+    #[derive(TypedHeader, UriAndParamsHelpers, Eq, PartialEq, Clone, Debug)]
     pub struct From {
         pub display_name: Option<String>,
         pub uri: Uri,
@@ -115,6 +115,16 @@ pub mod typed {
                         .collect::<Vec<_>>()
                         .join("")
                 ),
+            }
+        }
+    }
+
+    impl std::convert::From<crate::common::Uri> for From {
+        fn from(uri: crate::common::Uri) -> Self {
+            Self {
+                display_name: None,
+                uri,
+                params: Default::default(),
             }
         }
     }

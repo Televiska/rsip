@@ -54,10 +54,10 @@ pub mod typed {
         uri::{self, param::Branch, Param, Uri},
         Transport, Version,
     };
-    use macros::TypedHeader;
+    use macros::{TypedHeader, UriAndParamsHelpers};
     use std::convert::{TryFrom, TryInto};
 
-    #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
+    #[derive(TypedHeader, UriAndParamsHelpers, Eq, PartialEq, Clone, Debug)]
     pub struct Via {
         pub version: Version,
         pub transport: Transport,
@@ -105,6 +105,17 @@ pub mod typed {
                     .collect::<Vec<_>>()
                     .join("")
             )
+        }
+    }
+
+    impl std::convert::From<crate::common::Uri> for Via {
+        fn from(uri: crate::common::Uri) -> Self {
+            Self {
+                version: Default::default(),
+                transport: Default::default(),
+                uri,
+                params: vec![Param::Branch(Default::default())],
+            }
         }
     }
 }
