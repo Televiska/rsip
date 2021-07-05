@@ -11,6 +11,7 @@ pub use message::{Request, Response, SipMessage};
 pub mod prelude {
     pub mod rsip {
         pub use crate::*;
+        pub use message::header_macros::*;
 
         pub mod header {
             pub use crate::headers::header::*;

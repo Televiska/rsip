@@ -56,10 +56,10 @@ pub mod typed {
     use super::Tokenizer;
     use crate::common::uri::param::Tag;
     use crate::common::{uri::Param, Uri};
-    use macros::TypedHeader;
+    use macros::{TypedHeader, UriAndParamsHelpers};
     use std::convert::{TryFrom, TryInto};
 
-    #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
+    #[derive(TypedHeader, UriAndParamsHelpers, Eq, PartialEq, Clone, Debug)]
     pub struct To {
         pub display_name: Option<String>,
         pub uri: Uri,
@@ -90,11 +90,11 @@ pub mod typed {
             })
         }
 
-        pub fn with_tag(&mut self, tag: impl Into<Tag>) {
+        pub fn with_tag(&mut self, tag: Tag) {
             self.params
                 .retain(|param| !matches!(param, Param::Tag(Tag { .. })));
 
-            self.params.push(Tag::new(tag.into()).into());
+            self.params.push(Tag::new(tag).into());
         }
     }
 
@@ -122,6 +122,16 @@ pub mod typed {
                         .collect::<Vec<_>>()
                         .join("")
                 ),
+            }
+        }
+    }
+
+    impl std::convert::From<crate::common::Uri> for To {
+        fn from(uri: crate::common::Uri) -> Self {
+            Self {
+                display_name: None,
+                uri,
+                params: Default::default(),
             }
         }
     }

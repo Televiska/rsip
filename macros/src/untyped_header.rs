@@ -20,6 +20,10 @@ pub fn trait_methods(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
             fn into_typed(self) -> Result<typed::#struct_name, crate::Error> {
                 std::convert::TryInto::try_into(self)
             }
+
+            fn replace(&mut self, new_value: impl Into<String>) {
+                self.0 = new_value.into();
+            }
         }
     }
 }

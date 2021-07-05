@@ -7,7 +7,7 @@ pub use tokenizer::Tokenizer;
 
 pub use auth::Auth;
 pub use host_with_port::{Domain, Host, HostWithPort, Port};
-pub use param::Param;
+pub use param::*;
 pub use schema::Schema;
 
 use std::convert::{TryFrom, TryInto};

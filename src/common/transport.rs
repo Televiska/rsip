@@ -1,12 +1,12 @@
 pub use tokenizer::Tokenizer;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Transport {
     Udp,
     Tcp,
     Tls,
     Sctp,
-    Other(String),
+    //Other(String),
 }
 
 impl Default for Transport {
@@ -22,7 +22,7 @@ impl std::fmt::Display for Transport {
             Self::Tcp => write!(f, "TCP"),
             Self::Tls => write!(f, "TLS"),
             Self::Sctp => write!(f, "SCTP"),
-            Self::Other(inner) => write!(f, "{}", inner),
+            //Self::Other(inner) => write!(f, "{}", inner),
         }
     }
 }
@@ -43,7 +43,7 @@ mod tokenizer {
                 part if part.eq_ignore_ascii_case("TCP") => Ok(Transport::Tcp),
                 part if part.eq_ignore_ascii_case("TLS") => Ok(Transport::Tls),
                 part if part.eq_ignore_ascii_case("SCTP") => Ok(Transport::Sctp),
-                part => Ok(Transport::Other(part.into())),
+                part => Err(Error::ParseError(format!("unknown transport: {}", part))),
             }
         }
     }
