@@ -53,6 +53,38 @@ mod typed {
     validate_typed_header_trait!(www_authenticate, WwwAuthenticate);
 
     #[test]
+    fn display() -> Result<(), rsip::Error> {
+        use rsip::common::auth;
+
+        assert_eq!(
+            format!(
+                "{}",
+                www_authenticate::typed::WwwAuthenticate {
+                    scheme: auth::Scheme::Digest,
+                    realm: "http-auth@example.org".into(),
+                    nonce: "7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v".into(),
+                    algorithm: Some(auth::Algorithm::Sha256),
+                    qop: Some(auth::Qop::Auth),
+                    opaque: Some("FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS".into()),
+                    domain: None,
+                    stale: None,
+                    charset: None
+                }
+            ),
+            String::from(concat!(
+                "Digest ",
+                "realm=\"http-auth@example.org\" ",
+                "nonce=\"7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v\" ",
+                "opaque=\"FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS\" ",
+                "algorithm=sha256 ",
+                "qop=auth",
+            ))
+        );
+
+        Ok(())
+    }
+
+    #[test]
     fn typed() {
         assert_eq!(
             Tokenizer {

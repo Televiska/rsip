@@ -37,6 +37,46 @@ mod typed {
     validate_typed_header_trait!(authorization, Authorization);
 
     #[test]
+    fn display() -> Result<(), rsip::Error> {
+        use rsip::common::auth;
+
+        assert_eq!(
+            format!(
+                "{}",
+                authorization::typed::Authorization {
+                    scheme: auth::Scheme::Digest,
+                    realm: "http-auth@example.org".into(),
+                    username: "Mufasa".into(),
+                    uri: "/dir/index.html".try_into()?,
+                    algorithm: Some(auth::Algorithm::Md5),
+                    nonce: "7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v".into(),
+                    qop: Some(auth::AuthQop::Auth {
+                        cnonce: "f2/wE4q74E6zIJEtWaHKaf5wv/H5QzzpXusqGemxURZJ".into(),
+                        nc: 1
+                    }),
+                    response: "8ca523f5e9506fed4657c9700eebdbec".into(),
+                    opaque: Some("FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS".into())
+                }
+            ),
+            String::from(concat!(
+                "Digest ",
+                "username=\"Mufasa\" ",
+                "realm=\"http-auth@example.org\" ",
+                "nonce=\"7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v\" ",
+                "uri=\"/dir/index.html\" ",
+                "response=\"8ca523f5e9506fed4657c9700eebdbec\" ",
+                "algorithm=md5 ",
+                "opaque=\"FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS\" ",
+                "qop=auth ",
+                "nc=00000001 ",
+                "cnonce=\"f2/wE4q74E6zIJEtWaHKaf5wv/H5QzzpXusqGemxURZJ\""
+            ))
+        );
+
+        Ok(())
+    }
+
+    #[test]
     fn typed() {
         assert_eq!(
             Tokenizer {
