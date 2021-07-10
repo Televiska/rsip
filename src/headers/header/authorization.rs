@@ -72,7 +72,25 @@ pub mod typed {
 
     impl std::fmt::Display for Authorization {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "unimplemented",)
+            write!(
+                f,
+                "{} username=\"{}\", realm=\"{}\", nonce=\"{}\", uri=\"{}\", response=\"{}\"",
+                self.scheme, self.username, self.realm, self.nonce, self.uri, self.response
+            )?;
+
+            if let Some(algorithm) = &self.algorithm {
+                write!(f, ", algorithm={}", algorithm)?;
+            }
+
+            if let Some(opaque) = &self.opaque {
+                write!(f, ", opaque=\"{}\"", opaque)?;
+            }
+
+            if let Some(qop) = &self.qop {
+                write!(f, ", {}", qop)?;
+            }
+
+            Ok(())
         }
     }
 

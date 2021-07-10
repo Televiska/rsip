@@ -1,24 +1,20 @@
+mod host;
+mod port;
+
 pub use tokenizer::Tokenizer;
 
-use macros::NewType;
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+pub use host::{Domain, Host};
+pub use port::Port;
+
+use crate::Error;
+use std::convert::{TryFrom, TryInto};
+use std::net::{IpAddr, SocketAddr};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct HostWithPort {
     pub host: Host,
     pub port: Option<Port>,
 }
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub enum Host {
-    Domain(Domain),
-    IpAddr(IpAddr),
-}
-
-#[derive(NewType, Debug, PartialEq, Eq, Clone)]
-pub struct Domain(String);
-#[derive(NewType, Debug, PartialEq, Eq, Clone)]
-pub struct Port(u16);
 
 impl std::fmt::Display for HostWithPort {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -29,28 +25,33 @@ impl std::fmt::Display for HostWithPort {
     }
 }
 
-impl std::fmt::Display for Host {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self {
-            Host::Domain(domain) => write!(f, "{}", domain),
-            Host::IpAddr(ip_addr) => write!(f, "{}", ip_addr),
-        }
+impl TryFrom<String> for HostWithPort {
+    type Error = Error;
+
+    fn try_from(from: String) -> Result<Self, Self::Error> {
+        from.as_str().try_into()
     }
 }
 
-impl<T> From<T> for Host
-where
-    T: Into<String>,
-{
-    fn from(from: T) -> Self {
-        Self::Domain(from.into().into())
+impl TryFrom<&str> for HostWithPort {
+    type Error = Error;
+
+    fn try_from(from: &str) -> Result<Self, Self::Error> {
+        match from.rsplit_once(":") {
+            None => Ok(Host::from(from).into()),
+            Some((host, port)) => Ok((
+                Host::from(String::from(host)),
+                TryInto::<Port>::try_into(port)?,
+            )
+                .into()),
+        }
     }
 }
 
 impl Default for HostWithPort {
     fn default() -> Self {
         Self {
-            host: Host::IpAddr(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1))),
+            host: Default::default(),
             port: None,
         }
     }
@@ -63,9 +64,9 @@ impl From<Host> for HostWithPort {
 }
 
 impl From<IpAddr> for HostWithPort {
-    fn from(ip_addr: IpAddr) -> Self {
+    fn from(from: IpAddr) -> Self {
         Self {
-            host: Host::IpAddr(ip_addr),
+            host: from.into(),
             port: None,
         }
     }
@@ -80,6 +81,19 @@ impl From<SocketAddr> for HostWithPort {
     }
 }
 
+impl TryInto<SocketAddr> for HostWithPort {
+    type Error = Error;
+
+    fn try_into(self) -> Result<SocketAddr, Error> {
+        let ip_addr: IpAddr = self.host.try_into()?;
+
+        Ok(SocketAddr::new(
+            ip_addr,
+            self.port.unwrap_or_else(|| 5060.into()).into(),
+        ))
+    }
+}
+
 impl From<Domain> for HostWithPort {
     fn from(domain: Domain) -> Self {
         Self {
@@ -89,35 +103,31 @@ impl From<Domain> for HostWithPort {
     }
 }
 
-//TODO: String should be a dns type for better safety
-impl From<&str> for HostWithPort {
-    fn from(host: &str) -> Self {
-        Self {
-            host: Host::Domain(host.into()),
-            port: None,
-        }
-    }
-}
-
-impl<T, S> From<(T, Option<S>)> for HostWithPort
+impl<H, P> From<(H, P)> for HostWithPort
 where
-    T: Into<Domain>,
-    S: Into<Port>,
+    H: Into<Host>,
+    P: Into<Port>,
 {
-    fn from(from: (T, Option<S>)) -> Self {
+    fn from(from: (H, P)) -> Self {
         Self {
-            host: Host::Domain(from.0.into()),
-            port: from.1.map(|p| p.into()),
+            host: from.0.into(),
+            port: Some(from.1.into()),
         }
     }
 }
 
-/*
-impl std::fmt::Display for HostWithPort {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", Into::<libsip::uri::Domain>::into(self.clone()))
+impl<H, P> From<(H, Option<P>)> for HostWithPort
+where
+    H: Into<Host>,
+    P: Into<Port>,
+{
+    fn from(from: (H, Option<P>)) -> Self {
+        Self {
+            host: from.0.into(),
+            port: from.1.map(Into::into),
+        }
     }
-}*/
+}
 
 pub mod tokenizer {
     use super::{Host, HostWithPort};

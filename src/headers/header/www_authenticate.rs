@@ -111,7 +111,34 @@ pub mod typed {
 
     impl std::fmt::Display for WwwAuthenticate {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "unimplemented",)
+            write!(f, "{} realm=\"{}\"", self.scheme, self.realm)?;
+            if let Some(domain) = &self.domain {
+                write!(f, ", domain=\"{}\"", domain)?;
+            }
+
+            write!(f, ", nonce=\"{}\"", self.nonce)?;
+
+            if let Some(opaque) = &self.opaque {
+                write!(f, ", opaque=\"{}\"", opaque)?;
+            }
+
+            if let Some(stale) = &self.stale {
+                write!(f, ", stale={}", stale)?;
+            }
+
+            if let Some(algorithm) = &self.algorithm {
+                write!(f, ", algorithm={}", algorithm)?;
+            }
+
+            if let Some(qop) = &self.qop {
+                write!(f, ", qop=\"{}\"", qop)?;
+            }
+
+            if let Some(charset) = &self.charset {
+                write!(f, ", charset={}", charset)?;
+            }
+
+            Ok(())
         }
     }
 

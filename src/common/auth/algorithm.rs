@@ -17,7 +17,7 @@ impl Default for Algorithm {
 impl std::fmt::Display for Algorithm {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Md5 => write!(f, "md5"),
+            Self::Md5 => write!(f, "MD5"),
             Self::Md5Sess => write!(f, "md5-sess"),
             Self::Sha256 => write!(f, "sha256"),
             Self::Sha256Sess => write!(f, "sha256-sess"),

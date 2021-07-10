@@ -114,7 +114,7 @@ pub mod typed {
                 ),
                 None => write!(
                     f,
-                    "{}{}",
+                    "<{}>{}",
                     self.uri,
                     self.params
                         .iter()
