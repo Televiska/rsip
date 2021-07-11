@@ -1,6 +1,6 @@
 use macros::NewType;
 
-#[derive(NewType, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Port(u16);
 
 impl Default for Port {
