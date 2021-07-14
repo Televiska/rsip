@@ -1,6 +1,8 @@
 pub mod header;
+pub mod typed;
+pub mod untyped;
 pub use header::Header;
-pub use header::*;
+pub use untyped::*;
 
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct Headers(Vec<Header>);

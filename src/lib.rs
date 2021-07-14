@@ -19,7 +19,7 @@ pub mod prelude {
     }
 
     pub use crate::{
-        headers::header::{TypedHeader, UntypedHeader},
+        headers::{typed::TypedHeader, ToTypedHeader, UntypedHeader},
         message::{HasHeaders, HeadersExt},
     };
 }

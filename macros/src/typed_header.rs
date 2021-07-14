@@ -2,8 +2,8 @@ use quote::quote;
 
 pub fn trait_methods(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
-        impl<'a> crate::headers::header::TypedHeader<'a> for #struct_name {
-            type Tokenizer = super::Tokenizer<'a>;
+        impl<'a> crate::headers::typed::TypedHeader<'a> for #struct_name {
+            type Tokenizer = Tokenizer<'a>;
         }
     }
 }
@@ -11,9 +11,11 @@ pub fn trait_methods(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
 //TODO: this shouldn't be needed once specialization lands
 pub fn into_untyped(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
-        impl std::convert::From<#struct_name> for super::#struct_name {
+        impl std::convert::From<#struct_name> for crate::headers::#struct_name {
             fn from(typed: #struct_name) -> Self {
-                super::#struct_name(typed.into())
+                use crate::headers::untyped::UntypedHeader;
+
+                crate::headers::#struct_name::new(typed)
             }
         }
     }
@@ -22,8 +24,10 @@ pub fn into_untyped(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
 pub fn untyped(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
         impl #struct_name {
-            pub fn untyped(self) -> super::#struct_name {
-                super::#struct_name(self.into())
+            pub fn untyped(self) -> crate::headers::#struct_name {
+                use crate::headers::untyped::UntypedHeader;
+
+                crate::headers::#struct_name::new(self)
             }
         }
     }
@@ -53,12 +57,12 @@ pub fn into_header(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
 //TODO: this should be needed once specialization lands
 pub fn try_from_untyped(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
-        impl std::convert::TryFrom<super::#struct_name> for #struct_name {
+        impl std::convert::TryFrom<crate::headers::#struct_name> for #struct_name {
             type Error = crate::Error;
 
-            fn try_from(untyped: super::#struct_name) -> Result<Self, Self::Error> {
-                use crate::headers::header::UntypedHeader;
-                use crate::headers::header::Tokenize;
+            fn try_from(untyped: crate::headers::#struct_name) -> Result<Self, Self::Error> {
+                use crate::headers::UntypedHeader;
+                use crate::headers::typed::Tokenize;
 
                 std::convert::TryInto::try_into(Tokenizer::tokenize(untyped.value())?)
             }

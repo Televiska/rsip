@@ -1,6 +1,6 @@
 use rsip::{
     common::{self, uri},
-    headers::header::*,
+    headers::*,
     message::{request, response, Tokenizer},
     Request, Response, SipMessage,
 };
@@ -18,7 +18,7 @@ fn methods() {
         params: vec![],
         headers: vec![].into(),
     };
-    let headers: rsip::headers::Headers = vec![
+    let headers: rsip::Headers = vec![
                 Via::new("SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashd92").into(),
                 MaxForwards::new("70").into(),
                 From::new("Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH").into(),

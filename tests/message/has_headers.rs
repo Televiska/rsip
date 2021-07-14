@@ -1,4 +1,4 @@
-use rsip::{headers::header::*, message::HeadersExt};
+use rsip::{headers::*, message::HeadersExt};
 
 #[test]
 fn headers() {

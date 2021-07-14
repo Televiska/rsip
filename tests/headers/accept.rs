@@ -1,5 +1,6 @@
-use rsip::headers::header::Accept;
-use rsip::headers::header::UntypedHeader;
+use rsip::headers::*;
+
+validate_untyped_header_trait!(Accept);
 
 #[test]
 fn display() {
