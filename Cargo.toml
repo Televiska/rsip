@@ -3,6 +3,12 @@ name = "rsip"
 version = "0.1.0"
 authors = ["Filippos Vasilakis <vasilakisfil@gmail.com>"]
 edition = "2018"
+description = "SIP Rust library, parser & generator of SIP"
+repository = "https://github.com/vasilakisfil/rsip"
+keywords = ["sip", "3261", "session", "voip", "webrtc"]
+categories = ["parser-implementations", "parsing", "network-programming"]
+license-file = "LICENSE"
+
 
 [workspace]
 members = [
@@ -13,7 +19,7 @@ members = [
 uuid = { version = "0.8.1", features = ["v4"] }
 bytes = "1.0.1"
 nom = { version = "6.1.2", features = ["alloc", "regexp"] }
-macros = { path = "./macros" }
+macros = { path = "macros", version = "0.1.0" }
 md-5 = "0.9.1"
 sha2 = "0.9.5"
 
