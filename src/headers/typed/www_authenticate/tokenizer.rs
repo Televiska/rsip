@@ -1,4 +1,4 @@
-use crate::{common::auth, headers::typed::Tokenize};
+use crate::headers::{auth, typed::Tokenize};
 
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Tokenizer<'a> {
@@ -18,7 +18,7 @@ impl<'a> Tokenize<'a> for Tokenizer<'a> {
             sequence::{delimited, tuple},
         };
 
-        let params = map::<_, _, _, VerboseError<&str>, _, _>(
+        let params = map::<_, _, _, VerboseError<&'a str>, _, _>(
             tuple((
                 space0,
                 take_until("="),
@@ -35,17 +35,6 @@ impl<'a> Tokenize<'a> for Tokenizer<'a> {
         );
         let (_, (_, scheme, params)) =
             tuple((space0, auth::scheme::Tokenizer::tokenize, many1(params)))(part)?;
-
-        let params = params
-            .into_iter()
-            .map(|(key, value)| {
-                if value.starts_with('"') && value.ends_with('"') {
-                    (key, &value[1..(value.len() - 1)])
-                } else {
-                    (key, value)
-                }
-            })
-            .collect::<Vec<_>>();
 
         Ok(Self { scheme, params })
     }

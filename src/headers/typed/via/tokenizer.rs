@@ -9,7 +9,7 @@ use crate::{
 
 #[derive(Eq, PartialEq, Debug)]
 pub struct Tokenizer<'a> {
-    pub version: version::Tokenizer<'a>,
+    pub version: version::Tokenizer<'a, &'a [u8]>,
     pub transport: transport::Tokenizer<'a>,
     pub uri: uri::Tokenizer<'a>,
     pub params: Vec<param::Tokenizer<'a>>,

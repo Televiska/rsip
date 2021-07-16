@@ -1,64 +1,59 @@
 pub use tokenizer::Tokenizer;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub enum Method {
-    Ack,
-    Bye,
-    Cancel,
-    Info,
-    Invite,
-    Message,
-    Notify,
-    Options,
-    PRack,
-    Publish,
-    Refer,
-    Register,
-    Subscribe,
-    Update,
-}
+macro_rules! create_methods {
+    ($($name:ident),*) => {
 
-impl Method {
-    pub fn all() -> Vec<Self> {
-        vec![
-            Self::Ack,
-            Self::Bye,
-            Self::Cancel,
-            Self::Info,
-            Self::Invite,
-            Self::Message,
-            Self::Notify,
-            Self::Options,
-            Self::PRack,
-            Self::Publish,
-            Self::Refer,
-            Self::Register,
-            Self::Subscribe,
-            Self::Update,
-        ]
-    }
-}
+        #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+        pub enum Method {
+            $(
+                $name,
+            )*
+        }
 
-impl std::fmt::Display for Method {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Ack => write!(f, "ACK"),
-            Self::Bye => write!(f, "BYE"),
-            Self::Cancel => write!(f, "CANCEL"),
-            Self::Info => write!(f, "INFO"),
-            Self::Invite => write!(f, "INVITE"),
-            Self::Message => write!(f, "MESSAGE"),
-            Self::Notify => write!(f, "NOTIFY"),
-            Self::Options => write!(f, "OPTIONS"),
-            Self::PRack => write!(f, "PRACK"),
-            Self::Publish => write!(f, "Publish"),
-            Self::Refer => write!(f, "REFER"),
-            Self::Register => write!(f, "REGISTER"),
-            Self::Subscribe => write!(f, "SUBSCRIBE"),
-            Self::Update => write!(f, "UPDATE"),
+        impl Method {
+            pub fn all() -> Vec<Method> {
+                vec![
+                    $(
+                        Self::$name,
+                    )*
+                ]
+            }
+        }
+
+        impl std::fmt::Display for Method {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                match self {
+                    $(
+                        Self::$name => write!(f, "{}", stringify!($name).to_uppercase()),
+                    )*
+                }
+            }
+        }
+
+        fn match_from<'a>(value: &'a [u8]) -> Result<Method, crate::Error> {
+            use nom::{
+                branch::alt,
+                bytes::complete::{tag_no_case},
+                combinator::{rest, map},
+                error::VerboseError
+            };
+
+            let (_, method) = alt::<_, _, VerboseError<&'a [u8]>, _>((
+                $(
+                    map(tag_no_case(stringify!($name)), |_| Ok(Method::$name)),
+                )*
+                map(rest, |_| Err(crate::Error::ParseError(format!("Invalid method `{:?}`", value))))
+            ))(value)?;
+
+            method
         }
     }
 }
+
+create_methods!(
+    Ack, Bye, Cancel, Info, Invite, Message, Notify, Options, PRack, Publish, Refer, Register,
+    Subscribe, Update
+);
 
 //TODO: not ideal performance here
 impl std::str::FromStr for Method {
@@ -83,25 +78,7 @@ pub mod tokenizer {
         type Error = Error;
 
         fn try_into(self) -> Result<Method, Error> {
-            use std::str::from_utf8;
-
-            match from_utf8(self.value)? {
-                part if part.eq_ignore_ascii_case("ACK") => Ok(Method::Ack),
-                part if part.eq_ignore_ascii_case("BYE") => Ok(Method::Bye),
-                part if part.eq_ignore_ascii_case("CANCEL") => Ok(Method::Cancel),
-                part if part.eq_ignore_ascii_case("INFO") => Ok(Method::Info),
-                part if part.eq_ignore_ascii_case("INVITE") => Ok(Method::Invite),
-                part if part.eq_ignore_ascii_case("MESSAGE") => Ok(Method::Message),
-                part if part.eq_ignore_ascii_case("NOTIFY") => Ok(Method::Notify),
-                part if part.eq_ignore_ascii_case("OPTIONS") => Ok(Method::Options),
-                part if part.eq_ignore_ascii_case("PRACK") => Ok(Method::PRack),
-                part if part.eq_ignore_ascii_case("PUBLISH") => Ok(Method::Publish),
-                part if part.eq_ignore_ascii_case("REFER") => Ok(Method::Refer),
-                part if part.eq_ignore_ascii_case("REGISTER") => Ok(Method::Register),
-                part if part.eq_ignore_ascii_case("SUBSCRIBE") => Ok(Method::Subscribe),
-                part if part.eq_ignore_ascii_case("UPDATE") => Ok(Method::Update),
-                part => Err(Error::ParseError(format!("Invalid method `{}`", part))),
-            }
+            super::match_from(self.value)
         }
     }
 

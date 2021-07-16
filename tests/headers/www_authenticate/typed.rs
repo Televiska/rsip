@@ -1,6 +1,6 @@
-use rsip::{
-    common::auth,
-    headers::typed::{www_authenticate::Tokenizer, WwwAuthenticate},
+use rsip::headers::{
+    auth,
+    typed::{www_authenticate::Tokenizer, WwwAuthenticate},
 };
 use std::convert::TryInto;
 
@@ -8,7 +8,7 @@ validate_typed_header_trait!(WwwAuthenticate);
 
 #[test]
 fn display() -> Result<(), rsip::Error> {
-    use rsip::common::auth;
+    use rsip::headers::auth;
 
     assert_eq!(
         format!(

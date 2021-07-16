@@ -1,9 +1,9 @@
 use rsip::{
     common::{
-        auth::{Algorithm, AuthQop},
         uri::{Host, HostWithPort},
         Method,
     },
+    headers::auth::{Algorithm, AuthQop},
     services::auth::DigestGenerator,
 };
 
