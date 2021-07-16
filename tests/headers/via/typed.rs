@@ -1,6 +1,6 @@
 use rsip::{
     common::{
-        uri::{self, Branch, HostWithPort, Param},
+        uri::{self, param::Branch, HostWithPort, Param},
         Transport, Version,
     },
     headers::typed::{via::Tokenizer, Via},

@@ -3,10 +3,8 @@ pub mod tokenizer;
 pub use tokenizer::Tokenizer;
 
 use crate::{
-    common::{
-        auth::{self, Algorithm, AuthQop},
-        Uri,
-    },
+    common::Uri,
+    headers::auth::{self, Algorithm, AuthQop},
     Error,
 };
 use macros::TypedHeader;

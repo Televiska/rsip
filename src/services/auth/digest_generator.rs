@@ -1,10 +1,9 @@
 use crate::{
-    common::{
+    common::{uri::Uri, Method},
+    headers::{
+        self,
         auth::{Algorithm, AuthQop},
-        uri::Uri,
-        Method,
     },
-    headers,
 };
 
 pub struct DigestGenerator<'a> {

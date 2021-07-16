@@ -1,5 +1,5 @@
 use rsip::{
-    common::auth::{AuthQop, Scheme},
+    headers::auth::{AuthQop, Scheme},
     headers::typed::{authorization::Tokenizer, Authorization},
 };
 use std::convert::TryInto;
@@ -8,7 +8,7 @@ validate_typed_header_trait!(Authorization);
 
 #[test]
 fn display() -> Result<(), rsip::Error> {
-    use rsip::common::auth;
+    use rsip::headers::auth;
 
     assert_eq!(
         format!(
