@@ -1,4 +1,3 @@
-pub mod auth;
 pub mod content_type;
 pub mod language;
 pub mod method;

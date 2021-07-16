@@ -58,6 +58,12 @@ impl From<IpAddr> for Host {
     }
 }
 
+impl From<Domain> for Host {
+    fn from(from: Domain) -> Self {
+        Host::Domain(from)
+    }
+}
+
 impl TryInto<IpAddr> for Host {
     type Error = Error;
 

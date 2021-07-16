@@ -1,6 +1,7 @@
 use rsip::headers::UntypedHeader;
 
 pub mod accept;
+pub mod auth;
 pub mod authorization;
 pub mod contact;
 pub mod content_length;

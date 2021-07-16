@@ -1,4 +1,4 @@
-use crate::{common::auth, headers::typed::Tokenize};
+use crate::headers::{auth, typed::Tokenize};
 
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Tokenizer<'a> {

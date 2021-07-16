@@ -2,8 +2,8 @@ pub mod tokenizer;
 
 pub use tokenizer::Tokenizer;
 
-use crate::common::auth::{Algorithm, Qop};
-use crate::{common::auth, Error};
+use crate::headers::auth::{Algorithm, Qop};
+use crate::{headers::auth, Error};
 use macros::TypedHeader;
 use std::convert::{TryFrom, TryInto};
 

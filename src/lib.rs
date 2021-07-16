@@ -8,20 +8,16 @@ pub use error::Error;
 pub use headers::{Header, Headers};
 pub use message::{Request, Response, SipMessage};
 
+pub use crate::common::uri::*;
+pub use crate::common::*;
+
+pub use crate::message::header_macros::*;
+
+pub mod typed {
+    pub use crate::headers::typed::*;
+}
+
 pub mod prelude {
-    pub mod rsip {
-        pub use crate::*;
-        pub use message::header_macros::*;
-
-        pub mod headers {
-            pub use crate::headers::*;
-        }
-
-        pub mod typed {
-            pub use crate::headers::typed::*;
-        }
-    }
-
     pub use crate::{
         headers::{typed::TypedHeader, ToTypedHeader, UntypedHeader},
         message::{HasHeaders, HeadersExt},

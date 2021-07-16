@@ -1,5 +1,5 @@
 pub mod tokenizer {
-    use rsip::common::auth::scheme::Tokenizer;
+    use rsip::headers::auth::scheme::Tokenizer;
 
     #[test]
     fn with_str_input() -> Result<(), rsip::Error> {

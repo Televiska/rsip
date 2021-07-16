@@ -1,4 +1,3 @@
-pub mod auth;
 pub mod method;
 pub mod status_code;
 pub mod transport;
