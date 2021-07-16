@@ -22,49 +22,70 @@ impl std::fmt::Display for Version {
     }
 }
 
-mod tokenizer {
-    use super::Version;
-    use crate::{Error, NomError};
-    use std::convert::TryInto;
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8]>> for Version {
+    type Error = crate::Error;
 
-    impl<'a> TryInto<Version> for Tokenizer<'a> {
-        type Error = Error;
-
-        fn try_into(self) -> Result<Version, Error> {
-            match self.major {
-                b"1" => Ok(Version::V1),
-                b"2" => Ok(Version::V2),
-                _ => Err(Error::ParseError("Unrecognized SIP version".into())),
-            }
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8]>) -> Result<Self, Self::Error> {
+        match tokenizer.major {
+            b"1" => Ok(Version::V1),
+            b"2" => Ok(Version::V2),
+            _ => Err(Self::Error::ParseError("Unrecognized SIP version".into())),
         }
     }
+}
+
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str>> for Version {
+    type Error = crate::Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str>) -> Result<Self, Self::Error> {
+        match tokenizer.major {
+            "1" => Ok(Version::V1),
+            "2" => Ok(Version::V2),
+            _ => Err(Self::Error::ParseError("Unrecognized SIP version".into())),
+        }
+    }
+}
+
+mod tokenizer {
+    use crate::AbstractInput;
+    use crate::GenericNomError;
+    use std::marker::PhantomData;
 
     #[derive(Debug, PartialEq, Eq, Clone)]
-    pub struct Tokenizer<'a> {
-        pub major: &'a [u8],
-        pub minor: &'a [u8],
+    pub struct Tokenizer<'a, T>
+    where
+        T: AbstractInput<'a>,
+    {
+        pub major: T,
+        pub minor: T,
+        phantom: PhantomData<&'a T>,
     }
 
-    impl<'a> From<(&'a [u8], &'a [u8])> for Tokenizer<'a> {
-        fn from(tuple: (&'a [u8], &'a [u8])) -> Self {
+    impl<'a, T> From<(T, T)> for Tokenizer<'a, T>
+    where
+        T: AbstractInput<'a>,
+    {
+        fn from(from: (T, T)) -> Self {
             Self {
-                major: tuple.0,
-                minor: tuple.1,
+                major: from.0,
+                minor: from.1,
+                phantom: PhantomData,
             }
         }
     }
 
-    impl<'a> From<&'a [u8]> for Tokenizer<'a> {
-        fn from(major: &'a [u8]) -> Self {
-            Self { major, minor: b"0" }
-        }
-    }
+    impl<'a, T> Tokenizer<'a, T>
+    where
+        T: AbstractInput<'a>,
+    {
+        pub fn tokenize(part: T) -> Result<(T, Self), GenericNomError<'a, T>> {
+            use nom::{
+                bytes::complete::{tag, take_until},
+                sequence::tuple,
+            };
 
-    impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-            use nom::{bytes::complete::tag, character::complete::digit1, sequence::tuple};
-
-            let (rem, (_, major, _, minor)) = tuple((tag("SIP/"), digit1, tag("."), digit1))(part)?;
+            let (rem, (_, major, _, minor)) =
+                tuple((tag("SIP/"), take_until("."), tag("."), tag("0")))(part)?;
 
             Ok((rem, (major, minor).into()))
         }

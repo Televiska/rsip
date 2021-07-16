@@ -29,7 +29,7 @@ fn display() {
 fn from_tokenizer() {
     assert_eq!(
         Tokenizer {
-            version: "2".as_bytes().into(),
+            version: ("2".as_bytes(), "0".as_bytes()).into(),
             transport: "TLS".as_bytes().into(),
             uri: uri::Tokenizer {
                 schema: None,
