@@ -155,8 +155,8 @@ pub mod tokenizer {
 
     #[derive(Debug, PartialEq, Eq)]
     pub struct Tokenizer<'a> {
-        pub version: version::Tokenizer<'a>,
-        pub status_code: status_code::Tokenizer<'a>,
+        pub version: version::Tokenizer<'a, &'a [u8]>,
+        pub status_code: status_code::Tokenizer<'a, &'a [u8]>,
         pub headers: Vec<header::Tokenizer<'a>>,
         pub body: &'a [u8],
     }

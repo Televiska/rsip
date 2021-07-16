@@ -32,6 +32,7 @@ mod tokenizer {
     use crate::{Error, NomError};
     use std::convert::TryInto;
 
+    //TODO: convert that to TryFrom, remove the need to parse utf8
     impl<'a> TryInto<Transport> for Tokenizer<'a> {
         type Error = Error;
 

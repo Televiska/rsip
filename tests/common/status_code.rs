@@ -29,13 +29,25 @@ fn parser() {
     );
 }
 
-#[test]
-fn tokenizer() {
-    assert_eq!(
-        Tokenizer::tokenize(b"200 OK\r\nsomething"),
-        Ok((
-            "something".as_bytes(),
-            ("200".as_bytes(), "OK".as_bytes()).into()
-        )),
-    );
+pub mod tokenizer {
+    use rsip::common::status_code::Tokenizer;
+
+    #[test]
+    fn with_str_input() {
+        assert_eq!(
+            Tokenizer::tokenize("200 OK\r\nsomething"),
+            Ok(("something", ("200", "OK").into())),
+        );
+    }
+
+    #[test]
+    fn with_bytes_input() {
+        assert_eq!(
+            Tokenizer::tokenize("200 OK\r\nsomething".as_bytes()),
+            Ok((
+                "something".as_bytes(),
+                ("200".as_bytes(), "OK".as_bytes()).into()
+            )),
+        );
+    }
 }

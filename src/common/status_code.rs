@@ -1,7 +1,8 @@
 pub use tokenizer::Tokenizer;
 
-macro_rules! foo {
+macro_rules! create_status_codes {
     ($($name:ident => $code:expr),*) => {
+
         #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone)]
         pub enum StatusCode {
             $(
@@ -44,6 +45,7 @@ macro_rules! foo {
             }
         }
 
+        //Here we decide to completely ignore the reason if the code can be mapped to a well known status
         fn match_from<'a>(code: u16, reason: &'a [u8]) -> Result<StatusCode, crate::Error> {
             use std::str::from_utf8;
 
@@ -57,7 +59,7 @@ macro_rules! foo {
     }
 }
 
-foo!(Trying => 100,
+create_status_codes!(Trying => 100,
     Ringing => 180,
     CallIsBeingForwarded => 181,
     Queued => 182,
@@ -170,50 +172,66 @@ impl Default for StatusCode {
     }
 }
 
-//Here we decide to completely ignore the reason if the code can be mapped to a well known status
-pub mod tokenizer {
-    use super::StatusCode;
-    use crate::{Error, NomError};
-    use std::convert::TryInto;
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8]>> for StatusCode {
+    type Error = crate::Error;
 
-    impl<'a> TryInto<StatusCode> for Tokenizer<'a> {
-        type Error = Error;
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8]>) -> Result<Self, Self::Error> {
+        use std::str::from_utf8;
 
-        fn try_into(self) -> Result<StatusCode, Error> {
-            use super::match_from;
-            use std::str::from_utf8;
-
-            match_from(from_utf8(self.code)?.parse::<u16>()?, self.reason)
-        }
+        match_from(from_utf8(tokenizer.code)?.parse::<u16>()?, tokenizer.reason)
     }
+}
+
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str>> for StatusCode {
+    type Error = crate::Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str>) -> Result<Self, Self::Error> {
+        match_from(tokenizer.code.parse::<u16>()?, tokenizer.reason.as_bytes())
+    }
+}
+
+mod tokenizer {
+    use crate::AbstractInput;
+    use crate::GenericNomError;
+    use std::marker::PhantomData;
 
     #[derive(Debug, PartialEq, Eq, Clone)]
-    pub struct Tokenizer<'a> {
-        pub code: &'a [u8],
-        pub reason: &'a [u8],
+    pub struct Tokenizer<'a, T>
+    where
+        T: AbstractInput<'a>,
+    {
+        pub code: T,
+        pub reason: T,
+        phantom: PhantomData<&'a T>,
     }
 
-    impl<'a> From<(&'a [u8], &'a [u8])> for Tokenizer<'a> {
-        fn from(tuple: (&'a [u8], &'a [u8])) -> Self {
+    impl<'a, T> From<(T, T)> for Tokenizer<'a, T>
+    where
+        T: AbstractInput<'a>,
+    {
+        fn from(from: (T, T)) -> Self {
             Self {
-                code: tuple.0,
-                reason: tuple.1,
+                code: from.0,
+                reason: from.1,
+                phantom: PhantomData,
             }
         }
     }
 
-    impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+    impl<'a, T> Tokenizer<'a, T>
+    where
+        T: AbstractInput<'a>,
+    {
+        pub fn tokenize(part: T) -> Result<(T, Self), GenericNomError<'a, T>> {
             use nom::{
-                bytes::complete::{tag, take_until},
-                character::complete::digit1,
+                bytes::complete::{tag, take, take_until},
                 sequence::tuple,
             };
 
             let (rem, (code, _, reason, _)) =
-                tuple((digit1, tag(" "), take_until("\r\n"), tag("\r\n")))(part)?;
+                tuple((take(3usize), tag(" "), take_until("\r\n"), tag("\r\n")))(part)?;
 
-            Ok((rem, Self { code, reason }))
+            Ok((rem, (code, reason).into()))
         }
     }
 }

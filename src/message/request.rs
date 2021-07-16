@@ -165,7 +165,7 @@ pub mod tokenizer {
     pub struct Tokenizer<'a> {
         pub method: method::Tokenizer<'a>,
         pub uri: uri::Tokenizer<'a>,
-        pub version: version::Tokenizer<'a>,
+        pub version: version::Tokenizer<'a, &'a [u8]>,
         pub headers: Vec<header::Tokenizer<'a>>,
         pub body: &'a [u8],
     }

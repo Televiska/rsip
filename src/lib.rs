@@ -13,8 +13,12 @@ pub mod prelude {
         pub use crate::*;
         pub use message::header_macros::*;
 
-        pub mod header {
-            pub use crate::headers::header::*;
+        pub mod headers {
+            pub use crate::headers::*;
+        }
+
+        pub mod typed {
+            pub use crate::headers::typed::*;
         }
     }
 
@@ -34,6 +38,8 @@ pub trait AbstractInput<'a>:
     + nom::FindSubstring<&'a str>
     + nom::Slice<nom::lib::std::ops::RangeFrom<usize>>
     + nom::InputLength
+    + nom::InputIter
+    + nom::Compare<&'a str>
 {
 }
 
@@ -44,6 +50,8 @@ impl<'a, T> AbstractInput<'a> for T where
         + nom::FindSubstring<&'a str>
         + nom::Slice<nom::lib::std::ops::RangeFrom<usize>>
         + nom::InputLength
+        + nom::InputIter
+        + nom::Compare<&'a str>
 {
 }
 
