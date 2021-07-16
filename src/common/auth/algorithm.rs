@@ -18,11 +18,11 @@ impl std::fmt::Display for Algorithm {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Md5 => write!(f, "MD5"),
-            Self::Md5Sess => write!(f, "md5-sess"),
-            Self::Sha256 => write!(f, "sha256"),
-            Self::Sha256Sess => write!(f, "sha256-sess"),
-            Self::Sha512 => write!(f, "sha512"),
-            Self::Sha512Sess => write!(f, "sha512-sess"),
+            Self::Md5Sess => write!(f, "MD5-sess"),
+            Self::Sha256 => write!(f, "SHA256"),
+            Self::Sha256Sess => write!(f, "SHA256-sess"),
+            Self::Sha512 => write!(f, "SHA512"),
+            Self::Sha512Sess => write!(f, "SHA512-sess"),
         }
     }
 }

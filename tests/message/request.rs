@@ -1,6 +1,6 @@
 use rsip::{
     common::{self, uri},
-    headers::header::*,
+    headers::*,
     message::request::{Request, Tokenizer},
 };
 use std::convert::TryFrom;

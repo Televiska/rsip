@@ -140,7 +140,7 @@ pub trait HeadersExt: super::HasHeaders {
     }
 
     fn transaction_id(&self) -> Result<String, Error> {
-        use crate::headers::header::UntypedHeader;
+        use crate::headers::ToTypedHeader;
 
         Ok(format!(
             "{}",

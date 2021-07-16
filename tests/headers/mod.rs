@@ -1,4 +1,4 @@
-use rsip::headers::header::UntypedHeader;
+use rsip::headers::UntypedHeader;
 
 pub mod accept;
 pub mod authorization;
@@ -11,7 +11,7 @@ pub mod to;
 pub mod via;
 pub mod www_authenticate;
 
-use rsip::headers::header::{Accept, Header, Tokenizer};
+use rsip::headers::{header::Tokenizer, Accept, Header};
 
 #[test]
 fn display() {

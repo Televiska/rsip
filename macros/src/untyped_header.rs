@@ -2,23 +2,13 @@ use quote::quote;
 
 pub fn trait_methods(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     quote! {
-        impl<'a> crate::headers::header::UntypedHeader<'a> for #struct_name {
-            type Typed = typed::#struct_name;
-
+        impl<'a> crate::headers::untyped::UntypedHeader<'a> for #struct_name {
             fn new(value: impl std::convert::Into<String>) -> Self {
                 Self(value.into())
             }
 
             fn value(&self) -> &str {
                 &self.0
-            }
-
-            fn typed(&self) -> Result<typed::#struct_name, crate::Error> {
-                std::convert::TryInto::try_into(self.clone())
-            }
-
-            fn into_typed(self) -> Result<typed::#struct_name, crate::Error> {
-                std::convert::TryInto::try_into(self)
             }
 
             fn replace(&mut self, new_value: impl Into<String>) {
@@ -38,7 +28,7 @@ pub fn display(struct_name: &syn::Ident, display_name: Option<String>) -> proc_m
     quote! {
         impl std::fmt::Display for #struct_name {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                use crate::headers::header::UntypedHeader;
+                use crate::headers::untyped::UntypedHeader;
 
                 write!(f, "{}: {}", #name, self.value())
             }
@@ -69,7 +59,7 @@ pub fn from_into_string(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
     let from_value = quote! {
         impl<'a> std::convert::From<#struct_name> for String {
             fn from(from: #struct_name) -> Self {
-                use crate::headers::header::UntypedHeader;
+                use crate::headers::untyped::UntypedHeader;
 
                 from.value().clone().into()
             }

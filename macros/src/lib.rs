@@ -4,6 +4,7 @@ use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
 
 mod newtype;
+mod to_typed_header;
 mod typed_header;
 mod untyped_header;
 
@@ -37,6 +38,24 @@ pub fn untyped_header_signature(item: TokenStream) -> TokenStream {
         #into_header
         #from_into_string
         #from_str
+    };
+
+    expanded.into()
+}
+
+#[proc_macro_derive(ToTypedHeader, attributes(header))]
+pub fn to_typed_header_signature(item: TokenStream) -> TokenStream {
+    let ast = parse_macro_input!(item as DeriveInput);
+
+    let struct_name = &ast.ident;
+
+    //let field_type = field_type(ast.data);
+    //let field_name = field_type_name(field_type.clone());
+
+    let to_typed_header = to_typed_header::trait_methods(&struct_name);
+
+    let expanded = quote! {
+        #to_typed_header
     };
 
     expanded.into()
