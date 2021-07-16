@@ -4,7 +4,7 @@ pub use tokenizer::Tokenizer;
 
 use crate::headers::auth::{Algorithm, Qop};
 use crate::{headers::auth, Error};
-use macros::TypedHeader;
+use rsip_derives::TypedHeader;
 use std::convert::{TryFrom, TryInto};
 
 #[derive(TypedHeader, Eq, PartialEq, Clone, Debug, Default)]

@@ -1,4 +1,4 @@
-use macros::UntypedHeader;
+use rsip_derives::UntypedHeader;
 
 #[derive(UntypedHeader, Debug, PartialEq, Eq, Clone)]
 pub struct RecordRoute(String);

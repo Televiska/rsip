@@ -6,7 +6,7 @@ use crate::common::{
     uri::{self, param::Branch, Param, Uri},
     Transport, Version,
 };
-use macros::{TypedHeader, UriAndParamsHelpers};
+use rsip_derives::{TypedHeader, UriAndParamsHelpers};
 use std::convert::{TryFrom, TryInto};
 
 #[derive(TypedHeader, UriAndParamsHelpers, Eq, PartialEq, Clone, Debug)]

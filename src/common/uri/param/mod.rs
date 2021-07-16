@@ -22,7 +22,7 @@ pub use transport::Transport;
 pub use ttl::Ttl;
 pub use user::User;
 
-use macros::NewType;
+use rsip_derives::NewType;
 
 //TODO: move out Via/From/etc params from here, but keep the same tokenizer
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -70,7 +70,7 @@ impl std::fmt::Display for Param {
 pub mod tokenizer {
     use super::*;
     use crate::{Error, NomError};
-    use macros::Utf8Tokenizer;
+    use rsip_derives::Utf8Tokenizer;
     use std::convert::TryInto;
 
     impl<'a> TryInto<Param> for Tokenizer<'a> {

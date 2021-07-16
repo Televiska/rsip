@@ -110,7 +110,7 @@ impl std::fmt::Display for Header {
 pub mod tokenizer {
     use super::*;
     use crate::{Error, NomError};
-    use macros::Utf8Tokenizer;
+    use rsip_derives::Utf8Tokenizer;
     use std::convert::TryInto;
 
     impl<'a> TryInto<Header> for Tokenizer<'a> {

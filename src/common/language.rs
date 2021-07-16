@@ -1,4 +1,4 @@
-use macros::NewType;
+use rsip_derives::NewType;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Language {

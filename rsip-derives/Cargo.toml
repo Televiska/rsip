@@ -1,8 +1,12 @@
 [package]
-name = "macros"
+name = "rsip-derives"
 version = "0.1.0"
 authors = ["Filippos Vasilakis <vasilakisfil@gmail.com>"]
 edition = "2018"
+description = "rsip helpful macros, for internal use mostly"
+repository = "https://github.com/vasilakisfil/rsip/tree/master/rsip-derives"
+keywords = ["sip", "rsip", "macros", "derive", "derives"]
+license-file = "LICENSE"
 
 [lib]
 proc-macro = true

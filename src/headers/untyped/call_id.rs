@@ -1,4 +1,4 @@
-use macros::UntypedHeader;
+use rsip_derives::UntypedHeader;
 use uuid::Uuid;
 
 #[derive(UntypedHeader, Debug, PartialEq, Eq, Clone)]

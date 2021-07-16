@@ -1,5 +1,5 @@
 use crate::Error;
-use macros::NewType;
+use rsip_derives::NewType;
 use std::convert::TryInto;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 

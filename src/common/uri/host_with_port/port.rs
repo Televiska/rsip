@@ -1,4 +1,4 @@
-use macros::NewType;
+use rsip_derives::NewType;
 
 #[derive(NewType, Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Port(u16);

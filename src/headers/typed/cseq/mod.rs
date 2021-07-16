@@ -3,7 +3,7 @@ pub mod tokenizer;
 pub use tokenizer::Tokenizer;
 
 use crate::common::Method;
-use macros::TypedHeader;
+use rsip_derives::TypedHeader;
 use std::convert::TryFrom;
 
 #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
