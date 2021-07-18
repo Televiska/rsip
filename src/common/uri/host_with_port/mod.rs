@@ -1,6 +1,7 @@
 mod host;
 mod port;
 
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 pub use host::{Domain, Host};
@@ -10,6 +11,12 @@ use crate::Error;
 use std::convert::{TryFrom, TryInto};
 use std::net::{IpAddr, SocketAddr};
 
+/// Simple struct that holds the [Host] and [Port] of a SIP(S) uri, reprsented by [Uri](super::Uri).
+/// Note that during parsing, if no port is set, it is returned as `None`. Usually when no port
+/// is specified then port 5060 is assumed. But rsip is not acting smart here and delegates that
+/// responsibility to you because you might want 5061 (TLS) as default etc.
+///
+/// Similarly on generation, if no port is specified, no port is set at all in the final string.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct HostWithPort {
     pub host: Host,
@@ -129,6 +136,7 @@ where
     }
 }
 
+#[doc(hidden)]
 pub mod tokenizer {
     use super::{Host, HostWithPort};
     use crate::{Error, NomError};

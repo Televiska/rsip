@@ -1,8 +1,13 @@
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 macro_rules! create_status_codes {
     ($($name:ident => $code:expr),*) => {
 
+        /// The SIP [Response](super::super::Response) status code (or response code as SIP main
+        /// RFC refers to them). This is not a `Copy` type because in case of an unknown (= not
+        /// defined in any SIP RFC) status code, the reason is also provided inside the `Other`
+        /// tuple variant.
         #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, Clone)]
         pub enum StatusCode {
             $(
@@ -190,6 +195,7 @@ impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str>> for StatusCode
     }
 }
 
+#[doc(hidden)]
 mod tokenizer {
     use crate::AbstractInput;
     use crate::GenericNomError;

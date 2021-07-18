@@ -1,3 +1,6 @@
+/// The `Algorithm`, as part of the SIP Authorization framework, found in headers like
+/// [Authorization](super::super::typed::Authorization) and
+/// [WwwAuthenticate](super::super::typed::WwwAuthenticate)
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Algorithm {
     Md5,

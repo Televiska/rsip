@@ -6,6 +6,13 @@ use crate::{
     },
 };
 
+/// Simple helpful struct to generate & verify the `Digest` authentication strings.
+/// It can also be created from an [Authorization](crate::typed::Authorization),
+/// an `&str` for the password and a [Method](crate::Method) using the [from](From::from()) method.
+///
+/// Supports SIP versions of [RFC7616](https://datatracker.ietf.org/doc/html/rfc7616)
+/// and [RFC2617](https://datatracker.ietf.org/doc/html/rfc2617).
+#[derive(Debug, Clone)]
 pub struct DigestGenerator<'a> {
     pub username: &'a str,
     pub password: &'a str,

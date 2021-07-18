@@ -1,5 +1,8 @@
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
+/// Simple enum that holds the schema part of a URIs. This type is not a `Copy` type because
+/// it can hold any `Contact` URI, like `mailto` etc.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Schema {
     Sip,
@@ -23,6 +26,7 @@ impl std::fmt::Display for Schema {
     }
 }
 
+#[doc(hidden)]
 pub mod tokenizer {
     use super::Schema;
     use crate::{Error, NomError};

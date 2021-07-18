@@ -1,7 +1,18 @@
 use crate::headers::untyped::*;
 
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
+/// Big enum holding in each variant every possible header defined in SIP. All variants hold an
+/// [untyped](super::untyped) header which is basically a NewType around String.
+///
+/// In case a header is not defined in Rsip, parsing will store it in the `Other`
+/// variant, which is a tuple of Strings.
+/// For instance, constructing the `X-Fs-Sending-Message` header (related to SMS in SIP),
+/// you can do:
+/// ```
+/// let x_fs_sending_message = rsip::Header::Other("X-FS-Sending-Message".into(), "f9c4adc8-9c2a-47d5-a7f1-63d20784685e".into());
+/// ```
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Header {
     Accept(Accept),
@@ -107,6 +118,7 @@ impl std::fmt::Display for Header {
     }
 }
 
+#[doc(hidden)]
 pub mod tokenizer {
     use super::*;
     use crate::{Error, NomError};

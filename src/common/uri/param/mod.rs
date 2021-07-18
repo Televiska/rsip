@@ -1,3 +1,4 @@
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 pub mod branch;
@@ -24,6 +25,11 @@ pub use user::User;
 
 use rsip_derives::NewType;
 
+/// This enum holds all the possible parameters found in SIP(S) URIs, and headers like `From`,
+/// `To`, `Contact`, `Via` etc. For better safety, we should probably define different param
+/// enums for each of those cases since, for instance, a `branch` parameter should not appear
+/// in a `Contact` header, however we have it in the same enum for simplicity for now and delegate
+/// this safety to the user.
 //TODO: move out Via/From/etc params from here, but keep the same tokenizer
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Param {
@@ -67,6 +73,7 @@ impl std::fmt::Display for Param {
     }
 }
 
+#[doc(hidden)]
 pub mod tokenizer {
     use super::*;
     use crate::{Error, NomError};

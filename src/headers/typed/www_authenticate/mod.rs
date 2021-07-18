@@ -1,5 +1,7 @@
+#[doc(hidden)]
 pub mod tokenizer;
 
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 use crate::headers::auth::{Algorithm, Qop};
@@ -7,6 +9,7 @@ use crate::{headers::auth, Error};
 use rsip_derives::TypedHeader;
 use std::convert::{TryFrom, TryInto};
 
+/// The `WwwAuthenticate` header in its [typed](super) form.
 #[derive(TypedHeader, Eq, PartialEq, Clone, Debug, Default)]
 pub struct WwwAuthenticate {
     pub scheme: auth::Scheme,

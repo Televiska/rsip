@@ -3,6 +3,7 @@ pub mod host_with_port;
 pub mod param;
 pub mod schema;
 
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 pub use auth::Auth;
@@ -12,6 +13,12 @@ pub use schema::Schema;
 
 use std::convert::{TryFrom, TryInto};
 
+/// A very flexible SIP(S) URI.
+///
+/// Note that during parsing, if no port is set, it is returned as `None`. Usually when no port
+/// is specified then port 5060 is assumed. But rsip is not acting smart here and delegates that
+/// responsibility to you because you might want 5061 (TLS) as default etc.
+/// Similarly on generation, if no port is specified, no port is set at all in the final string.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Uri {
     pub schema: Option<Schema>,
@@ -22,8 +29,8 @@ pub struct Uri {
 }
 
 impl Uri {
-    pub fn username(&self) -> Option<&str> {
-        self.auth.as_ref().map(|auth| auth.username.as_ref())
+    pub fn user(&self) -> Option<&str> {
+        self.auth.as_ref().map(|auth| auth.user.as_ref())
     }
 
     pub fn host(&self) -> &Host {
@@ -138,6 +145,7 @@ impl From<std::net::IpAddr> for Uri {
     }
 }
 
+#[doc(hidden)]
 pub mod tokenizer {
     use super::{auth, host_with_port, param, schema, Uri};
     use crate::{Error, NomError};

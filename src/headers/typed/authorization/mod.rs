@@ -1,5 +1,7 @@
+#[doc(hidden)]
 pub mod tokenizer;
 
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 use crate::{
@@ -10,6 +12,7 @@ use crate::{
 use rsip_derives::TypedHeader;
 use std::convert::{TryFrom, TryInto};
 
+/// The `Authorization` header in its [typed](super) form.
 #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
 pub struct Authorization {
     pub scheme: auth::Scheme,

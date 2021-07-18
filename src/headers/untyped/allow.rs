@@ -1,5 +1,6 @@
 use rsip_derives::UntypedHeader;
 
+/// The `Allow` header in its [untyped](super) form.
 #[derive(UntypedHeader, Debug, PartialEq, Eq, Clone)]
 pub struct Allow(String);
 

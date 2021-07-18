@@ -4,6 +4,11 @@ use crate::{
     Error,
 };
 
+/// Helpful trait to access most common headers from a [Request](crate::Request),
+/// [Response](crate::Response) and [SipMessage](crate::SipMessage) structs.
+///
+/// Some headers that are expected to be there return a `Result<T, rsip::Error>` while others
+/// return just an `Option<T>`, where `T` is the actual [untyped](crate::headers::untyped) header.
 pub trait HeadersExt: super::HasHeaders {
     fn to_header(&self) -> Result<&headers::To, Error> {
         header!(

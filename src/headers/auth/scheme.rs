@@ -1,5 +1,9 @@
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
+/// The `Scheme`, as part of the SIP Authorization framework, found in headers like
+/// [Authorization](super::super::typed::Authorization) and
+/// [WwwAuthenticate](super::super::typed::WwwAuthenticate)
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Scheme {
     Digest,
@@ -45,6 +49,7 @@ impl<'a> std::convert::TryFrom<Tokenizer<'a, &'a str>> for Scheme {
     }
 }
 
+#[doc(hidden)]
 mod tokenizer {
     use crate::AbstractInput;
     use crate::GenericNomError;

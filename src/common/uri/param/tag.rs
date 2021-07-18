@@ -1,5 +1,7 @@
 use rsip_derives::{IntoParam, NewType};
 
+/// Simple NewType around String. Intended to be used for the `tag` parameter found in the `From`
+/// and `To` headers.
 #[derive(NewType, IntoParam, Debug, PartialEq, Eq, Clone)]
 pub struct Tag(String);
 
