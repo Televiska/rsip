@@ -1,5 +1,10 @@
 # Rsip
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Build status](https://github.com/vasilakisfil/rsip/actions/workflows/rust-ci.yml/badge.svg)
+[![Crates.io Version](https://img.shields.io/crates/v/rsip.svg)](https://crates.io/crates/rsip)
+[![Minimum rustc version](https://img.shields.io/badge/rustc-1.44.0+-lightgray.svg)](#rust-version-requirements)
+
 A common general purpose library for SIP. It can parse and generate all SIP
 structures.
 
