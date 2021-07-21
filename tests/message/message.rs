@@ -1,7 +1,7 @@
 use rsip::{
     common::{self, uri},
     headers::*,
-    message::{request, response, Tokenizer},
+    message::{request, response, sip_message::Tokenizer},
     Request, Response, SipMessage,
 };
 use std::convert::TryFrom;

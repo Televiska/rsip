@@ -1,11 +1,14 @@
+#[doc(hidden)]
 pub mod tokenizer;
 
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 use crate::common::Method;
 use rsip_derives::TypedHeader;
 use std::convert::TryFrom;
 
+/// The `CSeq` header in its [typed](super) form.
 #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
 pub struct CSeq {
     pub seq: u16,

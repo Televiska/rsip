@@ -1,5 +1,6 @@
 use rsip_derives::UntypedHeader;
 
+/// The `Max-Forwards` header in its [untyped](super) form.
 #[derive(UntypedHeader, Debug, PartialEq, Eq, Clone)]
 pub struct MaxForwards(String);
 

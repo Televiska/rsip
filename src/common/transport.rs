@@ -1,5 +1,7 @@
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
+/// Simple enum that holds the transport type used (for instance in the `Via` header).
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Transport {
     Udp,
@@ -27,6 +29,7 @@ impl std::fmt::Display for Transport {
     }
 }
 
+#[doc(hidden)]
 mod tokenizer {
     use super::Transport;
     use crate::{Error, NomError};

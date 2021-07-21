@@ -1,8 +1,10 @@
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 macro_rules! create_methods {
     ($($name:ident),*) => {
 
+        /// The SIP [Request](super::super::Request) method.
         #[derive(Debug, PartialEq, Eq, Clone, Copy)]
         pub enum Method {
             $(
@@ -69,6 +71,7 @@ impl std::str::FromStr for Method {
     }
 }
 
+#[doc(hidden)]
 pub mod tokenizer {
     use super::Method;
     use crate::{Error, NomError};

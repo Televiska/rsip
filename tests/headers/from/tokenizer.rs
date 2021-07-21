@@ -12,7 +12,7 @@ fn tokenizer() {
             uri: uri::Tokenizer {
                 schema: Some("sip".as_bytes().into()),
                 auth: Some(uri::auth::Tokenizer {
-                    username: "alice".as_bytes(),
+                    user: "alice".as_bytes(),
                     password: None
                 }),
                 host_with_port: ("atlanta.example.com".as_bytes(), None).into(),
@@ -30,7 +30,7 @@ fn tokenizer() {
             uri: uri::Tokenizer {
                 schema: Some("sip".as_bytes().into()),
                 auth: Some(uri::auth::Tokenizer {
-                    username: "alice".as_bytes(),
+                    user: "alice".as_bytes(),
                     password: None
                 }),
                 host_with_port: ("atlanta.example.com".as_bytes(), None).into(),
@@ -48,7 +48,7 @@ fn tokenizer() {
             uri: uri::Tokenizer {
                 schema: Some("sip".as_bytes().into()),
                 auth: Some(uri::auth::Tokenizer {
-                    username: "alice".as_bytes(),
+                    user: "alice".as_bytes(),
                     password: None
                 }),
                 host_with_port: ("atlanta.example.com".as_bytes(), None).into(),

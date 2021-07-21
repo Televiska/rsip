@@ -1,16 +1,18 @@
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
+/// Simple struct that holds the authority part on of a URI.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Auth {
-    pub username: String,
+    pub user: String,
     pub password: Option<String>,
 }
 
 impl std::fmt::Display for Auth {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.password {
-            Some(password) => write!(f, "{}:{}", self.username, password),
-            None => write!(f, "{}", self.username),
+            Some(password) => write!(f, "{}:{}", self.user, password),
+            None => write!(f, "{}", self.user),
         }
     }
 }
@@ -22,12 +24,13 @@ where
 {
     fn from(from: (T, Option<S>)) -> Self {
         Self {
-            username: from.0.into(),
+            user: from.0.into(),
             password: from.1.map(|p| p.into()),
         }
     }
 }
 
+#[doc(hidden)]
 pub mod tokenizer {
     use super::Auth;
     use crate::{Error, NomError};
@@ -41,7 +44,7 @@ pub mod tokenizer {
             use std::str::from_utf8;
 
             Ok(Auth {
-                username: from_utf8(self.username)?.into(),
+                user: from_utf8(self.user)?.into(),
                 password: self
                     .password
                     .map(|p| from_utf8(p))
@@ -53,14 +56,14 @@ pub mod tokenizer {
 
     #[derive(Debug, PartialEq, Eq, Clone)]
     pub struct Tokenizer<'a> {
-        pub username: &'a [u8],
+        pub user: &'a [u8],
         pub password: Option<&'a [u8]>,
     }
 
     impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
         fn from(value: (&'a [u8], Option<&'a [u8]>)) -> Self {
             Self {
-                username: value.0,
+                user: value.0,
                 password: value.1,
             }
         }
@@ -77,18 +80,18 @@ pub mod tokenizer {
             };
             let (rem, (auth, _)) = tuple((take_till(|c| c == b'.' || c == b'@'), tag("@")))(part)?;
 
-            let (username, password) =
+            let (user, password) =
                 match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(
                     auth,
                 ) {
-                    Ok((_, (username, _, password))) => (username, Some(password)),
+                    Ok((_, (user, _, password))) => (user, Some(password)),
                     Err(_) => {
-                        let (_, username) = rest(auth)?;
-                        (username, None)
+                        let (_, user) = rest(auth)?;
+                        (user, None)
                     }
                 };
 
-            Ok((rem, Tokenizer { username, password }))
+            Ok((rem, Tokenizer { user, password }))
         }
     }
 }

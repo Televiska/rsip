@@ -1,5 +1,6 @@
 use rsip_derives::UntypedHeader;
 
+/// The `Content-Length` header in its [untyped](super) form.
 #[derive(UntypedHeader, Debug, PartialEq, Eq, Clone)]
 pub struct ContentLength(String);
 

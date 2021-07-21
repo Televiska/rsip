@@ -5,7 +5,7 @@ use std::convert::TryInto;
 fn display() {
     assert_eq!(
         Auth {
-            username: "user".into(),
+            user: "user".into(),
             password: None
         }
         .to_string(),
@@ -14,7 +14,7 @@ fn display() {
 
     assert_eq!(
         Auth {
-            username: "user".into(),
+            user: "user".into(),
             password: Some("password".into())
         }
         .to_string(),
@@ -27,7 +27,7 @@ fn parser() {
     assert_eq!(
         Tokenizer::from(("user".as_bytes(), Some("password".as_bytes()))).try_into(),
         Ok(Auth {
-            username: "user".into(),
+            user: "user".into(),
             password: Some("password".into())
         }),
     );

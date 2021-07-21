@@ -1,5 +1,7 @@
+#[doc(hidden)]
 pub mod tokenizer;
 
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 use crate::common::uri::param::Tag;
@@ -7,6 +9,7 @@ use crate::common::{uri::Param, Uri};
 use rsip_derives::{TypedHeader, UriAndParamsHelpers};
 use std::convert::{TryFrom, TryInto};
 
+/// The `To` header in its [typed](super) form.
 #[derive(TypedHeader, UriAndParamsHelpers, Eq, PartialEq, Clone, Debug)]
 pub struct To {
     pub display_name: Option<String>,

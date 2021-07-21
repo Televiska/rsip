@@ -1,9 +1,24 @@
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 use super::{request, response};
 use crate::{common::Version, Error, Headers, Request, Response};
 use std::convert::{TryFrom, TryInto};
 
+/// SipMessage reprsents a generic SIP message, which could either be a [Request](crate::Request)
+/// or a [Response](crate::Response).
+///
+/// A SipMessage can be converted to a `String`, `&str`, or `Bytes`, all using the underlying `Debug`
+/// trait.
+///
+/// A SipMessage can be taken using the `TryFrom` convertions from a `String`, an `&str` or
+/// `Bytes`, all using the underlying Tokenizer. If a convertion fails, the tokenizer will give you
+/// a relevant underlying nom error wrapped in [rsip::Error](crate::Error).
+///
+/// In order to access specific [headers](crate::headers::untyped), you should take a look on the
+/// [HeadersExt](crate::message::HeadersExt) trait that is automatically implemented for any type
+/// that has implemented the [HasHeaders](crate::message::HasHeaders) trait, which SipMessage
+/// implements it.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum SipMessage {
     Request(Request),
@@ -136,6 +151,7 @@ impl From<SipMessage> for bytes::Bytes {
     }
 }
 
+#[doc(hidden)]
 pub mod tokenizer {
     use super::{request, response, SipMessage};
     use crate::{Error, NomError};

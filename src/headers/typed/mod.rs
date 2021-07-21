@@ -1,3 +1,11 @@
+//! Module holding the [TypedHeader] trait and all typed headers. A typed header is basically any
+//! header that holds something more complex than an opque string (like `Call-ID`) or a number
+//! (like `Expires`). New typed headers will be added along the way for newer RFCs like
+//! [PASSporT](https://datatracker.ietf.org/doc/html/rfc8224),
+//! [SHAKEN](https://datatracker.ietf.org/doc/html/rfc8588),
+//! [push notifications](https://datatracker.ietf.org/doc/html/rfc8599) etc
+//!
+
 pub mod authorization;
 pub mod contact;
 pub mod cseq;

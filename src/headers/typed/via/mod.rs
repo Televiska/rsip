@@ -1,5 +1,7 @@
+#[doc(hidden)]
 pub mod tokenizer;
 
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 use crate::common::{
@@ -9,6 +11,7 @@ use crate::common::{
 use rsip_derives::{TypedHeader, UriAndParamsHelpers};
 use std::convert::{TryFrom, TryInto};
 
+/// The `Via` header in its [typed](super) form.
 #[derive(TypedHeader, UriAndParamsHelpers, Eq, PartialEq, Clone, Debug)]
 pub struct Via {
     pub version: Version,

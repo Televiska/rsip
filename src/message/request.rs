@@ -1,3 +1,4 @@
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
 use crate::{
@@ -11,6 +12,18 @@ use crate::{
 };
 use std::convert::{TryFrom, TryInto};
 
+/// Request reprsents a SIP request message, which contains a [Method](crate::Method),
+/// a [Uri](crate::Uri), a [Version](crate::Version), [Headers](crate::Headers) and a
+/// body, represented as a `Vec<u8>`, thus not checked for UTF-8 compliance.
+///
+/// A Request can easily be transformed to a [SipMessage](crate::SipMessage).
+/// Also it can be converted to a `String`, `&str`, or `Bytes`, all using the underlying `Debug`
+/// trait.
+///
+/// In order to access specific [headers](crate::headers::untyped), you should take a look on the
+/// [HeadersExt](crate::message::HeadersExt) trait that is automatically implemented for any type
+/// that has implemented the [HasHeaders](crate::message::HasHeaders) trait, which Request
+/// implements it.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Request {
     pub method: Method,
@@ -67,14 +80,14 @@ impl std::fmt::Display for Request {
 }
 
 impl TryFrom<SipMessage> for Request {
-    type Error = &'static str;
+    type Error = crate::Error;
 
     fn try_from(sip_message: crate::SipMessage) -> Result<Self, Self::Error> {
         match sip_message {
             crate::SipMessage::Request(request) => Ok(request),
-            crate::SipMessage::Response(_) => {
-                Err("Can't convert a models::SipMessage::Response into Request !")
-            }
+            crate::SipMessage::Response(_) => Err(Error::Unexpected(
+                "Can't convert a models::SipMessage::Response into Request !".into(),
+            )),
         }
     }
 }
@@ -137,6 +150,7 @@ impl From<Request> for bytes::Bytes {
     }
 }
 
+#[doc(hidden)]
 pub mod tokenizer {
     use super::{header, method, uri, version, Request};
     use crate::{Error, NomError};

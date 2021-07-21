@@ -1,5 +1,7 @@
+#[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
+/// Simple enum that holds the SIP version. Defaults to `Version::V2`.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Version {
     V1,
@@ -46,6 +48,7 @@ impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str>> for Version {
     }
 }
 
+#[doc(hidden)]
 mod tokenizer {
     use crate::AbstractInput;
     use crate::GenericNomError;

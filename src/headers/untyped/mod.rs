@@ -1,3 +1,14 @@
+//! Module holding the [UntypedHeader] trait and all the untyped headers.
+//! An untyped header is basically nothing more than a simple NewType around `String` with many
+//! many helpful goodies.
+//!
+//! Some untyped headers have a [typed](super::typed) equivalent header, like [From] equivalent is
+//! [typed::From](super::typed::From), [Via] equivalent is [typed::Via](super::typed::Via) etc. Those
+//! untyped headers implement the [ToTypedHeader] trait.
+//!
+//! If a header is not implemented in Rsip, then you can use the `Other` variant of the
+//! [Header](super::Header) enum.
+
 use crate::Header;
 
 pub mod accept;

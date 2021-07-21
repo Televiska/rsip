@@ -16,7 +16,7 @@ fn display() -> Result<(), rsip::Error> {
                 uri: uri::Uri {
                     schema: Some(uri::Schema::Sip),
                     auth: Some(uri::Auth {
-                        username: "alice".into(),
+                        user: "alice".into(),
                         password: None
                     }),
                     host_with_port: uri::HostWithPort::try_from("atlanta.example.com")?,
@@ -40,7 +40,7 @@ fn from_tokenizer() -> Result<(), rsip::Error> {
             uri: uri::Tokenizer {
                 schema: Some("sip".as_bytes().into()),
                 auth: Some(uri::auth::Tokenizer {
-                    username: "alice".as_bytes(),
+                    user: "alice".as_bytes(),
                     password: None
                 }),
                 host_with_port: ("atlanta.example.com".as_bytes(), None).into(),
@@ -55,7 +55,7 @@ fn from_tokenizer() -> Result<(), rsip::Error> {
             uri: uri::Uri {
                 schema: Some(uri::Schema::Sip),
                 auth: Some(uri::Auth {
-                    username: "alice".into(),
+                    user: "alice".into(),
                     password: None
                 }),
                 host_with_port: uri::HostWithPort::try_from("atlanta.example.com")?,

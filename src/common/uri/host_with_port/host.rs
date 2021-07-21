@@ -3,6 +3,12 @@ use rsip_derives::NewType;
 use std::convert::TryInto;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
+/// The `Host` enum represents the host part of the [HostWithPort](super::HostWithPort) struct
+///
+/// It has 2 variants:
+///
+/// * `Domain` that holds a [Domain] that represents a DNS domain.
+/// * `IpAddr` that holds an [IpAddr](std::net::IpAddr) and represents a raw IP address
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Host {
     Domain(Domain),
@@ -25,6 +31,8 @@ impl std::str::FromStr for Host {
     }
 }
 
+/// A NewType around `String` to hold DNS domains.
+/// No check is done when you convert something into `Domain`.
 #[derive(NewType, Debug, PartialEq, Eq, Clone)]
 pub struct Domain(String);
 

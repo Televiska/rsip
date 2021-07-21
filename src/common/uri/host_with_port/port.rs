@@ -1,5 +1,6 @@
 use rsip_derives::NewType;
 
+/// A simple NewType around u16, as part of the [HostWithPort](super::HostWithPort).
 #[derive(NewType, Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Port(u16);
 

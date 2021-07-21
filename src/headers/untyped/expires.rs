@@ -1,5 +1,6 @@
 use rsip_derives::UntypedHeader;
 
+/// The `Expires` header in its [untyped](super) form.
 #[derive(UntypedHeader, Debug, PartialEq, Eq, Clone)]
 pub struct Expires(String);
 

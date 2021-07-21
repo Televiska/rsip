@@ -5,6 +5,8 @@ pub mod untyped;
 pub use header::Header;
 pub use untyped::*;
 
+/// Simple NewType around `Vec<Header>` that gives many helpful methods when dealing with headers
+/// in [super::Request], [super::Response] and [super::SipMessage].
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct Headers(Vec<Header>);
 
