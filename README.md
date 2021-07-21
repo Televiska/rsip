@@ -197,5 +197,3 @@ Content-Length: 0
 
 ## To Do
 * write more tests, especially around edge cases
-* provide more helpful builders & services
-* write documentation
