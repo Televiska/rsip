@@ -133,6 +133,26 @@ fn display() {
 }
 
 #[test]
+fn parser_loop() -> Result<(), rsip::Error> {
+    let req: &str = concat!(
+                "REGISTER sips:ss2.biloxi.example.com SIP/2.0\r\n",
+                "Via: SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashd92\r\n",
+                "Max-Forwards: 70\r\n",
+                "From: Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH\r\n",
+                "To: Bob <sips:bob@biloxi.example.com>\r\n",
+                "Call-ID: 1j9FpLxk3uxtm8tn@biloxi.example.com\r\n",
+                "CSeq: 2 REGISTER\r\n",
+                "Contact: <sips:bob@client.biloxi.example.com>\r\n",
+                "Authorization: Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"\r\n",
+                "Content-Length: 0\r\n\r\n"
+            );
+    let parsed_request = Request::try_from(req.clone().as_bytes())?;
+    assert_eq!(req, String::from(parsed_request).as_str());
+
+    Ok(())
+}
+
+#[test]
 fn parser() {
     assert_eq!(
         Request::try_from("REGISTER sip:server.com SIP/2.0\r\n\r\n".as_bytes()),

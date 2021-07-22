@@ -86,6 +86,24 @@ fn display() {
 }
 
 #[test]
+fn parser_loop() -> Result<(), rsip::Error> {
+    let resp: &str = concat!(
+               "SIP/2.0 401 Unauthorized\r\n",
+               "Via: SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashds7;received=192.0.2.201\r\n",
+               "From: Bob <sips:bob@biloxi.example.com>;tag=a73kszlfl\r\n",
+               "To: Bob <sips:bob@biloxi.example.com>;tag=1410948204\r\n",
+               "Call-ID: 1j9FpLxk3uxtm8tn@biloxi.example.com\r\n",
+               "CSeq: 1 REGISTER\r\n",
+               "WWW-Authenticate: Digest realm=\"atlanta.example.com\", qop=\"auth\", nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\", stale=FALSE, algorithm=MD5\r\n",
+               "Content-Length: 0\r\n\r\n"
+            );
+    let parsed_response = Response::try_from(resp.clone().as_bytes())?;
+    assert_eq!(resp, String::from(parsed_response).as_str());
+
+    Ok(())
+}
+
+#[test]
 fn parser() {
     assert_eq!(
         Response::try_from("SIP/2.0 401 Unauthorized\r\n\r\n".as_bytes()),
