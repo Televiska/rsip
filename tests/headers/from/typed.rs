@@ -14,7 +14,7 @@ fn display() -> Result<(), rsip::Error> {
             From {
                 display_name: Some("Alice".into()),
                 uri: uri::Uri {
-                    schema: Some(uri::Schema::Sip),
+                    scheme: Some(uri::Scheme::Sip),
                     auth: Some(uri::Auth {
                         user: "alice".into(),
                         password: None
@@ -38,7 +38,7 @@ fn from_tokenizer() -> Result<(), rsip::Error> {
         Tokenizer {
             display_name: Some("Alice"),
             uri: uri::Tokenizer {
-                schema: Some("sip".as_bytes().into()),
+                scheme: Some("sip".as_bytes().into()),
                 auth: Some(uri::auth::Tokenizer {
                     user: "alice".as_bytes(),
                     password: None
@@ -53,7 +53,7 @@ fn from_tokenizer() -> Result<(), rsip::Error> {
         Ok(From {
             display_name: Some("Alice".into()),
             uri: uri::Uri {
-                schema: Some(uri::Schema::Sip),
+                scheme: Some(uri::Scheme::Sip),
                 auth: Some(uri::Auth {
                     user: "alice".into(),
                     password: None

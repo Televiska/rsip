@@ -78,7 +78,7 @@
 //! let typed_from: rsip::typed::From = rsip::typed::From {
 //!     display_name: Some("Bob".into()),
 //!     uri: rsip::Uri {
-//!         schema: Some(rsip::Schema::Sips),
+//!         scheme: Some(rsip::Scheme::Sips),
 //!         auth: Some(rsip::Auth {
 //!             user: "Bob".into(),
 //!             password: None,
@@ -94,7 +94,7 @@
 //!
 //! As you can see in the typed `From` example, a very crucial part is the [Uri](Uri). The uri we want to generate is
 //! `sips:bob@biloxi.example.com` as in the untyped header above. Hence:
-//! * we specify hat the [schema](Schema) of the Uri is `Schema::Sips`
+//! * we specify hat the [scheme](Scheme) of the Uri is `Scheme::Sips`
 //! * we specify the auth part of the Uri, but only the user part which is `Bob`. We do that
 //! using the helpful [Auth](Auth) struct,
 //! * we specify the host part of the Uri, which is defined in the Uri as
@@ -117,7 +117,7 @@
 //! # let typed_from: rsip::typed::From = rsip::typed::From {
 //! #     display_name: Some("Bob".into()),
 //! #     uri: rsip::Uri {
-//! #         schema: Some(rsip::Schema::Sips),
+//! #         scheme: Some(rsip::Scheme::Sips),
 //! #         auth: Some(rsip::Auth {
 //! #             user: "Bob".into(),
 //! #             password: None,
@@ -140,7 +140,7 @@
 //! # let typed_from: rsip::typed::From = rsip::typed::From {
 //! #     display_name: Some("Bob".into()),
 //! #     uri: rsip::Uri {
-//! #         schema: Some(rsip::Schema::Sips),
+//! #         scheme: Some(rsip::Scheme::Sips),
 //! #         auth: Some(rsip::Auth {
 //! #             user: "Bob".into(),
 //! #             password: None,
@@ -193,7 +193,7 @@
 //! let request = rsip::Request {
 //!     method: rsip::Method::Register,
 //!     uri: rsip::Uri {
-//!         schema: Some(rsip::Schema::Sips),
+//!         scheme: Some(rsip::Scheme::Sips),
 //!         host_with_port: rsip::Domain::from("ss2.biloxi.example.com").into(),
 //!         ..Default::default()
 //!     },
@@ -213,7 +213,7 @@
 //! # let request = rsip::Request {
 //! #     method: rsip::Method::Register,
 //! #     uri: rsip::Uri {
-//! #         schema: Some(rsip::Schema::Sips),
+//! #         scheme: Some(rsip::Scheme::Sips),
 //! #         host_with_port: rsip::Domain::from("ss2.biloxi.example.com").into(),
 //! #         ..Default::default()
 //! #     },
@@ -227,7 +227,7 @@
 //! # let request = rsip::Request {
 //! #     method: rsip::Method::Register,
 //! #     uri: rsip::Uri {
-//! #         schema: Some(rsip::Schema::Sips),
+//! #         scheme: Some(rsip::Scheme::Sips),
 //! #         host_with_port: rsip::Domain::from("ss2.biloxi.example.com").into(),
 //! #         ..Default::default()
 //! #     },
@@ -311,6 +311,7 @@ impl<'a, T> AbstractInput<'a> for T where
 pub(crate) mod utils {
     pub fn opt_trim(input: &str) -> Option<&str> {
         let input = input.trim();
+
         match input.is_empty() {
             true => None,
             false => Some(input),

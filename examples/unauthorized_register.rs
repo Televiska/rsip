@@ -2,7 +2,7 @@ pub fn generate_register() -> rsip::SipMessage {
     let mut headers: rsip::Headers = Default::default();
 
     let base_uri = rsip::Uri {
-        schema: Some(rsip::Schema::Sips),
+        scheme: Some(rsip::Scheme::Sips),
         auth: Some(("bob", Option::<String>::None).into()),
         host_with_port: rsip::Domain::from("biloxi.example.com").into(),
         ..Default::default()
@@ -60,7 +60,7 @@ pub fn generate_register() -> rsip::SipMessage {
     rsip::Request {
         method: rsip::Method::Register,
         uri: rsip::Uri {
-            schema: Some(rsip::Schema::Sips),
+            scheme: Some(rsip::Scheme::Sips),
             host_with_port: rsip::Domain::from("ss2.biloxi.example.com").into(),
             ..Default::default()
         },

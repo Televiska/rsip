@@ -11,7 +11,7 @@ fn tokenizer() {
             version: ("2".as_bytes(), "0".as_bytes()).into(),
             transport: "TLS".as_bytes().into(),
             uri: uri::Tokenizer {
-                schema: None,
+                scheme: None,
                 auth: None,
                 host_with_port: (
                     "client.biloxi.example.com".as_bytes(),

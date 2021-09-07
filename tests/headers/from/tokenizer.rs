@@ -10,7 +10,7 @@ fn tokenizer() {
         Ok(Tokenizer {
             display_name: Some("Alice"),
             uri: uri::Tokenizer {
-                schema: Some("sip".as_bytes().into()),
+                scheme: Some("sip".as_bytes().into()),
                 auth: Some(uri::auth::Tokenizer {
                     user: "alice".as_bytes(),
                     password: None
@@ -28,7 +28,7 @@ fn tokenizer() {
         Ok(Tokenizer {
             display_name: None,
             uri: uri::Tokenizer {
-                schema: Some("sip".as_bytes().into()),
+                scheme: Some("sip".as_bytes().into()),
                 auth: Some(uri::auth::Tokenizer {
                     user: "alice".as_bytes(),
                     password: None
@@ -46,7 +46,7 @@ fn tokenizer() {
         Ok(Tokenizer {
             display_name: None,
             uri: uri::Tokenizer {
-                schema: Some("sip".as_bytes().into()),
+                scheme: Some("sip".as_bytes().into()),
                 auth: Some(uri::auth::Tokenizer {
                     user: "alice".as_bytes(),
                     password: None

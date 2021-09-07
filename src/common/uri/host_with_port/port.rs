@@ -27,3 +27,10 @@ impl std::convert::TryFrom<&str> for Port {
         Ok(from.parse::<u16>()?.into())
     }
 }
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Port {
+    fn random() -> Self {
+        Self(testing_utils::rand_num_from(1001..50000))
+    }
+}

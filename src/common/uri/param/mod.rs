@@ -8,7 +8,6 @@ pub mod method;
 pub mod q;
 pub mod received;
 pub mod tag;
-pub mod transport;
 pub mod ttl;
 pub mod user;
 
@@ -19,10 +18,10 @@ pub use method::Method;
 pub use q::Q;
 pub use received::Received;
 pub use tag::Tag;
-pub use transport::Transport;
 pub use ttl::Ttl;
 pub use user::User;
 
+use crate::Transport;
 use rsip_derives::NewType;
 
 /// This enum holds all the possible parameters found in SIP(S) URIs, and headers like `From`,
@@ -84,11 +83,13 @@ pub mod tokenizer {
         type Error = Error;
 
         fn try_into(self) -> Result<Param, Error> {
+            use std::str::FromStr;
+
             let tokenizer: Utf8Tokenizer = self.try_into()?;
 
             match (tokenizer.name, tokenizer.value) {
                 (s, Some(v)) if s.eq_ignore_ascii_case("transport") => {
-                    Ok(Param::Transport(Transport::new(v)))
+                    Ok(Param::Transport(Transport::from_str(v)?))
                 }
                 (s, Some(v)) if s.eq_ignore_ascii_case("user") => Ok(Param::User(User::new(v))),
                 (s, Some(v)) if s.eq_ignore_ascii_case("method") => {

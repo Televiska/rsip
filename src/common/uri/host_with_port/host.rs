@@ -1,6 +1,7 @@
 use crate::Error;
 use rsip_derives::NewType;
 use std::convert::TryInto;
+use std::hash::{Hash, Hasher};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 /// The `Host` enum represents the host part of the [HostWithPort](super::HostWithPort) struct
@@ -33,8 +34,20 @@ impl std::str::FromStr for Host {
 
 /// A NewType around `String` to hold DNS domains.
 /// No check is done when you convert something into `Domain`.
-#[derive(NewType, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, Debug, Eq, Clone)]
 pub struct Domain(String);
+
+impl Hash for Domain {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.0.hash(state);
+    }
+}
+
+impl PartialEq for Domain {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
 
 impl std::fmt::Display for Host {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -89,5 +102,27 @@ impl TryInto<SocketAddr> for Host {
     fn try_into(self) -> Result<SocketAddr, Error> {
         let ip_addr: IpAddr = self.try_into()?;
         Ok(SocketAddr::new(ip_addr, 5060))
+    }
+}
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Domain {
+    fn random() -> Self {
+        Domain(format!(
+            "{}.{}",
+            String::random(),
+            testing_utils::rand_str_of(3)
+        ))
+    }
+}
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Host {
+    fn random() -> Self {
+        if bool::random() {
+            Host::Domain(Domain::random())
+        } else {
+            Host::IpAddr(IpAddr::random())
+        }
     }
 }

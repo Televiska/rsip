@@ -4,7 +4,7 @@ use rsip::{
         Method,
     },
     headers::auth::{Algorithm, AuthQop},
-    services::auth::DigestGenerator,
+    services::DigestGenerator,
 };
 
 #[test]

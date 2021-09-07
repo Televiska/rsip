@@ -37,7 +37,7 @@ impl<'a> DigestGenerator<'a> {
             nonce: &auth.nonce,
             uri: &auth.uri,
             realm: &auth.realm,
-            method: &method,
+            method,
             qop: auth.qop.as_ref(),
             algorithm: auth.algorithm.unwrap_or(Algorithm::Md5),
         }

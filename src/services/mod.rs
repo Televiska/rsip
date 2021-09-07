@@ -2,6 +2,6 @@
 //!
 
 #[doc(hidden)]
-pub mod auth;
+pub mod digest_generator;
 
-pub use auth::DigestGenerator;
+pub use digest_generator::DigestGenerator;

@@ -1,16 +1,16 @@
 pub mod auth;
 pub mod host_with_port;
 pub mod params;
-pub mod schema;
+pub mod scheme;
 
-use rsip::common::uri::{param::Maddr, Param, Schema, Tokenizer, Uri};
+use rsip::common::uri::{param::Maddr, Param, Scheme, Tokenizer, Uri};
 use std::convert::TryInto;
 
 #[test]
 fn display() {
     assert_eq!(
         Uri {
-            schema: None,
+            scheme: None,
             auth: None,
             host_with_port: ("server2.com", Option::<u16>::None).into(),
             params: Default::default(),
@@ -22,7 +22,7 @@ fn display() {
 
     assert_eq!(
         Uri {
-            schema: None,
+            scheme: None,
             auth: Some(("user", Option::<String>::None).into()),
             host_with_port: ("server2.com", Option::<u16>::None).into(),
             params: Default::default(),
@@ -34,7 +34,7 @@ fn display() {
 
     assert_eq!(
         Uri {
-            schema: None,
+            scheme: None,
             auth: Some(("user", Some("password")).into()),
             host_with_port: ("server2.com", Option::<u16>::None).into(),
             params: Default::default(),
@@ -46,7 +46,7 @@ fn display() {
 
     assert_eq!(
         Uri {
-            schema: None,
+            scheme: None,
             auth: Some(("user", Some("password")).into()),
             host_with_port: ("server2.com", Some(5060)).into(),
             params: Default::default(),
@@ -58,7 +58,7 @@ fn display() {
 
     assert_eq!(
         Uri {
-            schema: Some(Schema::Sips),
+            scheme: Some(Scheme::Sips),
             auth: None,
             host_with_port: ("client.biloxi.example.com", Some(5061)).into(),
             params: vec![
@@ -76,7 +76,7 @@ fn display() {
 fn parser() {
     assert_eq!(
         Tokenizer {
-            schema: None,
+            scheme: None,
             auth: None,
             host_with_port: ("server2.com".as_bytes(), None).into(),
             params: vec![],
@@ -84,7 +84,7 @@ fn parser() {
         }
         .try_into(),
         Ok(Uri {
-            schema: None,
+            scheme: None,
             auth: None,
             host_with_port: ("server2.com", Option::<u16>::None).into(),
             params: Default::default(),
@@ -94,7 +94,7 @@ fn parser() {
 
     assert_eq!(
         Tokenizer {
-            schema: None,
+            scheme: None,
             auth: Some(("user".as_bytes(), None).into()),
             host_with_port: ("server2.com".as_bytes(), None).into(),
             params: vec![],
@@ -102,7 +102,7 @@ fn parser() {
         }
         .try_into(),
         Ok(Uri {
-            schema: None,
+            scheme: None,
             auth: Some(("user", Option::<String>::None).into()),
             host_with_port: ("server2.com", Option::<u16>::None).into(),
             params: Default::default(),
@@ -112,7 +112,7 @@ fn parser() {
 
     assert_eq!(
         Tokenizer {
-            schema: None,
+            scheme: None,
             auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
             host_with_port: ("server2.com".as_bytes(), None).into(),
             params: vec![],
@@ -120,7 +120,7 @@ fn parser() {
         }
         .try_into(),
         Ok(Uri {
-            schema: None,
+            scheme: None,
             auth: Some(("user", Some("password")).into()),
             host_with_port: ("server2.com", Option::<u16>::None).into(),
             params: Default::default(),
@@ -130,7 +130,7 @@ fn parser() {
 
     assert_eq!(
         Tokenizer {
-            schema: None,
+            scheme: None,
             auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
             host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
             params: vec![],
@@ -138,7 +138,7 @@ fn parser() {
         }
         .try_into(),
         Ok(Uri {
-            schema: None,
+            scheme: None,
             auth: Some(("user", Some("password")).into()),
             host_with_port: ("server2.com", Some(5060)).into(),
             params: Default::default(),
@@ -148,7 +148,7 @@ fn parser() {
 
     assert_eq!(
         Tokenizer {
-            schema: Some("sip".as_bytes().into()),
+            scheme: Some("sip".as_bytes().into()),
             auth: Some(("user".as_bytes(), None).into()),
             host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
             params: vec![],
@@ -156,7 +156,7 @@ fn parser() {
         }
         .try_into(),
         Ok(Uri {
-            schema: Some(Schema::Sip),
+            scheme: Some(Scheme::Sip),
             auth: Some(("user", Option::<String>::None).into()),
             host_with_port: ("server2.com", Some(5060)).into(),
             params: Default::default(),
@@ -166,7 +166,7 @@ fn parser() {
 
     assert_eq!(
         Tokenizer {
-            schema: Some("sip".as_bytes().into()),
+            scheme: Some("sip".as_bytes().into()),
             auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
             host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
             params: vec![],
@@ -174,7 +174,7 @@ fn parser() {
         }
         .try_into(),
         Ok(Uri {
-            schema: Some(Schema::Sip),
+            scheme: Some(Scheme::Sip),
             auth: Some(("user", Some("password")).into()),
             host_with_port: ("server2.com", Some(5060)).into(),
             params: Default::default(),
@@ -184,7 +184,7 @@ fn parser() {
 
     assert_eq!(
         Tokenizer {
-            schema: Some("sips".as_bytes().into()),
+            scheme: Some("sips".as_bytes().into()),
             auth: None,
             host_with_port: (
                 "client.biloxi.example.com".as_bytes(),
@@ -199,7 +199,7 @@ fn parser() {
         }
         .try_into(),
         Ok(Uri {
-            schema: Some(Schema::Sips),
+            scheme: Some(Scheme::Sips),
             auth: None,
             host_with_port: ("client.biloxi.example.com", Some(5061)).into(),
             params: vec![
@@ -218,7 +218,7 @@ fn tokenizer() {
         Ok((
             "something".as_bytes(),
             Tokenizer {
-                schema: None,
+                scheme: None,
                 auth: None,
                 host_with_port: ("server2.com".as_bytes(), None).into(),
                 params: vec![],
@@ -232,7 +232,7 @@ fn tokenizer() {
         Ok((
             "something".as_bytes(),
             Tokenizer {
-                schema: None,
+                scheme: None,
                 auth: Some(("user".as_bytes(), None).into()),
                 host_with_port: ("server2.com".as_bytes(), None).into(),
                 params: vec![],
@@ -246,7 +246,7 @@ fn tokenizer() {
         Ok((
             "something".as_bytes(),
             Tokenizer {
-                schema: None,
+                scheme: None,
                 auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
                 host_with_port: ("server2.com".as_bytes(), None).into(),
                 params: vec![],
@@ -260,7 +260,7 @@ fn tokenizer() {
         Ok((
             "something".as_bytes(),
             Tokenizer {
-                schema: None,
+                scheme: None,
                 auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
                 host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
                 params: vec![],
@@ -274,7 +274,7 @@ fn tokenizer() {
         Ok((
             "something".as_bytes(),
             Tokenizer {
-                schema: Some("sip".as_bytes().into()),
+                scheme: Some("sip".as_bytes().into()),
                 auth: Some(("user".as_bytes(), None).into()),
                 host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
                 params: vec![],
@@ -288,7 +288,7 @@ fn tokenizer() {
         Ok((
             "something".as_bytes(),
             Tokenizer {
-                schema: Some("sip".as_bytes().into()),
+                scheme: Some("sip".as_bytes().into()),
                 auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
                 host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
                 params: vec![],
@@ -302,7 +302,7 @@ fn tokenizer() {
         Ok((
             "something".as_bytes(),
             Tokenizer {
-                schema: Some("sips".as_bytes().into()),
+                scheme: Some("sips".as_bytes().into()),
                 auth: None,
                 host_with_port: ("ss2.biloxi.example.com".as_bytes(), None).into(),
                 params: vec![],
@@ -316,7 +316,7 @@ fn tokenizer() {
         Ok((
             "something".as_bytes(),
             Tokenizer {
-                schema: Some("sips".as_bytes().into()),
+                scheme: Some("sips".as_bytes().into()),
                 auth: None,
                 host_with_port: ("ss2.biloxi.example.com".as_bytes(), None).into(),
                 params: vec![("maddr".as_bytes(), Some("255.255.255.0".as_bytes())).into()],
@@ -330,7 +330,7 @@ fn tokenizer() {
         Ok((
             "something".as_bytes(),
             Tokenizer {
-                schema: Some("sips".as_bytes().into()),
+                scheme: Some("sips".as_bytes().into()),
                 auth: None,
                 host_with_port: (
                     "client.biloxi.example.com".as_bytes(),
@@ -350,7 +350,7 @@ fn tokenizer() {
         Ok((
             "something".as_bytes(),
             Tokenizer {
-                schema: Some("sips".as_bytes().into()),
+                scheme: Some("sips".as_bytes().into()),
                 auth: None,
                 host_with_port: (
                     "client.biloxi.example.com".as_bytes(),
@@ -373,7 +373,7 @@ fn tokenizer() {
         Ok((
             "something".as_bytes(),
             Tokenizer {
-                schema: Some("sips".as_bytes().into()),
+                scheme: Some("sips".as_bytes().into()),
                 auth: None,
                 host_with_port: (
                     "client.biloxi.example.com".as_bytes(),

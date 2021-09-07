@@ -1,22 +1,22 @@
-use rsip::common::uri::schema::{Schema, Tokenizer};
+use rsip::common::uri::scheme::{Scheme, Tokenizer};
 use std::convert::TryInto;
 
 #[test]
 fn display() {
-    assert_eq!(Schema::Sip.to_string(), String::from("sip"));
+    assert_eq!(Scheme::Sip.to_string(), String::from("sip"));
 
-    assert_eq!(Schema::Sips.to_string(), String::from("sips"));
+    assert_eq!(Scheme::Sips.to_string(), String::from("sips"));
 }
 
 #[test]
 fn parser() {
     assert_eq!(
         Tokenizer::from("sip".as_bytes()).try_into(),
-        Ok(Schema::Sip)
+        Ok(Scheme::Sip)
     );
     assert_eq!(
         Tokenizer::from("sips".as_bytes()).try_into(),
-        Ok(Schema::Sips)
+        Ok(Scheme::Sips)
     );
 }
 
