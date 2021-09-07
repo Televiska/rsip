@@ -68,7 +68,7 @@ fn generate_register_request() -> rsip::SipMessage {
     let mut headers: rsip::Headers = Default::default();
 
     let base_uri = rsip::Uri {
-        schema: Some(rsip::Schema::Sips),
+        schema: Some(rsip::Scheme::Sips),
         auth: Some(("bob", Option::<String>::None).into()),
         host_with_port: rsip::Domain::from("biloxi.example.com").into(),
         ..Default::default()
@@ -126,7 +126,7 @@ fn generate_register_request() -> rsip::SipMessage {
     rsip::Request {
         method: rsip::Method::Register,
         uri: rsip::Uri {
-            schema: Some(rsip::Schema::Sips),
+            schema: Some(rsip::Scheme::Sips),
             host_with_port: rsip::Domain::from("ss2.biloxi.example.com").into(),
             ..Default::default()
         },
@@ -196,4 +196,7 @@ Content-Length: 0
 ```
 
 ## To Do
+* improve errors
 * write more tests, especially around edge cases
+* Make tokenizer an associated generic type on each type defined in this lib
+* implement more common traits like Hash etc

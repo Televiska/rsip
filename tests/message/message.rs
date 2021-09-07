@@ -9,7 +9,7 @@ use std::convert::TryFrom;
 #[test]
 fn methods() {
     let uri = uri::Uri {
-        schema: Some(uri::schema::Schema::Sips),
+        scheme: Some(uri::scheme::Scheme::Sips),
         auth: None,
         host_with_port: uri::HostWithPort {
             host: uri::Host::Domain("ss2.biloxi.example.com".into()),
@@ -77,7 +77,7 @@ fn parser() {
         Ok(SipMessage::Request(Request {
             method: common::method::Method::Register,
             uri: uri::Uri {
-                schema: Some(uri::schema::Schema::Sip),
+                scheme: Some(uri::scheme::Scheme::Sip),
                 auth: None,
                 host_with_port: uri::HostWithPort {
                     host: uri::Host::Domain("server.com".into()),
@@ -110,7 +110,7 @@ fn parser() {
         Ok(SipMessage::Request(Request {
             method: common::method::Method::Register,
             uri: uri::Uri {
-                schema: Some(uri::schema::Schema::Sips),
+                scheme: Some(uri::scheme::Scheme::Sips),
                 auth: None,
                 host_with_port: uri::HostWithPort {
                     host: uri::Host::Domain("ss2.biloxi.example.com".into()),
@@ -184,7 +184,7 @@ fn tokenizer() {
             Tokenizer::Request(request::Tokenizer {
                 method: "REGISTER".as_bytes().into(),
                 uri: uri::Tokenizer {
-                    schema: Some("sip".as_bytes().into()),
+                    scheme: Some("sip".as_bytes().into()),
                     auth: None,
                     host_with_port: ("server.com".as_bytes(), None).into(),
                     params: vec![],
@@ -217,7 +217,7 @@ fn tokenizer() {
             Tokenizer::Request(request::Tokenizer {
                 method: "REGISTER".as_bytes().into(),
                 uri: uri::Tokenizer {
-                    schema: Some("sips".as_bytes().into()),
+                    scheme: Some("sips".as_bytes().into()),
                     auth: None,
                     host_with_port: ("ss2.biloxi.example.com".as_bytes(), None).into(),
                     params: vec![],

@@ -120,7 +120,7 @@ impl TryFrom<String> for Request {
     type Error = Error;
 
     fn try_from(from: String) -> Result<Self, Self::Error> {
-        Tokenizer::tokenize(&from.as_bytes())?.1.try_into()
+        Tokenizer::tokenize(from.as_bytes())?.1.try_into()
     }
 }
 

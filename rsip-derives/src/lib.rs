@@ -26,11 +26,11 @@ pub fn untyped_header_signature(item: TokenStream) -> TokenStream {
     //let field_type = field_type(ast.data);
     //let field_name = field_type_name(field_type.clone());
 
-    let untyped_methods = untyped_header::trait_methods(&struct_name);
-    let display = untyped_header::display(&struct_name, opts.display_name);
-    let into_header = untyped_header::into_header(&struct_name);
-    let from_into_string = untyped_header::from_into_string(&struct_name);
-    let from_str = untyped_header::from_str(&struct_name);
+    let untyped_methods = untyped_header::trait_methods(struct_name);
+    let display = untyped_header::display(struct_name, opts.display_name);
+    let into_header = untyped_header::into_header(struct_name);
+    let from_into_string = untyped_header::from_into_string(struct_name);
+    let from_str = untyped_header::from_str(struct_name);
 
     let expanded = quote! {
         #untyped_methods
@@ -52,7 +52,7 @@ pub fn to_typed_header_signature(item: TokenStream) -> TokenStream {
     //let field_type = field_type(ast.data);
     //let field_name = field_type_name(field_type.clone());
 
-    let to_typed_header = to_typed_header::trait_methods(&struct_name);
+    let to_typed_header = to_typed_header::trait_methods(struct_name);
 
     let expanded = quote! {
         #to_typed_header
@@ -69,12 +69,12 @@ pub fn typed_header_signature(item: TokenStream) -> TokenStream {
     //let field_type = field_type(ast.data);
     //let field_name = field_type_name(field_type.clone());
 
-    let typed_methods = typed_header::trait_methods(&struct_name);
-    let into_string = typed_header::into_string(&struct_name);
-    let into_untyped = typed_header::into_untyped(&struct_name);
-    let untyped = typed_header::untyped(&struct_name);
-    let into_header = typed_header::into_header(&struct_name);
-    let try_from_untyped = typed_header::try_from_untyped(&struct_name);
+    let typed_methods = typed_header::trait_methods(struct_name);
+    let into_string = typed_header::into_string(struct_name);
+    let into_untyped = typed_header::into_untyped(struct_name);
+    let untyped = typed_header::untyped(struct_name);
+    let into_header = typed_header::into_header(struct_name);
+    let try_from_untyped = typed_header::try_from_untyped(struct_name);
 
     let expanded = quote! {
         #typed_methods
@@ -125,7 +125,7 @@ pub fn string_typed_header_signature(item: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(item as DeriveInput);
     let struct_name = &ast.ident;
 
-    let expanded = typed_header::string_typed_mods(&struct_name);
+    let expanded = typed_header::string_typed_mods(struct_name);
 
     expanded.into()
 }
@@ -140,7 +140,7 @@ pub fn integer_typed_header_signature(item: TokenStream) -> TokenStream {
         .integer_type
         .expect("not specified integer type");
 
-    let expanded = typed_header::integer_typed_mods(&struct_name, &integer_type);
+    let expanded = typed_header::integer_typed_mods(struct_name, &integer_type);
 
     expanded.into()
 }
@@ -151,14 +151,14 @@ pub fn new_type_signature(item: TokenStream) -> TokenStream {
     let struct_name = &ast.ident;
     let field_type = field_type(ast.data.clone());
 
-    let new_signature = newtype::new_signature(&struct_name, &field_type);
-    let value_signature = newtype::value_signature(&struct_name, &field_type);
-    let display_signature = newtype::display_signature(&struct_name);
-    let from_inner_signature = newtype::from_inner_signature(&struct_name, &field_type);
-    let into_inner_signature = newtype::into_inner_signature(&struct_name, &field_type);
+    let new_signature = newtype::new_signature(struct_name, &field_type);
+    let value_signature = newtype::value_signature(struct_name, &field_type);
+    let display_signature = newtype::display_signature(struct_name);
+    let from_inner_signature = newtype::from_inner_signature(struct_name, &field_type);
+    let into_inner_signature = newtype::into_inner_signature(struct_name, &field_type);
 
     let from_str_signature = match is_string(field_type) {
-        true => newtype::from_str_signature(&struct_name),
+        true => newtype::from_str_signature(struct_name),
         false => quote! {},
     };
 
