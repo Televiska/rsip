@@ -23,6 +23,9 @@
 //! to a different crate. It was inspired by [libsip](https://github.com/ByteHeathen/libsip)
 //! but has taken a bit different path regarding parsing, flexibility & safety.
 //!
+//! For locating SIP servers ([RFC3263](https://datatracker.ietf.org/doc/html/rfc3263)) take a
+//! look on [rsip-dns](https://github.com/vasilakisfil/rsip-dns) library.
+//!
 //! ## SIP: It's all about headers
 //! In case you haven't worked with SIP before let me tell you one thing: headers in SIP play
 //! a crucial role, basically most of your logic resides around the headers (and there are plenty

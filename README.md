@@ -27,6 +27,8 @@ It was inspired by [libsip](https://github.com/ByteHeathen/libsip) but has taken
 a bit different path regarding parsing, flexibility & safety.
 
 
+For locating SIP servers ([RFC3263](https://datatracker.ietf.org/doc/html/rfc3263)) take a look on [rsip-dns](https://github.com/vasilakisfil/rsip-dns) library.
+
 ## Features
 * This thing is _fast_, uses nom for basic message parsing and headers are parsed
   only when needed, on-demand. Intentions are to make it even faster by providing
