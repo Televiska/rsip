@@ -13,7 +13,7 @@ impl Default for CallId {
 }
 
 impl CallId {
-    fn new(value: String) -> Self {
+    pub fn new(value: String) -> Self {
         Self(value)
     }
 }

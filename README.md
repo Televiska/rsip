@@ -26,29 +26,30 @@ initially but then was split to a different crate.
 It was inspired by [libsip](https://github.com/ByteHeathen/libsip) but has taken
 a bit different path regarding parsing, flexibility & safety.
 
-
 For locating SIP servers ([RFC3263](https://datatracker.ietf.org/doc/html/rfc3263)) take a look on [rsip-dns](https://github.com/vasilakisfil/rsip-dns) library.
 
 ## Features
-* This thing is _fast_, uses nom for basic message parsing and headers are parsed
+
+- This thing is _fast_, uses nom for basic message parsing and headers are parsed
   only when needed, on-demand. Intentions are to make it even faster by providing
   a non-owning variant (everything is an &str underneath)
-* Strong (new)types everywhere. Even if underlying type is String, everything is
+- Strong (new)types everywhere. Even if underlying type is String, everything is
   a NewType for better type safety.
-* Provides typed headers on demand, like `From`, `To`, `Contact`, `Via` etc
+- Provides typed headers on demand, like `From`, `To`, `Contact`, `Via` etc
   The reasoning behind on demand strongly typed headers is 2 fold:
-  * perfromance & memory reasons: headers are parsed only when needed
-  * it enables you to still have a working Rust SIP parser in case a typed header
-  has a bug, the peer has a bug or there is an edge/new case never seen before.
-* While performance is always a goal, user friendliness and usability is the main
- goal. A lot of helpful functions and convertions to make things easy :)
-* Very simple code structure make it super easy to extend and add new typed headers
+  - perfromance & memory reasons: headers are parsed only when needed
+  - it enables you to still have a working Rust SIP parser in case a typed header
+    has a bug, the peer has a bug or there is an edge/new case never seen before.
+- While performance is always a goal, user friendliness and usability is the main
+  goal. A lot of helpful functions and convertions to make things easy :)
+- Very simple code structure make it super easy to extend and add new typed headers
   As long as you can do [nom](https://github.com/Geal/nom) stuff, it's straightforward. The goal is to add
   many typed headers of latest RFCs like [PASSporT](https://datatracker.ietf.org/doc/html/rfc8224), [SHAKEN](https://datatracker.ietf.org/doc/html/rfc8588), [push notifications](https://datatracker.ietf.org/doc/html/rfc8599) etc
-* Provides some extra services like Digest auth generator/validator etc
+- Provides some extra services like Digest auth generator/validator etc
   Intention is to add many helper services.
 
 ## Examples
+
 For instance, generating the Register request found in [section 2.1 of RFC3665](https://datatracker.ietf.org/doc/html/rfc3665#section-2.1)
 
 ```
@@ -128,7 +129,7 @@ fn generate_register_request() -> rsip::SipMessage {
     rsip::Request {
         method: rsip::Method::Register,
         uri: rsip::Uri {
-            schema: Some(rsip::Scheme::Sips),
+            scheme: Some(rsip::Scheme::Sips),
             host_with_port: rsip::Domain::from("ss2.biloxi.example.com").into(),
             ..Default::default()
         },
@@ -198,7 +199,8 @@ Content-Length: 0
 ```
 
 ## To Do
-* improve errors
-* write more tests, especially around edge cases
-* Make tokenizer an associated generic type on each type defined in this lib
-* implement more common traits like Hash etc
+
+- improve errors
+- write more tests, especially around edge cases
+- Make tokenizer an associated generic type on each type defined in this lib
+- implement more common traits like Hash etc
