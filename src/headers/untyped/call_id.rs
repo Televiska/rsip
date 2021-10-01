@@ -11,3 +11,9 @@ impl Default for CallId {
         Self(format!("{}@example.com", Uuid::new_v4().to_string()))
     }
 }
+
+impl CallId {
+    fn new(value: String) -> Self {
+        Self(value)
+    }
+}
