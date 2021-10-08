@@ -131,6 +131,10 @@ pub trait HeadersExt: super::HasHeaders {
     fn authorization_header(&self) -> Option<&headers::Authorization> {
         header_opt!(self.headers().iter(), Header::Authorization)
     }
+    
+    fn www_authenticate_header(&self) -> Option<&headers::WwwAuthenticate> {
+        header_opt!(self.headers().iter(), Header::WwwAuthenticate)
+    }
 
     fn expires_header(&self) -> Option<&headers::Expires> {
         header_opt!(self.headers().iter(), Header::Expires)
