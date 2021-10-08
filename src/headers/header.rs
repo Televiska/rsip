@@ -155,7 +155,7 @@ pub mod tokenizer {
                 }
                 s if s.eq_ignore_ascii_case("CSeq") => Ok(Header::CSeq(CSeq::new(tokenizer.value))),
                 s if s.eq_ignore_ascii_case("Call-Id") => {
-                    Ok(Header::CallId(CallId::new(tokenizer.value)))
+                    Ok(Header::CallId(CallId::new(tokenizer.value.to_string())))
                 }
                 s if s.eq_ignore_ascii_case("Call-Info") => {
                     Ok(Header::CallInfo(CallInfo::new(tokenizer.value)))
