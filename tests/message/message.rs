@@ -173,6 +173,82 @@ fn parser() {
             body: vec![]
         })),
     );
+
+    assert_eq!(
+        SipMessage::try_from(
+            concat!(
+                "INVITE sip:1004@server.test.com:5060 SIP/2.0\r\n",
+                "Accept: application/sdp\r\n",
+                "Content-Type: application/sdp\r\n",
+                "Content-Length: 0\r\n\r\n",
+                "v=0\r\n"
+            )
+            .as_bytes()
+        ),
+        Ok(SipMessage::Request(Request {
+            method: common::method::Method::Invite,
+            uri: uri::Uri {
+                scheme: Some(uri::scheme::Scheme::Sip),
+                auth: Some(uri::Auth {
+                    user: "1004".into(),
+                    password: None
+                }),
+                host_with_port: uri::HostWithPort {
+                    host: uri::Host::Domain("server.test.com".into()),
+                    port: Some(5060.into())
+                },
+                params: vec![],
+                headers: vec![].into()
+            },
+            version: common::version::Version::V2,
+            headers: vec![
+                Accept::new("application/sdp").into(),
+                ContentType::new("application/sdp").into(),
+                ContentLength::new("0").into(),
+            ].into(),
+            body: vec![
+                b'v', b'=', b'0', b'\r',  b'\n'
+            ]       
+        }))
+    );
+
+    assert_eq!(
+        SipMessage::try_from(
+            concat!(
+                "INVITE sip:1004@server.test.com:5060 SIP/2.0\r\n",
+                "Accept: application/sdp\r\n",
+                "Content-Type: application/sdp\r\n",
+                "Content-Length: 0\r\n\r\n",
+                "a=fmtp:96 0-15\r\n"
+            )
+            .as_bytes()
+        ),
+        Ok(SipMessage::Request(Request {
+            method: common::method::Method::Invite,
+            uri: uri::Uri {
+                scheme: Some(uri::scheme::Scheme::Sip),
+                auth: Some(uri::Auth {
+                    user: "1004".into(),
+                    password: None
+                }),
+                host_with_port: uri::HostWithPort {
+                    host: uri::Host::Domain("server.test.com".into()),
+                    port: Some(5060.into())
+                },
+                params: vec![],
+                headers: vec![].into()
+            },
+            version: common::version::Version::V2,
+            headers: vec![
+                Accept::new("application/sdp").into(),
+                ContentType::new("application/sdp").into(),
+                ContentLength::new("0").into(),
+            ].into(),
+            body: vec![
+                b'a',b'=',b'f',b'm',b't',b'p',b':',b'9',b'6',b' ',b'0',b'-',b'1',b'5',b'\r',b'\n',
+            ]       
+        }))
+    );
 }
 
 #[test]
