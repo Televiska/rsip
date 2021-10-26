@@ -205,10 +205,9 @@ fn parser() {
                 Accept::new("application/sdp").into(),
                 ContentType::new("application/sdp").into(),
                 ContentLength::new("0").into(),
-            ].into(),
-            body: vec![
-                b'v', b'=', b'0', b'\r',  b'\n'
-            ]       
+            ]
+            .into(),
+            body: vec![b'v', b'=', b'0', b'\r', b'\n']
         }))
     );
 
@@ -243,10 +242,12 @@ fn parser() {
                 Accept::new("application/sdp").into(),
                 ContentType::new("application/sdp").into(),
                 ContentLength::new("0").into(),
-            ].into(),
+            ]
+            .into(),
             body: vec![
-                b'a',b'=',b'f',b'm',b't',b'p',b':',b'9',b'6',b' ',b'0',b'-',b'1',b'5',b'\r',b'\n',
-            ]       
+                b'a', b'=', b'f', b'm', b't', b'p', b':', b'9', b'6', b' ', b'0', b'-', b'1', b'5',
+                b'\r', b'\n',
+            ]
         }))
     );
 }
