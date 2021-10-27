@@ -122,6 +122,7 @@ impl std::fmt::Display for Header {
 pub mod tokenizer {
     use super::*;
     use crate::{Error, NomError};
+    use nom::character::is_alphabetic;
     use rsip_derives::Utf8Tokenizer;
     use std::convert::TryInto;
 
@@ -276,15 +277,19 @@ pub mod tokenizer {
                 sequence::tuple,
             };
 
-            let (rem, (name, _, _, value, _)) = tuple((
-                take_until(":"),
-                tag(":"),
-                space0,
-                take_until("\r\n"),
-                tag("\r\n"),
-            ))(part)?;
-
-            Ok((rem, (name, value).into()))
+            if is_alphabetic(part[0]) {
+                let (rem, (name, _, _, value, _)) = tuple((
+                    take_until(":"),
+                    tag(":"),
+                    space0,
+                    take_until("\r\n"),
+                    tag("\r\n"),
+                ))(part)?;
+                Ok((rem, (name, value).into()))
+            } else {
+                let (rem, rest) = tag("a")(part)?;
+                Ok((rem, (rest, rest).into()))
+            }
         }
     }
 

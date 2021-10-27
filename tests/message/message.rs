@@ -180,7 +180,7 @@ fn parser() {
                 "INVITE sip:1004@server.test.com:5060 SIP/2.0\r\n",
                 "Accept: application/sdp\r\n",
                 "Content-Type: application/sdp\r\n",
-                "Content-Length: 0\r\n\r\n",
+                "Content-Length: 5\r\n\r\n",
                 "v=0\r\n"
             )
             .as_bytes()
@@ -204,7 +204,7 @@ fn parser() {
             headers: vec![
                 Accept::new("application/sdp").into(),
                 ContentType::new("application/sdp").into(),
-                ContentLength::new("0").into(),
+                ContentLength::new("5").into(),
             ]
             .into(),
             body: vec![b'v', b'=', b'0', b'\r', b'\n']
@@ -217,7 +217,7 @@ fn parser() {
                 "INVITE sip:1004@server.test.com:5060 SIP/2.0\r\n",
                 "Accept: application/sdp\r\n",
                 "Content-Type: application/sdp\r\n",
-                "Content-Length: 0\r\n\r\n",
+                "Content-Length: 16\r\n\r\n",
                 "a=fmtp:96 0-15\r\n"
             )
             .as_bytes()
@@ -241,7 +241,7 @@ fn parser() {
             headers: vec![
                 Accept::new("application/sdp").into(),
                 ContentType::new("application/sdp").into(),
-                ContentLength::new("0").into(),
+                ContentLength::new("16").into(),
             ]
             .into(),
             body: vec![
