@@ -216,6 +216,130 @@ fn parser() {
             body: vec![]
         }),
     );
+
+    assert_eq!(
+        Request::try_from(
+            concat!(
+                "REGISTER sips:ss2.biloxi.example.com SIP/2.0\r\n",
+                "Via: SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashd92\r\n",
+                "Max-Forwards: 70\r\n",
+                "From: Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH\r\n",
+                "To: Bob <sips:bob@biloxi.example.com>\r\n",
+                "Call-ID: 1j9FpLxk3uxtm8tn@biloxi.example.com\r\n",
+                "CSeq: 2 REGISTER\r\n",
+                "Contact: <sips:bob@client.biloxi.example.com>\r\n",
+                "Authorization: Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"\r\n",
+                "Content-Length: 0\r\n\r\n",
+                "a simple body\r\n",
+                "and some complex: characters\r\n",
+                "Ok?"
+            ).as_bytes()
+        ),
+        Ok(Request {
+            method: common::method::Method::Register,
+            uri: uri::Uri {
+                scheme: Some(uri::scheme::Scheme::Sips),
+                auth: None,
+                host_with_port: uri::HostWithPort {
+                    host: uri::Host::Domain("ss2.biloxi.example.com".into()),
+                    port: None
+                },
+                params: vec![],
+                headers: vec![].into()
+            },
+            version: common::version::Version::V2,
+            headers: vec![
+                Via::new("SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashd92").into(),
+                MaxForwards::new("70").into(),
+                From::new("Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH").into(),
+                To::new("Bob <sips:bob@biloxi.example.com>").into(),
+                CallId::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
+                CSeq::new("2 REGISTER").into(),
+                Contact::new("<sips:bob@client.biloxi.example.com>").into(),
+                Authorization::new("Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"").into(),
+                ContentLength::new("0").into(),
+            ].into(),
+            body: concat!(
+                "a simple body\r\n",
+                "and some complex: characters\r\n",
+                "Ok?"
+            ).as_bytes().to_vec()
+        }),
+    );
+
+    assert_eq!(
+        Request::try_from(
+            concat!(
+                "REGISTER sips:ss2.biloxi.example.com SIP/2.0\r\n",
+                "Via: SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashd92\r\n",
+                "Max-Forwards: 70\r\n",
+                "From: Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH\r\n",
+                "To: Bob <sips:bob@biloxi.example.com>\r\n",
+                "Call-ID: 1j9FpLxk3uxtm8tn@biloxi.example.com\r\n",
+                "CSeq: 2 REGISTER\r\n",
+                "Contact: <sips:bob@client.biloxi.example.com>\r\n",
+                "Authorization: Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"\r\n",
+                "Content-Length: 0\r\n\r\n",
+                "v=0\r\n",
+                "o=aculab-02360801 2108656133 265635486 IN IP4 185.28.212.6\r\n",
+                "s=-\r\n",
+                "c=IN IP4 192.168.0.13\r\n",
+                "t=0 0\r\n",
+                "m=audio 47580 RTP/AVP 120 0 18 8 9 96\r\n",
+                "c=IN IP4 192.168.0.13\r\n",
+                "a=rtpmap:96 telephone-event/8000\r\n",
+                "a=fmtp:960-15\r\n",
+                "a=ptime:20\r\n",
+                "a=rtpmap:120 OPUS/48000/2\r\n",
+                "a=fmtp:120 minptime=20; maxplaybackrate=16000; maxaveragebitrate=24000; useinbandfec=1\r\n",
+                "a=rtpmap:18 G729/8000\r\n",
+                "a=fmtp:18 annexb=yes\r\n",
+                "a=rtpmap:9 G722/8000\r\n"
+            ).as_bytes()
+        ),
+        Ok(Request {
+            method: common::method::Method::Register,
+            uri: uri::Uri {
+                scheme: Some(uri::scheme::Scheme::Sips),
+                auth: None,
+                host_with_port: uri::HostWithPort {
+                    host: uri::Host::Domain("ss2.biloxi.example.com".into()),
+                    port: None
+                },
+                params: vec![],
+                headers: vec![].into()
+            },
+            version: common::version::Version::V2,
+            headers: vec![
+                Via::new("SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashd92").into(),
+                MaxForwards::new("70").into(),
+                From::new("Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH").into(),
+                To::new("Bob <sips:bob@biloxi.example.com>").into(),
+                CallId::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
+                CSeq::new("2 REGISTER").into(),
+                Contact::new("<sips:bob@client.biloxi.example.com>").into(),
+                Authorization::new("Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"").into(),
+                ContentLength::new("0").into(),
+            ].into(),
+            body: concat!(
+                "v=0\r\n",
+                "o=aculab-02360801 2108656133 265635486 IN IP4 185.28.212.6\r\n",
+                "s=-\r\n",
+                "c=IN IP4 192.168.0.13\r\n",
+                "t=0 0\r\n",
+                "m=audio 47580 RTP/AVP 120 0 18 8 9 96\r\n",
+                "c=IN IP4 192.168.0.13\r\n",
+                "a=rtpmap:96 telephone-event/8000\r\n",
+                "a=fmtp:960-15\r\n",
+                "a=ptime:20\r\n",
+                "a=rtpmap:120 OPUS/48000/2\r\n",
+                "a=fmtp:120 minptime=20; maxplaybackrate=16000; maxaveragebitrate=24000; useinbandfec=1\r\n",
+                "a=rtpmap:18 G729/8000\r\n",
+                "a=fmtp:18 annexb=yes\r\n",
+                "a=rtpmap:9 G722/8000\r\n"
+            ).as_bytes().to_vec()
+        }),
+    );
 }
 
 #[test]

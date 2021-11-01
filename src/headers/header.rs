@@ -271,17 +271,21 @@ pub mod tokenizer {
     impl<'a> Tokenizer<'a> {
         pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
             use nom::{
+                branch::alt,
                 bytes::complete::{tag, take_until},
                 character::complete::space0,
+                combinator::{map, rest},
                 sequence::tuple,
             };
 
-            let (rem, (name, _, _, value, _)) = tuple((
+            let (rem, (name, _, _, value)) = tuple((
                 take_until(":"),
                 tag(":"),
                 space0,
-                take_until("\r\n"),
-                tag("\r\n"),
+                alt((
+                    map(tuple((take_until("\r\n"), tag("\r\n"))), |(value, _)| value),
+                    rest,
+                )),
             ))(part)?;
 
             Ok((rem, (name, value).into()))

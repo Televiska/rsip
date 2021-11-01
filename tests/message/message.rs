@@ -104,7 +104,10 @@ fn parser() {
                 "CSeq: 2 REGISTER\r\n",
                 "Contact: <sips:bob@client.biloxi.example.com>\r\n",
                 "Authorization: Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"\r\n",
-                "Content-Length: 0\r\n\r\n"
+                "Content-Length: 0\r\n\r\n",
+                "a simple body\r\n",
+                "and some complex: characters\r\n",
+                "Ok?"
             ).as_bytes()
         ),
         Ok(SipMessage::Request(Request {
@@ -131,7 +134,11 @@ fn parser() {
                 Authorization::new("Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"").into(),
                 ContentLength::new("0").into(),
             ].into(),
-            body: vec![]
+            body: concat!(
+                "a simple body\r\n",
+                "and some complex: characters\r\n",
+                "Ok?"
+            ).as_bytes().to_vec()
         })),
     );
 
@@ -155,7 +162,10 @@ fn parser() {
                "Call-ID: 1j9FpLxk3uxtm8tn@biloxi.example.com\r\n",
                "CSeq: 1 REGISTER\r\n",
                "WWW-Authenticate: Digest realm=\"atlanta.example.com\", qop=\"auth\", nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\", stale=FALSE, algorithm=MD5\r\n",
-               "Content-Length: 0\r\n\r\n"
+               "Content-Length: 0\r\n\r\n",
+               "a simple body\r\n",
+               "and some complex: characters\r\n",
+               "Ok?"
             ).as_bytes()
         ),
         Ok(SipMessage::Response(Response {
@@ -170,7 +180,11 @@ fn parser() {
                 WwwAuthenticate::new("Digest realm=\"atlanta.example.com\", qop=\"auth\", nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\", stale=FALSE, algorithm=MD5").into(),
                 ContentLength::new("0").into(),
             ].into(),
-            body: vec![]
+            body: concat!(
+                "a simple body\r\n",
+                "and some complex: characters\r\n",
+                "Ok?"
+            ).as_bytes().to_vec()
         })),
     );
 }

@@ -58,7 +58,7 @@ impl std::fmt::Display for From {
             ),
             None => write!(
                 f,
-                "{}{}",
+                "<{}>{}",
                 self.uri,
                 self.params
                     .iter()

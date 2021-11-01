@@ -230,12 +230,14 @@ mod tokenizer {
     {
         pub fn tokenize(part: T) -> Result<(T, Self), GenericNomError<'a, T>> {
             use nom::{
+                branch::alt,
                 bytes::complete::{tag, take, take_until},
+                combinator::rest,
                 sequence::tuple,
             };
 
-            let (rem, (code, _, reason, _)) =
-                tuple((take(3usize), tag(" "), take_until("\r\n"), tag("\r\n")))(part)?;
+            let (rem, (code, _, reason)) =
+                tuple((take(3usize), tag(" "), alt((take_until("\r\n"), rest))))(part)?;
 
             Ok((rem, (code, reason).into()))
         }

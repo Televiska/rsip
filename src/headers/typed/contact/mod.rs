@@ -60,7 +60,7 @@ impl std::fmt::Display for Contact {
             ),
             None => write!(
                 f,
-                "{}{}",
+                "<{}>{}",
                 self.uri,
                 self.params
                     .iter()
