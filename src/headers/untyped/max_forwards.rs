@@ -6,7 +6,7 @@ pub struct MaxForwards(String);
 
 impl Default for MaxForwards {
     fn default() -> Self {
-        Self("0".into())
+        Self("70".into())
     }
 }
 

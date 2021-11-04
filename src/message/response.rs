@@ -178,16 +178,25 @@ pub mod tokenizer {
     impl<'a> Tokenizer<'a> {
         pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
             use nom::{
-                bytes::complete::tag, character::complete::space1, multi::many0, sequence::tuple,
+                branch::alt,
+                bytes::complete::{tag, take_until},
+                character::complete::space1,
+                multi::many0,
+                sequence::tuple,
             };
 
-            let (rem, (version, _, status_code)) = tuple((
+            let (rem, (version, _, status_code, _)) = tuple((
                 version::Tokenizer::tokenize,
                 space1,
                 status_code::Tokenizer::tokenize,
+                tag("\r\n"),
             ))(part)?;
-            let (rem, headers) = many0(header::Tokenizer::tokenize)(rem)?;
-            let (body, _) = tag("\r\n")(rem)?;
+
+            let (body, (headers, _)) = alt((
+                tuple((take_until("\r\n\r\n"), tag("\r\n\r\n"))),
+                tuple((take_until("\r\n"), tag("\r\n"))),
+            ))(rem)?;
+            let (_, headers) = many0(header::Tokenizer::tokenize)(headers)?;
 
             Ok((
                 &[],

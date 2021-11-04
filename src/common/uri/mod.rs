@@ -129,6 +129,34 @@ impl From<(Scheme, Host)> for Uri {
     }
 }
 
+impl<H, P> From<(H, P)> for Uri
+where
+    H: Into<Host>,
+    P: Into<Port>,
+{
+    fn from(tuple: (H, P)) -> Self {
+        Self {
+            scheme: None,
+            host_with_port: (tuple.0.into(), tuple.1.into()).into(),
+            auth: None,
+            params: Default::default(),
+            headers: Default::default(),
+        }
+    }
+}
+
+impl From<Host> for Uri {
+    fn from(host: Host) -> Self {
+        Self {
+            scheme: None,
+            host_with_port: host.into(),
+            auth: None,
+            params: Default::default(),
+            headers: Default::default(),
+        }
+    }
+}
+
 impl From<std::net::SocketAddr> for Uri {
     fn from(socket_addr: std::net::SocketAddr) -> Self {
         Self {

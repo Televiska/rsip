@@ -36,7 +36,7 @@ pub mod tokenizer {
     fn with_str_input() {
         assert_eq!(
             Tokenizer::tokenize("200 OK\r\nsomething"),
-            Ok(("something", ("200", "OK").into())),
+            Ok(("\r\nsomething", ("200", "OK").into())),
         );
     }
 
@@ -45,7 +45,7 @@ pub mod tokenizer {
         assert_eq!(
             Tokenizer::tokenize("200 OK\r\nsomething".as_bytes()),
             Ok((
-                "something".as_bytes(),
+                "\r\nsomething".as_bytes(),
                 ("200".as_bytes(), "OK".as_bytes()).into()
             )),
         );
