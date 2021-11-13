@@ -19,7 +19,7 @@ members = [
 [dependencies]
 uuid = { version = "0.8.1", features = ["v4"] }
 bytes = "1.0.1"
-nom = { version = "6.1.2", features = ["alloc", "regexp"] }
+nom = { version = "7.1.0", features = ["alloc"] }
 rsip-derives = { version = "0.1.0", path = "./rsip-derives" }
 md-5 = "0.9.1"
 sha2 = "0.9.5"
