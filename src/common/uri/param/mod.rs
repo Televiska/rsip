@@ -75,7 +75,7 @@ impl std::fmt::Display for Param {
 #[doc(hidden)]
 pub mod tokenizer {
     use super::*;
-    use crate::{Error, NomError};
+    use crate::{Error, IResult, NomError, TokenizerError};
     use rsip_derives::Utf8Tokenizer;
     use std::convert::TryInto;
 
@@ -121,7 +121,7 @@ pub mod tokenizer {
     }
 
     impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
             use crate::parser_utils::is_token;
             use nom::{
                 bytes::complete::{tag, take_while},
@@ -134,7 +134,8 @@ pub mod tokenizer {
                 tag(";"),
                 take_while(is_alphabetic),
                 opt(map(tuple((tag("="), take_while(is_token))), |t| t.1)),
-            ))(part)?;
+            ))(part)
+            .map_err(|_: NomError<'a>| TokenizerError::from(("uri param", part)).into())?;
 
             Ok((rem, (name, value).into()))
         }

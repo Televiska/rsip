@@ -4,7 +4,7 @@ use rsip::{
 };
 
 #[test]
-fn tokenizer() {
+fn tokenizer1() {
     assert_eq!(
         Tokenizer::tokenize("Alice <sip:alice@atlanta.example.com>;tag=9fxced76sl"),
         Ok(Tokenizer {
@@ -22,7 +22,10 @@ fn tokenizer() {
             params: vec![("tag".as_bytes(), Some("9fxced76sl".as_bytes())).into()],
         })
     );
+}
 
+#[test]
+fn tokenizer2() {
     assert_eq!(
         Tokenizer::tokenize("<sip:alice@atlanta.example.com>;tag=9fxced76sl"),
         Ok(Tokenizer {
@@ -40,7 +43,10 @@ fn tokenizer() {
             params: vec![("tag".as_bytes(), Some("9fxced76sl".as_bytes())).into()],
         })
     );
+}
 
+#[test]
+fn tokenizer3() {
     assert_eq!(
         Tokenizer::tokenize("sip:alice@atlanta.example.com;tag=9fxced76sl"),
         Ok(Tokenizer {

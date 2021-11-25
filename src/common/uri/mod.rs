@@ -26,7 +26,7 @@ pub struct Uri {
     pub auth: Option<Auth>,
     pub host_with_port: HostWithPort,
     pub params: Vec<Param>,
-    pub headers: crate::Headers,
+    pub headers: Vec<u32>,
 }
 
 impl Uri {
@@ -184,7 +184,7 @@ impl From<std::net::IpAddr> for Uri {
 #[doc(hidden)]
 pub mod tokenizer {
     use super::{auth, host_with_port, param, scheme, Uri};
-    use crate::{Error, NomError};
+    use crate::{Error, IResult};
     use std::convert::TryInto;
 
     impl<'a> TryInto<Uri> for Tokenizer<'a> {
@@ -216,15 +216,13 @@ pub mod tokenizer {
     }
 
     impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-            use nom::{character::complete::space0, combinator::opt, multi::many0};
+        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
+            use nom::{combinator::opt, multi::many0};
 
             let (rem, scheme) = opt(scheme::Tokenizer::tokenize)(part)?;
             let (rem, auth) = opt(auth::Tokenizer::tokenize)(rem)?;
             let (rem, host_with_port) = host_with_port::Tokenizer::tokenize(rem)?;
             let (rem, params) = many0(param::Tokenizer::tokenize)(rem)?;
-            //TODO: remove these smart moves
-            let (rem, _) = opt(space0)(rem)?;
 
             Ok((
                 rem,
@@ -239,7 +237,7 @@ pub mod tokenizer {
             ))
         }
 
-        pub fn tokenize_without_params(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        pub fn tokenize_without_params(part: &'a [u8]) -> IResult<Self> {
             use nom::combinator::opt;
 
             let (rem, scheme) = opt(scheme::Tokenizer::tokenize)(part)?;

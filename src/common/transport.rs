@@ -125,7 +125,7 @@ impl std::str::FromStr for Transport {
 #[doc(hidden)]
 mod tokenizer {
     use super::Transport;
-    use crate::{Error, NomError};
+    use crate::{Error, IResult, NomError, TokenizerError};
     use std::convert::TryInto;
 
     //TODO: convert that to TryFrom, remove the need to parse utf8
@@ -160,10 +160,11 @@ mod tokenizer {
     }
 
     impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-            use nom::{branch::alt, bytes::complete::take_until, combinator::rest};
+        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
+            use nom::{branch::alt, bytes::complete::take_until1, combinator::rest};
 
-            let (rem, transport) = alt((take_until(" "), rest))(part)?;
+            let (rem, transport) = alt((take_until1(" "), rest))(part)
+                .map_err(|_: NomError<'a>| TokenizerError::from(("transport", part)).into())?;
 
             Ok((rem, transport.into()))
         }

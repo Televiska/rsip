@@ -1,7 +1,7 @@
 use rsip::headers::typed::{authorization::Tokenizer, Tokenize};
 
 #[test]
-fn tokenizer() {
+fn tokenizer1() {
     assert_eq!(
         Tokenizer::tokenize(concat!(
             "Digest ",

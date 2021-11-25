@@ -14,29 +14,40 @@ pub mod www_authenticate;
 
 use rsip::headers::{header::Tokenizer, Accept, Header};
 
-#[test]
-fn display() {
-    assert_eq!(
-        Header::Accept(Accept::new("REGISTER, INVITE")).to_string(),
-        String::from("Accept: REGISTER, INVITE")
-    );
+mod display {
+    use super::*;
 
-    assert_eq!(
-        Header::Other("X-Forward".into(), "202.45.213.14".into()).to_string(),
-        String::from("X-Forward: 202.45.213.14")
-    );
+    #[test]
+    fn display1() {
+        assert_eq!(
+            Header::Accept(Accept::new("REGISTER, INVITE")).to_string(),
+            String::from("Accept: REGISTER, INVITE")
+        );
+    }
+
+    #[test]
+    fn display2() {
+        assert_eq!(
+            Header::Other("X-Forward".into(), "202.45.213.14".into()).to_string(),
+            String::from("X-Forward: 202.45.213.14")
+        );
+    }
 }
 
-#[test]
-fn tokenizer() {
-    assert_eq!(
-        Tokenizer::tokenize(b"Accept: REGISTER, INVITE\r\n something"),
-        Ok((
-            " something".as_bytes(),
-            Tokenizer {
-                name: "Accept".as_bytes(),
-                value: "REGISTER, INVITE".as_bytes()
-            }
-        )),
-    );
+mod tokenizer {
+    use super::*;
+
+    #[test]
+    fn tokenizer1() {
+        assert_eq!(
+            Tokenizer::tokenize(b"Accept: REGISTER, INVITE\r\n something"),
+            Ok((
+                " something".as_bytes(),
+                Tokenizer {
+                    name: "Accept".as_bytes(),
+                    value: "REGISTER, INVITE".as_bytes()
+                }
+            )),
+        );
+    }
 }

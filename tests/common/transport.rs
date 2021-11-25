@@ -1,35 +1,53 @@
 use rsip::common::transport::{Tokenizer, Transport};
 use std::convert::TryInto;
 
-#[test]
-fn display() {
-    assert_eq!(Transport::Udp.to_string(), String::from("UDP"));
+mod display {
+    use super::*;
 
-    assert_eq!(Transport::Tcp.to_string(), String::from("TCP"));
+    #[test]
+    fn display1() {
+        assert_eq!(Transport::Udp.to_string(), String::from("UDP"));
+
+        assert_eq!(Transport::Tcp.to_string(), String::from("TCP"));
+    }
 }
 
-#[test]
-fn parser() {
-    assert_eq!(
-        Tokenizer::from("UDP".as_bytes()).try_into(),
-        Ok(Transport::Udp)
-    );
+mod parser {
+    use super::*;
 
-    assert_eq!(
-        Tokenizer::from("TCP".as_bytes()).try_into(),
-        Ok(Transport::Tcp)
-    );
+    #[test]
+    fn parser1() {
+        assert_eq!(
+            Tokenizer::from("UDP".as_bytes()).try_into(),
+            Ok(Transport::Udp)
+        );
+    }
+
+    #[test]
+    fn parser2() {
+        assert_eq!(
+            Tokenizer::from("TCP".as_bytes()).try_into(),
+            Ok(Transport::Tcp)
+        );
+    }
 }
 
-#[test]
-fn tokenizer() {
-    assert_eq!(
-        Tokenizer::tokenize(b"UDP "),
-        Ok((" ".as_bytes(), "UDP".as_bytes().into())),
-    );
+mod tokenizer {
+    use super::*;
 
-    assert_eq!(
-        Tokenizer::tokenize(b"TCP"),
-        Ok(("".as_bytes(), "TCP".as_bytes().into())),
-    );
+    #[test]
+    fn tokenizer1() {
+        assert_eq!(
+            Tokenizer::tokenize(b"UDP "),
+            Ok((" ".as_bytes(), "UDP".as_bytes().into())),
+        );
+    }
+
+    #[test]
+    fn tokenizer2() {
+        assert_eq!(
+            Tokenizer::tokenize(b"TCP"),
+            Ok(("".as_bytes(), "TCP".as_bytes().into())),
+        );
+    }
 }

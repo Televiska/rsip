@@ -1,6 +1,9 @@
 #[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
+use crate::Error;
+use std::convert::TryFrom;
+
 macro_rules! create_methods {
     ($($name:ident),*) => {
 
@@ -32,19 +35,19 @@ macro_rules! create_methods {
             }
         }
 
-        fn match_from<'a>(value: &'a [u8]) -> Result<Method, crate::Error> {
+        fn match_from<'a>(value: &'a [u8]) -> Result<Method, Error> {
             use nom::{
                 branch::alt,
                 bytes::complete::{tag_no_case},
                 combinator::{rest, map},
-                error::VerboseError
             };
+            use bstr::ByteSlice;
 
-            let (_, method) = alt::<_, _, VerboseError<&'a [u8]>, _>((
+            let (_, method) = alt((
                 $(
                     map(tag_no_case(stringify!($name)), |_| Ok(Method::$name)),
                 )*
-                map(rest, |_| Err(crate::Error::ParseError(format!("Invalid method `{:?}`", value))))
+                map(rest, |_| Err(Error::ParseError(format!("invalid method `{}`", value.as_bstr()))))
             ))(value)?;
 
             method
@@ -71,19 +74,17 @@ impl std::str::FromStr for Method {
     }
 }
 
+impl<'a> TryFrom<Tokenizer<'a>> for Method {
+    type Error = Error;
+
+    fn try_from(from: Tokenizer<'a>) -> Result<Self, Self::Error> {
+        match_from(from.value)
+    }
+}
+
 #[doc(hidden)]
 pub mod tokenizer {
-    use super::Method;
-    use crate::{Error, NomError};
-    use std::convert::TryInto;
-
-    impl<'a> TryInto<Method> for Tokenizer<'a> {
-        type Error = Error;
-
-        fn try_into(self) -> Result<Method, Error> {
-            super::match_from(self.value)
-        }
-    }
+    use crate::{IResult, TokenizerError};
 
     #[derive(Debug, PartialEq, Eq, Clone)]
     pub struct Tokenizer<'a> {
@@ -98,15 +99,16 @@ pub mod tokenizer {
 
     impl<'a> Tokenizer<'a> {
         //works for request line
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
-            use crate::parser_utils::{create_error_for, is_token, opt_sp};
-            use nom::{bytes::complete::take_while, sequence::tuple};
+        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
+            use crate::parser_utils::{is_token, opt_sp};
+            use nom::{bytes::complete::take_while1, sequence::tuple};
 
-            let (rem, (method, _)) = tuple((take_while(is_token), opt_sp))(part)?;
+            let (rem, (method, _)) = tuple((take_while1(is_token), opt_sp))(part)
+                .map_err(|_| TokenizerError::from(("method", part)).into())?;
             //TODO: helpful to return early in case we parse a response but maybe it should not
             //be checked here though
             if method.starts_with(b"SIP/") {
-                return Err(create_error_for(method, "SIP version found instead"));
+                return TokenizerError::from(("method", part)).into();
             }
 
             Ok((rem, method.into()))

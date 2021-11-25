@@ -154,7 +154,7 @@ impl From<SipMessage> for bytes::Bytes {
 #[doc(hidden)]
 pub mod tokenizer {
     use super::{request, response, SipMessage};
-    use crate::{Error, NomError};
+    use crate::{Error, IResult};
     use std::convert::TryInto;
 
     impl<'a> TryInto<SipMessage> for Tokenizer<'a> {
@@ -187,7 +187,7 @@ pub mod tokenizer {
     }
 
     impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
             use nom::{branch::alt, combinator::map};
 
             let (_, message) = alt((

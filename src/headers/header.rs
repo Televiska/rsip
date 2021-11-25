@@ -121,7 +121,7 @@ impl std::fmt::Display for Header {
 #[doc(hidden)]
 pub mod tokenizer {
     use super::*;
-    use crate::{Error, NomError};
+    use crate::{Error, IResult, TokenizerError};
     use rsip_derives::Utf8Tokenizer;
     use std::convert::TryInto;
 
@@ -269,24 +269,26 @@ pub mod tokenizer {
     }
 
     impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
+            use crate::NomError;
             use nom::{
                 branch::alt,
-                bytes::complete::{tag, take_until},
+                bytes::complete::{tag, take_until, take_while1},
                 character::complete::space0,
                 combinator::{map, rest},
                 sequence::tuple,
             };
 
             let (rem, (name, _, _, value)) = tuple((
-                take_until(":"),
+                take_while1(crate::parser_utils::is_token),
                 tag(":"),
                 space0,
                 alt((
                     map(tuple((take_until("\r\n"), tag("\r\n"))), |(value, _)| value),
                     rest,
                 )),
-            ))(part)?;
+            ))(part)
+            .map_err(|_: NomError<'a>| TokenizerError::from(("header", part)).into())?;
 
             Ok((rem, (name, value).into()))
         }
