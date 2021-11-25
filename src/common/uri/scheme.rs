@@ -1,6 +1,8 @@
 #[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
+use crate::Error;
+
 /// Simple enum that holds the scheme part of a URIs. This type is not a `Copy` type because
 /// it can hold any `Contact` URI, like `mailto` etc.
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -11,21 +13,21 @@ pub enum Scheme {
 }
 
 impl Scheme {
-    pub fn default_transport(&self) -> Result<crate::Transport, crate::Error> {
+    pub fn default_transport(&self) -> Result<crate::Transport, Error> {
         use crate::Transport;
 
         match self {
             Scheme::Sip => Ok(Transport::Udp),
             Scheme::Sips => Ok(Transport::Tls),
-            _ => Err(crate::Error::Unexpected("unsupported scheme".into())),
+            _ => Err(Error::Unexpected("unsupported scheme".into())),
         }
     }
 
-    pub fn is_sip_secure(&self) -> Result<bool, crate::Error> {
+    pub fn is_sip_secure(&self) -> Result<bool, Error> {
         match self {
             Self::Sip => Ok(false),
             Self::Sips => Ok(true),
-            _ => Err(crate::Error::Unexpected("Not sip scheme".into())),
+            _ => Err(Error::Unexpected("Not sip scheme".into())),
         }
     }
 }
@@ -49,7 +51,7 @@ impl std::fmt::Display for Scheme {
 #[doc(hidden)]
 pub mod tokenizer {
     use super::Scheme;
-    use crate::{Error, NomError};
+    use crate::{Error, IResult, TokenizerError};
     use std::convert::TryInto;
 
     impl<'a> TryInto<Scheme> for Tokenizer<'a> {
@@ -79,7 +81,8 @@ pub mod tokenizer {
 
     #[allow(clippy::type_complexity)]
     impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
+            use crate::NomError;
             use nom::{
                 branch::alt,
                 bytes::complete::{tag, tag_no_case, take_until},
@@ -90,7 +93,8 @@ pub mod tokenizer {
                 tuple((tag_no_case("sip"), tag(":"))),
                 tuple((tag_no_case("sips"), tag(":"))),
                 tuple((take_until("://"), tag("://"))),
-            ))(part)?;
+            ))(part)
+            .map_err(|_: NomError<'a>| TokenizerError::from(("scheme", part)).into())?;
 
             Ok((rem, scheme.into()))
         }

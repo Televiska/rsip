@@ -260,11 +260,13 @@
 
 pub mod common;
 mod error;
+
 pub mod headers;
 pub mod message;
 pub mod services;
 
-pub use error::Error;
+pub use error::{Error, TokenizerError};
+
 pub use headers::{Header, Headers};
 pub use message::{Request, Response, SipMessage};
 
@@ -285,30 +287,37 @@ pub mod prelude {
 }
 
 pub(crate) type NomError<'a> = nom::Err<nom::error::VerboseError<&'a [u8]>>;
+pub(crate) type NomStrError<'a> = nom::Err<nom::error::VerboseError<&'a str>>;
 pub(crate) type GenericNomError<'a, T> = nom::Err<nom::error::VerboseError<T>>;
+pub(crate) type IResult<'a, T> = Result<(&'a [u8], T), nom::Err<TokenizerError>>;
+pub(crate) type GResult<I, T> = Result<(I, T), nom::Err<TokenizerError>>;
 
-pub trait AbstractInput<'a>:
-    nom::InputTakeAtPosition
+pub trait AbstractInput<'a, I>:
+    nom::InputTakeAtPosition<Item = I>
     + nom::InputTake
     + Clone
+    + Copy
     + nom::FindSubstring<&'a str>
     + nom::Slice<nom::lib::std::ops::RangeFrom<usize>>
     + nom::InputLength
     + nom::InputIter
     + nom::Compare<&'a str>
+    + std::fmt::Debug
+    + Into<&'a bstr::BStr>
 {
+    fn is_empty(&self) -> bool;
 }
 
-impl<'a, T> AbstractInput<'a> for T where
-    T: nom::InputTakeAtPosition
-        + nom::InputTake
-        + Clone
-        + nom::FindSubstring<&'a str>
-        + nom::Slice<nom::lib::std::ops::RangeFrom<usize>>
-        + nom::InputLength
-        + nom::InputIter
-        + nom::Compare<&'a str>
-{
+impl<'a> AbstractInput<'a, char> for &'a str {
+    fn is_empty(&self) -> bool {
+        <str>::is_empty(self)
+    }
+}
+
+impl<'a> AbstractInput<'a, u8> for &'a [u8] {
+    fn is_empty(&self) -> bool {
+        <[u8]>::is_empty(self)
+    }
 }
 
 pub(crate) mod utils {
@@ -323,6 +332,7 @@ pub(crate) mod utils {
 }
 
 pub(crate) mod parser_utils {
+    use crate::TokenizerError;
     use nom::{error::VerboseError, IResult};
 
     pub fn opt_sp(input: &[u8]) -> IResult<&[u8], Option<&[u8]>, VerboseError<&[u8]>> {
@@ -331,17 +341,43 @@ pub(crate) mod parser_utils {
         opt(tag(" "))(input)
     }
 
+    pub fn is_empty_or_fail_with<'a, I, T: crate::AbstractInput<'a, I>, S: Into<&'a bstr::BStr>>(
+        rem: T,
+        tuple: (&'static str, S),
+    ) -> Result<(), nom::Err<crate::TokenizerError>> {
+        if !rem.is_empty() {
+            //TODO: specify that this is trailing input
+            //use a comma in params tests to test
+            Err(TokenizerError::from(tuple).into())
+        } else {
+            Ok(())
+        }
+    }
+
+    /*
     pub fn create_error_for<'a>(rem: &'a [u8], error: &'static str) -> super::NomError<'a> {
         nom::Err::Error(nom::error::VerboseError {
             errors: vec![(rem, nom::error::VerboseErrorKind::Context(error))],
         })
     }
+    */
 
     pub fn is_token(chr: u8) -> bool {
         use nom::character::is_alphanumeric;
 
         is_alphanumeric(chr) || "-.!%*_+`'~".contains(char::from(chr))
     }
+    /*
+        pub fn is_unreserved(chr: u8) -> bool {
+            use nom::character::is_alphanumeric;
+
+            is_alphanumeric(chr) || "-_.!~*'()".contains(char::from(chr))
+        }
+
+        pub fn is_reserved(chr: u8) -> bool {
+            ";/?:@&=+$,".contains(char::from(chr))
+        }
+    */
 
     /*
         pub fn opt_sc<'a>(

@@ -1,3 +1,4 @@
+use crate::Error;
 #[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
@@ -51,7 +52,7 @@ macro_rules! create_status_codes {
         }
 
         //Here we decide to completely ignore the reason if the code can be mapped to a well known status
-        fn match_from<'a>(code: u16, reason: &'a [u8]) -> Result<StatusCode, crate::Error> {
+        fn match_from<'a>(code: u16, reason: &'a [u8]) -> Result<StatusCode, Error> {
             use std::str::from_utf8;
 
             match (code, reason) {
@@ -177,58 +178,62 @@ impl Default for StatusCode {
     }
 }
 
-impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8]>> for StatusCode {
-    type Error = crate::Error;
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8], u8>> for StatusCode {
+    type Error = Error;
 
-    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8]>) -> Result<Self, Self::Error> {
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8], u8>) -> Result<Self, Self::Error> {
         use std::str::from_utf8;
 
         match_from(from_utf8(tokenizer.code)?.parse::<u16>()?, tokenizer.reason)
     }
 }
 
-impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str>> for StatusCode {
-    type Error = crate::Error;
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for StatusCode {
+    type Error = Error;
 
-    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str>) -> Result<Self, Self::Error> {
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
         match_from(tokenizer.code.parse::<u16>()?, tokenizer.reason.as_bytes())
     }
 }
 
 #[doc(hidden)]
 mod tokenizer {
-    use crate::AbstractInput;
-    use crate::GenericNomError;
+    use crate::{AbstractInput, GResult, GenericNomError, TokenizerError};
     use std::marker::PhantomData;
 
     #[derive(Debug, PartialEq, Eq, Clone)]
-    pub struct Tokenizer<'a, T>
+    pub struct Tokenizer<'a, T, I>
     where
-        T: AbstractInput<'a>,
+        T: AbstractInput<'a, I>,
+        I: nom::AsChar,
     {
         pub code: T,
         pub reason: T,
-        phantom: PhantomData<&'a T>,
+        phantom1: PhantomData<&'a T>,
+        phantom2: PhantomData<I>,
     }
 
-    impl<'a, T> From<(T, T)> for Tokenizer<'a, T>
+    impl<'a, T, I> From<(T, T)> for Tokenizer<'a, T, I>
     where
-        T: AbstractInput<'a>,
+        T: AbstractInput<'a, I>,
+        I: nom::AsChar,
     {
         fn from(from: (T, T)) -> Self {
             Self {
                 code: from.0,
                 reason: from.1,
-                phantom: PhantomData,
+                phantom1: PhantomData,
+                phantom2: PhantomData,
             }
         }
     }
 
-    impl<'a, T> Tokenizer<'a, T>
+    impl<'a, T, I> Tokenizer<'a, T, I>
     where
-        T: AbstractInput<'a>,
+        T: AbstractInput<'a, I>,
+        I: nom::AsChar,
     {
-        pub fn tokenize(part: T) -> Result<(T, Self), GenericNomError<'a, T>> {
+        pub fn tokenize(part: T) -> GResult<T, Self> {
             use nom::{
                 branch::alt,
                 bytes::complete::{tag, take, take_until},
@@ -237,7 +242,9 @@ mod tokenizer {
             };
 
             let (rem, (code, _, reason)) =
-                tuple((take(3usize), tag(" "), alt((take_until("\r\n"), rest))))(part)?;
+                tuple((take(3usize), tag(" "), alt((take_until("\r\n"), rest))))(part).map_err(
+                    |_: GenericNomError<'a, T>| TokenizerError::from(("status", part)).into(),
+                )?;
 
             Ok((rem, (code, reason).into()))
         }

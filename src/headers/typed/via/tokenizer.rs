@@ -5,18 +5,19 @@ use crate::{
         version,
     },
     headers::typed::Tokenize,
+    Error,
 };
 
 #[derive(Eq, PartialEq, Debug)]
 pub struct Tokenizer<'a> {
-    pub version: version::Tokenizer<'a, &'a [u8]>,
+    pub version: version::Tokenizer<'a, &'a [u8], u8>,
     pub transport: transport::Tokenizer<'a>,
     pub uri: uri::Tokenizer<'a>,
     pub params: Vec<param::Tokenizer<'a>>,
 }
 
 impl<'a> Tokenize<'a> for Tokenizer<'a> {
-    fn tokenize(part: &'a str) -> Result<Self, crate::Error> {
+    fn tokenize(part: &'a str) -> Result<Self, Error> {
         use nom::{
             bytes::complete::tag, character::complete::space1, multi::many0, sequence::tuple,
         };
@@ -28,7 +29,8 @@ impl<'a> Tokenize<'a> for Tokenizer<'a> {
             space1,
             uri::Tokenizer::tokenize_without_params,
             many0(param::Tokenizer::tokenize),
-        ))(part.as_bytes())?;
+        ))(part.as_bytes())
+        .map_err(|_| Error::tokenizer(("via (typed) header", part)))?;
 
         Ok(Self {
             version,

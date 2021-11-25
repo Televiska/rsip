@@ -146,7 +146,7 @@ impl From<Response> for bytes::Bytes {
 #[doc(hidden)]
 pub mod tokenizer {
     use super::{header, status_code, version, Response};
-    use crate::{Error, NomError};
+    use crate::{Error, IResult, NomError, TokenizerError};
     use std::convert::TryInto;
 
     impl<'a> TryInto<Response> for Tokenizer<'a> {
@@ -169,14 +169,15 @@ pub mod tokenizer {
 
     #[derive(Debug, PartialEq, Eq)]
     pub struct Tokenizer<'a> {
-        pub version: version::Tokenizer<'a, &'a [u8]>,
-        pub status_code: status_code::Tokenizer<'a, &'a [u8]>,
+        pub version: version::Tokenizer<'a, &'a [u8], u8>,
+        pub status_code: status_code::Tokenizer<'a, &'a [u8], u8>,
         pub headers: Vec<header::Tokenizer<'a>>,
         pub body: &'a [u8],
     }
 
     impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
+            use crate::parser_utils::is_empty_or_fail_with;
             use nom::{
                 branch::alt,
                 bytes::complete::{tag, take_until},
@@ -192,11 +193,13 @@ pub mod tokenizer {
                 tag("\r\n"),
             ))(part)?;
 
-            let (body, (headers, _)) = alt((
+            let (body, (raw_headers, _)) = alt((
                 tuple((take_until("\r\n\r\n"), tag("\r\n\r\n"))),
                 tuple((take_until("\r\n"), tag("\r\n"))),
-            ))(rem)?;
-            let (_, headers) = many0(header::Tokenizer::tokenize)(headers)?;
+            ))(rem)
+            .map_err(|_: NomError<'a>| TokenizerError::from(("headers", rem)).into())?;
+            let (rem, headers) = many0(header::Tokenizer::tokenize)(raw_headers)?;
+            is_empty_or_fail_with(rem, ("headers", rem))?;
 
             Ok((
                 &[],

@@ -33,8 +33,7 @@ where
 #[doc(hidden)]
 pub mod tokenizer {
     use super::Auth;
-    use crate::{Error, NomError};
-    use nom::error::VerboseError;
+    use crate::{Error, IResult, NomError, TokenizerError};
     use std::convert::TryInto;
 
     impl<'a> TryInto<Auth> for Tokenizer<'a> {
@@ -72,13 +71,17 @@ pub mod tokenizer {
     #[allow(clippy::type_complexity)]
     impl<'a> Tokenizer<'a> {
         //we alt with take_until(".") and then tag("@") to make sure we fail early
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
             use nom::{
                 bytes::complete::{tag, take_till, take_until},
                 combinator::rest,
+                error::VerboseError,
                 sequence::tuple,
             };
-            let (rem, (auth, _)) = tuple((take_till(|c| c == b'.' || c == b'@'), tag("@")))(part)?;
+
+            let (rem, (auth, _)) =
+                tuple((take_till(|c| c == b'.' || c == b'@'), tag("@")))(part)
+                    .map_err(|_: NomError<'a>| TokenizerError::from(("auth user", part)).into())?;
 
             let (user, password) =
                 match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(
@@ -86,7 +89,11 @@ pub mod tokenizer {
                 ) {
                     Ok((_, (user, _, password))) => (user, Some(password)),
                     Err(_) => {
-                        let (_, user) = rest(auth)?;
+                        //this is not going to ever fail actually, since rest never returns an
+                        //error
+                        let (_, user) = rest(auth).map_err(|_: crate::NomError<'a>| {
+                            TokenizerError::from(("auth user (no password)", auth)).into()
+                        })?;
                         (user, None)
                     }
                 };

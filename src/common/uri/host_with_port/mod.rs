@@ -139,7 +139,7 @@ where
 #[doc(hidden)]
 pub mod tokenizer {
     use super::{Host, HostWithPort};
-    use crate::{Error, NomError};
+    use crate::{Error, IResult, NomError, TokenizerError};
     use nom::error::VerboseError;
     use std::convert::TryInto;
 
@@ -182,21 +182,28 @@ pub mod tokenizer {
 
     #[allow(clippy::type_complexity)]
     impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
             use nom::{
-                bytes::complete::{tag, take_till, take_until},
+                bytes::complete::{tag, take_till1, take_until},
                 combinator::rest,
                 sequence::tuple,
             };
 
-            let (rem, host_with_port) = take_till(|c| c == b';' || c == b' ')(part)?;
+            let (rem, host_with_port) = take_till1(|c| c == b';' || c == b' ')(part)
+                .map_err(|_: NomError<'a>| TokenizerError::from(("host with port", part)).into())?;
+
             let (host, port) =
                 match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(
                     host_with_port,
                 ) {
                     Ok((_, (host, _, port))) => (host, Some(port)),
                     Err(_) => {
-                        let (_, host) = rest(host_with_port)?;
+                        //this is not going to ever fail actually, since rest never returns an
+                        //error
+                        let (_, host) = rest(host_with_port).map_err(|_: NomError<'a>| {
+                            TokenizerError::from(("host with port (no port)", host_with_port))
+                                .into()
+                        })?;
                         (host, None)
                     }
                 };

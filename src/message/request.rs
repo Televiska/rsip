@@ -153,7 +153,7 @@ impl From<Request> for bytes::Bytes {
 #[doc(hidden)]
 pub mod tokenizer {
     use super::{header, method, uri, version, Request};
-    use crate::{Error, NomError};
+    use crate::{Error, IResult, NomError, TokenizerError};
     use std::convert::TryInto;
 
     impl<'a> TryInto<Request> for Tokenizer<'a> {
@@ -179,13 +179,14 @@ pub mod tokenizer {
     pub struct Tokenizer<'a> {
         pub method: method::Tokenizer<'a>,
         pub uri: uri::Tokenizer<'a>,
-        pub version: version::Tokenizer<'a, &'a [u8]>,
+        pub version: version::Tokenizer<'a, &'a [u8], u8>,
         pub headers: Vec<header::Tokenizer<'a>>,
         pub body: &'a [u8],
     }
 
     impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> Result<(&'a [u8], Self), NomError<'a>> {
+        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
+            use crate::parser_utils::is_empty_or_fail_with;
             use nom::{
                 branch::alt,
                 bytes::complete::{tag, take_until},
@@ -193,18 +194,21 @@ pub mod tokenizer {
                 sequence::tuple,
             };
 
-            let (rem, (method, uri, version, _)) = tuple((
+            let (rem, (method, uri, _, version, _)) = tuple((
                 method::Tokenizer::tokenize,
                 uri::Tokenizer::tokenize,
+                tag(" "),
                 version::Tokenizer::tokenize,
                 tag("\r\n"),
             ))(part)?;
 
-            let (body, (headers, _)) = alt((
+            let (body, (raw_headers, _)) = alt((
                 tuple((take_until("\r\n\r\n"), tag("\r\n\r\n"))),
                 tuple((take_until("\r\n"), tag("\r\n"))),
-            ))(rem)?;
-            let (_, headers) = many0(header::Tokenizer::tokenize)(headers)?;
+            ))(rem)
+            .map_err(|_: NomError<'a>| TokenizerError::from(("headers", rem)).into())?;
+            let (rem, headers) = many0(header::Tokenizer::tokenize)(raw_headers)?;
+            is_empty_or_fail_with(rem, ("headers", rem))?;
 
             Ok((
                 &[],

@@ -1,5 +1,4 @@
 use crate::{
-    error::Header as ErrorHeader,
     headers::{self, Header},
     Error,
 };
@@ -14,7 +13,7 @@ pub trait HeadersExt: super::HasHeaders {
         header!(
             self.headers().iter(),
             Header::To,
-            Error::MissingHeader(ErrorHeader::To)
+            Error::missing_header("To")
         )
     }
 
@@ -23,7 +22,7 @@ pub trait HeadersExt: super::HasHeaders {
         header!(
             self.headers_mut().iter_mut(),
             Header::To,
-            Error::MissingHeader(ErrorHeader::To)
+            Error::missing_header("To")
         )
     }
 
@@ -31,14 +30,14 @@ pub trait HeadersExt: super::HasHeaders {
         header!(
             self.headers().iter(),
             Header::From,
-            Error::MissingHeader(ErrorHeader::From)
+            Error::missing_header("From")
         )
     }
     fn from_header_mut(&mut self) -> Result<&mut headers::From, Error> {
         header!(
             self.headers_mut().iter_mut(),
             Header::From,
-            Error::MissingHeader(ErrorHeader::From)
+            Error::missing_header("From")
         )
     }
 
@@ -46,14 +45,14 @@ pub trait HeadersExt: super::HasHeaders {
         header!(
             self.headers().iter(),
             Header::Via,
-            Error::MissingHeader(ErrorHeader::Via)
+            Error::missing_header("Via")
         )
     }
     fn via_header_mut(&mut self) -> Result<&mut headers::Via, Error> {
         header!(
             self.headers_mut().iter_mut(),
             Header::Via,
-            Error::MissingHeader(ErrorHeader::Via)
+            Error::missing_header("Via")
         )
     }
 
@@ -61,14 +60,14 @@ pub trait HeadersExt: super::HasHeaders {
         header!(
             self.headers().iter(),
             Header::CallId,
-            Error::MissingHeader(ErrorHeader::CallId)
+            Error::missing_header("CallID")
         )
     }
     fn call_id_header_mut(&mut self) -> Result<&mut headers::CallId, Error> {
         header!(
             self.headers_mut().iter_mut(),
             Header::CallId,
-            Error::MissingHeader(ErrorHeader::CallId)
+            Error::missing_header("CallID")
         )
     }
 
@@ -76,14 +75,14 @@ pub trait HeadersExt: super::HasHeaders {
         header!(
             self.headers().iter(),
             Header::CSeq,
-            Error::MissingHeader(ErrorHeader::CSeq)
+            Error::missing_header("CSeq")
         )
     }
     fn cseq_header_mut(&mut self) -> Result<&mut headers::CSeq, Error> {
         header!(
             self.headers_mut().iter_mut(),
             Header::CSeq,
-            Error::MissingHeader(ErrorHeader::CSeq)
+            Error::missing_header("CSeq")
         )
     }
 
@@ -91,14 +90,14 @@ pub trait HeadersExt: super::HasHeaders {
         header!(
             self.headers().iter(),
             Header::MaxForwards,
-            Error::MissingHeader(ErrorHeader::MaxForwards)
+            Error::missing_header("Max-Forwards")
         )
     }
     fn max_forwards_header_mut(&mut self) -> Result<&mut headers::MaxForwards, Error> {
         header!(
             self.headers_mut().iter_mut(),
             Header::MaxForwards,
-            Error::MissingHeader(ErrorHeader::MaxForwards)
+            Error::missing_header("Max-Forwards")
         )
     }
 
@@ -106,14 +105,14 @@ pub trait HeadersExt: super::HasHeaders {
         header!(
             self.headers().iter(),
             Header::Contact,
-            Error::MissingHeader(ErrorHeader::Contact)
+            Error::missing_header("Contact")
         )
     }
     fn contact_header_mut(&mut self) -> Result<&mut headers::Contact, Error> {
         header!(
             self.headers_mut().iter_mut(),
             Header::Contact,
-            Error::MissingHeader(ErrorHeader::Contact)
+            Error::missing_header("Contact")
         )
     }
     fn contact_headers(&self) -> Vec<&headers::Contact> {
@@ -124,7 +123,7 @@ pub trait HeadersExt: super::HasHeaders {
         header!(
             self.headers().iter(),
             Header::UserAgent,
-            Error::MissingHeader(ErrorHeader::UserAgent)
+            Error::missing_header("User-Agent")
         )
     }
 
@@ -144,7 +143,7 @@ pub trait HeadersExt: super::HasHeaders {
         header!(
             self.headers().iter(),
             Header::MinExpires,
-            Error::MissingHeader(ErrorHeader::MinExpires)
+            Error::missing_header("Min-Expires")
         )
     }
 

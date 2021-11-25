@@ -1,7 +1,7 @@
 use rsip::headers::typed::{cseq::Tokenizer, Tokenize};
 
 #[test]
-fn tokenizer() {
+fn tokenizer1() {
     assert_eq!(
         Tokenize::tokenize("123  INVITE"),
         Ok(Tokenizer {

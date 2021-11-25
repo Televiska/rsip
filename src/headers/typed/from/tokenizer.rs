@@ -1,5 +1,4 @@
-use crate::common::uri;
-use crate::headers::typed::Tokenize;
+use crate::{common::uri, headers::typed::Tokenize, Error};
 
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Tokenizer<'a> {
@@ -9,7 +8,7 @@ pub struct Tokenizer<'a> {
 }
 
 impl<'a> Tokenize<'a> for Tokenizer<'a> {
-    fn tokenize(part: &'a str) -> Result<Self, crate::Error> {
+    fn tokenize(part: &'a str) -> Result<Self, Error> {
         use nom::{
             bytes::complete::{tag, take_until},
             combinator::rest,
@@ -25,7 +24,8 @@ impl<'a> Tokenize<'a> for Tokenizer<'a> {
                 take_until(">"),
                 tag(">"),
                 rest,
-            ))(part)?;
+            ))(part)
+            .map_err(|_| Error::tokenizer(("from header", part)))?;
 
             Ok(Self {
                 display_name: crate::utils::opt_trim(display_name),
