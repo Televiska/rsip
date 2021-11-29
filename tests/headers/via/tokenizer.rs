@@ -8,20 +8,17 @@ fn tokenizer1() {
     assert_eq!(
         Tokenizer::tokenize("SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashds7"),
         Ok(Tokenizer {
-            version: ("2".as_bytes(), "0".as_bytes()).into(),
-            transport: "TLS".as_bytes().into(),
+            version: ("2", "0").into(),
+            transport: "TLS".into(),
             uri: uri::Tokenizer {
                 scheme: None,
                 auth: None,
-                host_with_port: (
-                    "client.biloxi.example.com".as_bytes(),
-                    Some("5061".as_bytes())
-                )
-                    .into(),
+                host_with_port: ("client.biloxi.example.com", Some("5061")).into(),
                 params: vec![],
-                headers: None
+                headers: None,
+                ..Default::default()
             },
-            params: vec![("branch".as_bytes(), Some("z9hG4bKnashds7".as_bytes())).into()],
+            params: vec![("branch", Some("z9hG4bKnashds7")).into()],
         })
     );
 }

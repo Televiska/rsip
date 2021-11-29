@@ -11,7 +11,7 @@ pub use host_with_port::{Domain, Host, HostWithPort, Port};
 pub use param::Param;
 pub use scheme::Scheme;
 
-use crate::Transport;
+use crate::{Error, Transport};
 use std::convert::{TryFrom, TryInto};
 
 /// A very flexible SIP(S) URI.
@@ -181,42 +181,71 @@ impl From<std::net::IpAddr> for Uri {
     }
 }
 
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for Uri {
+    type Error = Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
+        Ok(Uri {
+            scheme: tokenizer.scheme.map(TryInto::try_into).transpose()?,
+            auth: tokenizer.auth.map(TryInto::try_into).transpose()?,
+            host_with_port: tokenizer.host_with_port.try_into()?,
+            params: tokenizer
+                .params
+                .into_iter()
+                .map(TryInto::try_into)
+                .collect::<Result<Vec<_>, _>>()?,
+            headers: Default::default(),
+        })
+    }
+}
+
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8], u8>> for Uri {
+    type Error = Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8], u8>) -> Result<Self, Self::Error> {
+        Ok(Uri {
+            scheme: tokenizer.scheme.map(TryInto::try_into).transpose()?,
+            auth: tokenizer.auth.map(TryInto::try_into).transpose()?,
+            host_with_port: tokenizer.host_with_port.try_into()?,
+            params: tokenizer
+                .params
+                .into_iter()
+                .map(TryInto::try_into)
+                .collect::<Result<Vec<_>, _>>()?,
+            headers: Default::default(),
+        })
+    }
+}
+
 #[doc(hidden)]
 pub mod tokenizer {
-    use super::{auth, host_with_port, param, scheme, Uri};
-    use crate::{Error, IResult};
-    use std::convert::TryInto;
+    use super::{auth, host_with_port, param, scheme};
+    use crate::{AbstractInput, AbstractInputItem, GResult, TokenizerError};
+    use std::marker::PhantomData;
 
-    impl<'a> TryInto<Uri> for Tokenizer<'a> {
-        type Error = Error;
-
-        fn try_into(self) -> Result<Uri, Error> {
-            Ok(Uri {
-                scheme: self.scheme.map(TryInto::try_into).transpose()?,
-                auth: self.auth.map(TryInto::try_into).transpose()?,
-                host_with_port: self.host_with_port.try_into()?,
-                params: self
-                    .params
-                    .into_iter()
-                    .map(TryInto::try_into)
-                    .collect::<Result<Vec<_>, _>>()?,
-                headers: Default::default(),
-            })
-        }
-    }
-
-    #[derive(Debug, PartialEq, Eq, Clone)]
-    pub struct Tokenizer<'a> {
-        pub scheme: Option<scheme::Tokenizer<'a>>,
-        pub auth: Option<auth::Tokenizer<'a>>,
-        pub host_with_port: host_with_port::Tokenizer<'a>,
-        pub params: Vec<param::Tokenizer<'a>>,
+    #[derive(Debug, PartialEq, Eq, Clone, Default)]
+    pub struct Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        pub scheme: Option<scheme::Tokenizer<'a, T, I>>,
+        pub auth: Option<auth::Tokenizer<'a, T, I>>,
+        pub host_with_port: host_with_port::Tokenizer<'a, T, I>,
+        pub params: Vec<param::Tokenizer<'a, T, I>>,
         //TODO: why option here?
-        pub headers: Option<Vec<&'a [u8]>>,
+        pub headers: Option<Vec<T>>,
+        pub phantom1: PhantomData<&'a T>,
+        pub phantom2: PhantomData<I>,
     }
 
-    impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
+    impl<'a, T, I> Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+        TokenizerError: nom::error::ParseError<T>,
+    {
+        pub fn tokenize(part: T) -> GResult<T, Self> {
             use nom::{combinator::opt, multi::many0};
 
             let (rem, scheme) = opt(scheme::Tokenizer::tokenize)(part)?;
@@ -233,11 +262,13 @@ pub mod tokenizer {
                     params,
                     //TODO: support headers in the uri
                     headers: None,
+                    phantom1: Default::default(),
+                    phantom2: Default::default(),
                 },
             ))
         }
 
-        pub fn tokenize_without_params(part: &'a [u8]) -> IResult<Self> {
+        pub fn tokenize_without_params(part: T) -> GResult<T, Self> {
             use nom::combinator::opt;
 
             let (rem, scheme) = opt(scheme::Tokenizer::tokenize)(part)?;
@@ -252,6 +283,8 @@ pub mod tokenizer {
                     host_with_port,
                     params: vec![],
                     headers: None,
+                    phantom1: Default::default(),
+                    phantom2: Default::default(),
                 },
             ))
         }

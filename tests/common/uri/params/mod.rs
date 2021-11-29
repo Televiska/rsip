@@ -19,11 +19,7 @@ mod parser {
     #[test]
     fn parser1() {
         assert_eq!(
-            Tokenizer {
-                name: "maddr".as_bytes(),
-                value: Some("255.255.255.0".as_bytes()),
-            }
-            .try_into(),
+            Tokenizer::from(("maddr".as_bytes(), Some("255.255.255.0".as_bytes()))).try_into(),
             Ok(Param::Maddr(Maddr::new("255.255.255.0")))
         );
     }
@@ -31,11 +27,7 @@ mod parser {
     #[test]
     fn parser2() {
         assert_eq!(
-            Tokenizer {
-                name: "maddr".as_bytes(),
-                value: None,
-            }
-            .try_into(),
+            Tokenizer::from(("maddr".as_bytes(), None,)).try_into(),
             Ok(Param::Other("maddr".into(), None))
         );
     }
@@ -45,9 +37,9 @@ mod tokenizer {
     use super::*;
 
     #[test]
-    fn tokenizer1() {
+    fn tokenizer1_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b";maddr=255.255.255.255;something"),
+            Tokenizer::tokenize(";maddr=255.255.255.255;something".as_bytes()),
             Ok((
                 ";something".as_bytes(),
                 ("maddr".as_bytes(), Some("255.255.255.255".as_bytes())).into()
@@ -56,9 +48,17 @@ mod tokenizer {
     }
 
     #[test]
-    fn tokenizer2() {
+    fn tokenizer1_str() {
         assert_eq!(
-            Tokenizer::tokenize(b";maddr=255.255.255.255;something"),
+            Tokenizer::tokenize(";maddr=255.255.255.255;something"),
+            Ok((";something", ("maddr", Some("255.255.255.255")).into())),
+        );
+    }
+
+    #[test]
+    fn tokenizer2_u8() {
+        assert_eq!(
+            Tokenizer::tokenize(";maddr=255.255.255.255;something".as_bytes()),
             Ok((
                 ";something".as_bytes(),
                 ("maddr".as_bytes(), Some("255.255.255.255".as_bytes())).into()
@@ -69,7 +69,7 @@ mod tokenizer {
     #[test]
     fn errors1() {
         assert_eq!(
-            Tokenizer::tokenize(b"hello"),
+            Tokenizer::tokenize("hello".as_bytes()),
             Err(nom::Err::Error(rsip::TokenizerError::from(
                 "failed to tokenize uri param: hello"
             ))),

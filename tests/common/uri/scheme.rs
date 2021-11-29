@@ -39,9 +39,9 @@ mod tokenizer {
     use super::*;
 
     #[test]
-    fn tokenizer1() {
+    fn tokenizer1_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"sip:user2@server2.com something"),
+            Tokenizer::tokenize("sip:user2@server2.com something".as_bytes()),
             Ok((
                 "user2@server2.com something".as_bytes(),
                 "sip".as_bytes().into()
@@ -50,9 +50,17 @@ mod tokenizer {
     }
 
     #[test]
-    fn tokenizer2() {
+    fn tokenizer1_str() {
         assert_eq!(
-            Tokenizer::tokenize(b"sips:user2@server2.com something"),
+            Tokenizer::tokenize("sip:user2@server2.com something"),
+            Ok(("user2@server2.com something", "sip".into())),
+        );
+    }
+
+    #[test]
+    fn tokenizer2_u8() {
+        assert_eq!(
+            Tokenizer::tokenize("sips:user2@server2.com something".as_bytes()),
             Ok((
                 "user2@server2.com something".as_bytes(),
                 "sips".as_bytes().into()
@@ -63,7 +71,7 @@ mod tokenizer {
     #[test]
     fn errors1() {
         assert_eq!(
-            Tokenizer::tokenize(b"soup:user2@server2.com something"),
+            Tokenizer::tokenize("soup:user2@server2.com something".as_bytes()),
             Err(nom::Err::Error(rsip::TokenizerError::from(
                 "failed to tokenize scheme: soup:user2@server2.com something"
             ))),
@@ -73,7 +81,7 @@ mod tokenizer {
     #[test]
     fn errors2() {
         assert_eq!(
-            Tokenizer::tokenize(b"sip//:user2@server2.com something"),
+            Tokenizer::tokenize("sip//:user2@server2.com something".as_bytes()),
             Err(nom::Err::Error(rsip::TokenizerError::from(
                 "failed to tokenize scheme: sip//:user2@server2.com something"
             ))),

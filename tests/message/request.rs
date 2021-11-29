@@ -378,7 +378,8 @@ mod tokenizer {
                         auth: None,
                         host_with_port: ("server.com".as_bytes(), None).into(),
                         params: vec![],
-                        headers: None
+                        headers: None,
+                        ..Default::default()
                     },
                     version: ("2".as_bytes(), "0".as_bytes()).into(),
                     headers: vec![].into(),
@@ -413,8 +414,9 @@ mod tokenizer {
                         scheme: Some("sips".as_bytes().into()),
                         auth: None,
                         host_with_port: ("ss2.biloxi.example.com".as_bytes(), None).into(),
-                    params: vec![],
-                        headers: None
+                        params: vec![],
+                        headers: None,
+                        ..Default::default()
                     },
                     version: ("2".as_bytes(), "0".as_bytes()).into(),
                     headers: vec![
@@ -459,10 +461,13 @@ mod errors {
                 );
         let parsed_request = Request::try_from(req.clone().as_bytes());
         match parsed_request {
-            Err(rsip::Error::ParseError(inner)) if inner.contains("invalid method `REGISTE`") => {
+            Err(rsip::Error::ParseError(inner)) if inner.contains("invalid method: REGISTE") => {
                 Ok(())
             }
-            _ => panic!("unexpected result: {:?}", parsed_request),
+            _ => panic!(
+                "unexpected result, should have failed! {:?}",
+                parsed_request
+            ),
         }
     }
     /*

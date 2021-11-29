@@ -21,8 +21,9 @@ pub use tag::Tag;
 pub use ttl::Ttl;
 pub use user::User;
 
-use crate::Transport;
+use crate::{Error, Transport};
 use rsip_derives::NewType;
+use std::convert::TryInto;
 
 /// This enum holds all the possible parameters found in SIP(S) URIs, and headers like `From`,
 /// `To`, `Contact`, `Via` etc. For better safety, we should probably define different param
@@ -72,81 +73,110 @@ impl std::fmt::Display for Param {
     }
 }
 
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for Param {
+    type Error = Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
+        (tokenizer.name, tokenizer.value).try_into()
+    }
+}
+
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8], u8>> for Param {
+    type Error = Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8], u8>) -> Result<Self, Self::Error> {
+        use std::str::from_utf8;
+
+        Self::try_from(Tokenizer::from((
+            from_utf8(tokenizer.name)?,
+            tokenizer.value.map(from_utf8).transpose()?,
+        )))
+    }
+}
+
+impl<'a> std::convert::TryFrom<(&'a str, Option<&'a str>)> for Param {
+    type Error = Error;
+
+    fn try_from(from: (&'a str, Option<&'a str>)) -> Result<Self, Self::Error> {
+        use std::str::FromStr;
+
+        match (from.0, from.1) {
+            (s, Some(v)) if s.eq_ignore_ascii_case("transport") => {
+                Ok(Param::Transport(Transport::from_str(v)?))
+            }
+            (s, Some(v)) if s.eq_ignore_ascii_case("user") => Ok(Param::User(User::new(v))),
+            (s, Some(v)) if s.eq_ignore_ascii_case("method") => Ok(Param::Method(Method::new(v))),
+            (s, Some(v)) if s.eq_ignore_ascii_case("ttl") => Ok(Param::Ttl(Ttl::new(v))),
+            (s, Some(v)) if s.eq_ignore_ascii_case("maddr") => Ok(Param::Maddr(Maddr::new(v))),
+            (s, Some(v)) if s.eq_ignore_ascii_case("branch") => Ok(Param::Branch(Branch::new(v))),
+            (s, Some(v)) if s.eq_ignore_ascii_case("received") => {
+                Ok(Param::Received(Received::new(v)))
+            }
+            (s, Some(v)) if s.eq_ignore_ascii_case("tag") => Ok(Param::Tag(Tag::new(v))),
+            (s, Some(v)) if s.eq_ignore_ascii_case("expires") => {
+                Ok(Param::Expires(Expires::new(v)))
+            }
+            (s, Some(v)) if s.eq_ignore_ascii_case("q") => Ok(Param::Q(Q::new(v))),
+            (s, None) if s.eq_ignore_ascii_case("lr") => Ok(Param::Lr),
+            (s, v) => Ok(Param::Other(s.into(), v.map(Into::into))),
+        }
+    }
+}
+
 #[doc(hidden)]
 pub mod tokenizer {
-    use super::*;
-    use crate::{Error, IResult, NomError, TokenizerError};
-    use rsip_derives::Utf8Tokenizer;
-    use std::convert::TryInto;
+    use crate::{AbstractInput, AbstractInputItem, GResult, GenericNomError, TokenizerError};
+    use std::marker::PhantomData;
 
-    impl<'a> TryInto<Param> for Tokenizer<'a> {
-        type Error = Error;
+    #[derive(Debug, PartialEq, Eq, Clone)]
+    pub struct Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        pub name: T,
+        pub value: Option<T>,
+        phantom1: PhantomData<&'a T>,
+        phantom2: PhantomData<I>,
+    }
 
-        fn try_into(self) -> Result<Param, Error> {
-            use std::str::FromStr;
-
-            let tokenizer: Utf8Tokenizer = self.try_into()?;
-
-            match (tokenizer.name, tokenizer.value) {
-                (s, Some(v)) if s.eq_ignore_ascii_case("transport") => {
-                    Ok(Param::Transport(Transport::from_str(v)?))
-                }
-                (s, Some(v)) if s.eq_ignore_ascii_case("user") => Ok(Param::User(User::new(v))),
-                (s, Some(v)) if s.eq_ignore_ascii_case("method") => {
-                    Ok(Param::Method(Method::new(v)))
-                }
-                (s, Some(v)) if s.eq_ignore_ascii_case("ttl") => Ok(Param::Ttl(Ttl::new(v))),
-                (s, Some(v)) if s.eq_ignore_ascii_case("maddr") => Ok(Param::Maddr(Maddr::new(v))),
-                (s, Some(v)) if s.eq_ignore_ascii_case("branch") => {
-                    Ok(Param::Branch(Branch::new(v)))
-                }
-                (s, Some(v)) if s.eq_ignore_ascii_case("received") => {
-                    Ok(Param::Received(Received::new(v)))
-                }
-                (s, Some(v)) if s.eq_ignore_ascii_case("tag") => Ok(Param::Tag(Tag::new(v))),
-                (s, Some(v)) if s.eq_ignore_ascii_case("expires") => {
-                    Ok(Param::Expires(Expires::new(v)))
-                }
-                (s, Some(v)) if s.eq_ignore_ascii_case("q") => Ok(Param::Q(Q::new(v))),
-                (s, None) if s.eq_ignore_ascii_case("lr") => Ok(Param::Lr),
-                (s, v) => Ok(Param::Other(s.into(), v.map(Into::into))),
+    impl<'a, T, I> From<(T, Option<T>)> for Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        fn from(from: (T, Option<T>)) -> Self {
+            Self {
+                name: from.0,
+                value: from.1,
+                phantom1: PhantomData,
+                phantom2: PhantomData,
             }
         }
     }
 
-    #[derive(Debug, PartialEq, Eq, Utf8Tokenizer, Clone)]
-    pub struct Tokenizer<'a> {
-        pub name: &'a [u8],
-        pub value: Option<&'a [u8]>,
-    }
-
-    impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
-            use crate::parser_utils::is_token;
+    impl<'a, T, I> Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        pub fn tokenize(part: T) -> GResult<T, Self> {
             use nom::{
                 bytes::complete::{tag, take_while},
-                character::is_alphabetic,
                 combinator::{map, opt},
                 sequence::tuple,
             };
 
             let (rem, (_, name, value)) = tuple((
                 tag(";"),
-                take_while(is_alphabetic),
-                opt(map(tuple((tag("="), take_while(is_token))), |t| t.1)),
+                take_while(I::is_alphabetic),
+                opt(map(tuple((tag("="), take_while(I::is_token))), |t| t.1)),
             ))(part)
-            .map_err(|_: NomError<'a>| TokenizerError::from(("uri param", part)).into())?;
+            .map_err(|_: GenericNomError<'a, T>| {
+                TokenizerError::from(("uri param", part)).into()
+            })?;
 
             Ok((rem, (name, value).into()))
-        }
-    }
-
-    impl<'a> std::convert::From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
-        fn from(tuple: (&'a [u8], Option<&'a [u8]>)) -> Self {
-            Self {
-                name: tuple.0,
-                value: tuple.1,
-            }
         }
     }
 }

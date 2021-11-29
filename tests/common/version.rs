@@ -49,7 +49,7 @@ mod tokenizer {
     use super::*;
 
     #[test]
-    fn tokenizer1() {
+    fn tokenizer1_u8() {
         assert_eq!(
             Tokenizer::tokenize("SIP/1.0\r\nsomething".as_bytes()),
             Ok((
@@ -60,7 +60,15 @@ mod tokenizer {
     }
 
     #[test]
-    fn tokenizer2() {
+    fn tokenizer1_str() {
+        assert_eq!(
+            Tokenizer::tokenize("SIP/1.0\r\nsomething"),
+            Ok(("\r\nsomething", ("1", "0").into())),
+        );
+    }
+
+    #[test]
+    fn tokenizer2_u8() {
         assert_eq!(
             Tokenizer::tokenize("SIP/2.0 something".as_bytes()),
             Ok((
@@ -71,7 +79,7 @@ mod tokenizer {
     }
 
     #[test]
-    fn tokenizer3() {
+    fn tokenizer3_u8() {
         assert_eq!(
             Tokenizer::tokenize("SIP/2.0/UDP pc33.atlanta.com".as_bytes()),
             Ok((

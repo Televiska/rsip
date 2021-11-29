@@ -36,18 +36,28 @@ mod tokenizer {
     use super::*;
 
     #[test]
-    fn tokenizer1() {
+    fn tokenizer1_u8() {
+        assert_eq!(Tokenizer::tokenize("UDP "), Ok((" ", "UDP".into())),);
+    }
+
+    #[test]
+    fn tokenizer1_str() {
         assert_eq!(
-            Tokenizer::tokenize(b"UDP "),
+            Tokenizer::tokenize("UDP ".as_bytes()),
             Ok((" ".as_bytes(), "UDP".as_bytes().into())),
         );
     }
 
     #[test]
-    fn tokenizer2() {
+    fn tokenizer2_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"TCP"),
+            Tokenizer::tokenize("TCP".as_bytes()),
             Ok(("".as_bytes(), "TCP".as_bytes().into())),
         );
+    }
+
+    #[test]
+    fn tokenizer2_str() {
+        assert_eq!(Tokenizer::tokenize("TCP"), Ok(("", "TCP".into())),);
     }
 }

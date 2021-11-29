@@ -4,8 +4,8 @@ use crate::{common::uri, headers::typed::Tokenize, Error};
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Tokenizer<'a> {
     pub display_name: Option<&'a str>,
-    pub uri: uri::Tokenizer<'a>,
-    pub params: Vec<uri::param::Tokenizer<'a>>,
+    pub uri: uri::Tokenizer<'a, &'a str, char>,
+    pub params: Vec<uri::param::Tokenizer<'a, &'a str, char>>,
 }
 
 impl<'a> Tokenize<'a> for Tokenizer<'a> {
@@ -30,10 +30,10 @@ impl<'a> Tokenize<'a> for Tokenizer<'a> {
 
             Ok(Self {
                 display_name: crate::utils::opt_trim(display_name),
-                uri: uri::Tokenizer::tokenize(uri.as_bytes())
+                uri: uri::Tokenizer::tokenize(uri)
                     .map_err(|_| Error::tokenizer(("URI in name-addr of To header", part)))?
                     .1,
-                params: many0(uri::param::Tokenizer::tokenize)(params.as_bytes())
+                params: many0(uri::param::Tokenizer::tokenize)(params)
                     .map_err(|_| Error::tokenizer(("params in name-addr of To header", part)))?
                     .1,
             })
@@ -41,7 +41,7 @@ impl<'a> Tokenize<'a> for Tokenizer<'a> {
             let (_, (uri, params)) = tuple((
                 uri::Tokenizer::tokenize_without_params,
                 many0(uri::param::Tokenizer::tokenize),
-            ))(part.as_bytes())?;
+            ))(part)?;
 
             Ok(Self {
                 display_name: None,

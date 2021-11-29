@@ -35,18 +35,6 @@ impl std::fmt::Display for Version {
     }
 }
 
-impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8], u8>> for Version {
-    type Error = Error;
-
-    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8], u8>) -> Result<Self, Self::Error> {
-        match tokenizer.major {
-            b"1" => Ok(Version::V1),
-            b"2" => Ok(Version::V2),
-            _ => Err(Self::Error::ParseError("Unrecognized SIP version".into())),
-        }
-    }
-}
-
 impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for Version {
     type Error = Error;
 
@@ -59,16 +47,28 @@ impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for Vers
     }
 }
 
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8], u8>> for Version {
+    type Error = Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8], u8>) -> Result<Self, Self::Error> {
+        match tokenizer.major {
+            b"1" => Ok(Version::V1),
+            b"2" => Ok(Version::V2),
+            _ => Err(Self::Error::ParseError("Unrecognized SIP version".into())),
+        }
+    }
+}
+
 #[doc(hidden)]
 mod tokenizer {
-    use crate::{AbstractInput, GResult, GenericNomError, TokenizerError};
+    use crate::{AbstractInput, AbstractInputItem, GResult, GenericNomError, TokenizerError};
     use std::marker::PhantomData;
 
     #[derive(Debug, PartialEq, Eq, Clone)]
     pub struct Tokenizer<'a, T, I>
     where
         T: AbstractInput<'a, I>,
-        I: nom::AsChar,
+        I: AbstractInputItem<I>,
     {
         pub major: T,
         pub minor: T,
@@ -79,7 +79,7 @@ mod tokenizer {
     impl<'a, T, I> From<(T, T)> for Tokenizer<'a, T, I>
     where
         T: AbstractInput<'a, I>,
-        I: nom::AsChar,
+        I: AbstractInputItem<I>,
     {
         fn from(from: (T, T)) -> Self {
             Self {
@@ -94,7 +94,7 @@ mod tokenizer {
     impl<'a, T, I> Tokenizer<'a, T, I>
     where
         T: AbstractInput<'a, I>,
-        I: nom::AsChar,
+        I: AbstractInputItem<I>,
     {
         pub fn tokenize(part: T) -> GResult<T, Self> {
             use nom::{bytes::complete::tag, character::complete::digit1, sequence::tuple};

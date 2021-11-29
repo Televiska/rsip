@@ -52,14 +52,16 @@ macro_rules! create_status_codes {
         }
 
         //Here we decide to completely ignore the reason if the code can be mapped to a well known status
-        fn match_from<'a>(code: u16, reason: &'a [u8]) -> Result<StatusCode, Error> {
-            use std::str::from_utf8;
+        impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for StatusCode {
+            type Error = Error;
 
-            match (code, reason) {
-                $(
-                    ($code, _) => Ok(StatusCode::$name),
-                )*
-                (code, reason) => Ok(StatusCode::Other(code, from_utf8(reason)?.into())),
+            fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
+                match (tokenizer.code.parse::<u16>()?, tokenizer.reason) {
+                    $(
+                        ($code, _) => Ok(StatusCode::$name),
+                    )*
+                    (code, reason) => Ok(StatusCode::Other(code, reason.into())),
+                }
             }
         }
     }
@@ -184,28 +186,23 @@ impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8], u8>> for Statu
     fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8], u8>) -> Result<Self, Self::Error> {
         use std::str::from_utf8;
 
-        match_from(from_utf8(tokenizer.code)?.parse::<u16>()?, tokenizer.reason)
-    }
-}
-
-impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for StatusCode {
-    type Error = Error;
-
-    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
-        match_from(tokenizer.code.parse::<u16>()?, tokenizer.reason.as_bytes())
+        Self::try_from(Tokenizer::from((
+            from_utf8(tokenizer.code)?,
+            from_utf8(tokenizer.reason)?,
+        )))
     }
 }
 
 #[doc(hidden)]
 mod tokenizer {
-    use crate::{AbstractInput, GResult, GenericNomError, TokenizerError};
+    use crate::{AbstractInput, AbstractInputItem, GResult, GenericNomError, TokenizerError};
     use std::marker::PhantomData;
 
     #[derive(Debug, PartialEq, Eq, Clone)]
     pub struct Tokenizer<'a, T, I>
     where
         T: AbstractInput<'a, I>,
-        I: nom::AsChar,
+        I: AbstractInputItem<I>,
     {
         pub code: T,
         pub reason: T,
@@ -216,7 +213,7 @@ mod tokenizer {
     impl<'a, T, I> From<(T, T)> for Tokenizer<'a, T, I>
     where
         T: AbstractInput<'a, I>,
-        I: nom::AsChar,
+        I: AbstractInputItem<I>,
     {
         fn from(from: (T, T)) -> Self {
             Self {
@@ -231,7 +228,7 @@ mod tokenizer {
     impl<'a, T, I> Tokenizer<'a, T, I>
     where
         T: AbstractInput<'a, I>,
-        I: nom::AsChar,
+        I: AbstractInputItem<I>,
     {
         pub fn tokenize(part: T) -> GResult<T, Self> {
             use nom::{

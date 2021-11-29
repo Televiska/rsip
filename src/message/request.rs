@@ -177,8 +177,8 @@ pub mod tokenizer {
 
     #[derive(Debug, PartialEq, Eq)]
     pub struct Tokenizer<'a> {
-        pub method: method::Tokenizer<'a>,
-        pub uri: uri::Tokenizer<'a>,
+        pub method: method::Tokenizer<'a, &'a [u8], u8>,
+        pub uri: uri::Tokenizer<'a, &'a [u8], u8>,
         pub version: version::Tokenizer<'a, &'a [u8], u8>,
         pub headers: Vec<header::Tokenizer<'a>>,
         pub body: &'a [u8],
@@ -194,8 +194,9 @@ pub mod tokenizer {
                 sequence::tuple,
             };
 
-            let (rem, (method, uri, _, version, _)) = tuple((
+            let (rem, (method, _, uri, _, version, _)) = tuple((
                 method::Tokenizer::tokenize,
+                tag(" "),
                 uri::Tokenizer::tokenize,
                 tag(" "),
                 version::Tokenizer::tokenize,

@@ -1,7 +1,7 @@
 #[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
-use crate::{Port, Scheme};
+use crate::{Error, Port, Scheme};
 
 /// Simple enum that holds the transport type used (for instance in the `Via` header).
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
@@ -113,60 +113,85 @@ impl std::str::FromStr for Transport {
     type Err = crate::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use std::convert::TryInto;
+        use std::convert::TryFrom;
 
-        Tokenizer {
-            value: s.as_bytes(),
+        Self::try_from(Tokenizer::from(s))
+    }
+}
+
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for Transport {
+    type Error = Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
+        match tokenizer.value {
+            part if part.eq_ignore_ascii_case("UDP") => Ok(Transport::Udp),
+            part if part.eq_ignore_ascii_case("TCP") => Ok(Transport::Tcp),
+            part if part.eq_ignore_ascii_case("TLS") => Ok(Transport::Tls),
+            part if part.eq_ignore_ascii_case("SCTP") => Ok(Transport::Sctp),
+            part if part.eq_ignore_ascii_case("TLS-SCTP") => Ok(Transport::TlsSctp),
+            part if part.eq_ignore_ascii_case("WS") => Ok(Transport::Ws),
+            part if part.eq_ignore_ascii_case("WSS") => Ok(Transport::Wss),
+            part => Err(Error::ParseError(format!("unknown transport: {}", part))),
         }
-        .try_into()
+    }
+}
+
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8], u8>> for Transport {
+    type Error = Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8], u8>) -> Result<Self, Self::Error> {
+        use std::str::from_utf8;
+
+        let value = from_utf8(tokenizer.value)?;
+
+        Self::try_from(Tokenizer::from(value))
     }
 }
 
 #[doc(hidden)]
 mod tokenizer {
-    use super::Transport;
-    use crate::{Error, IResult, NomError, TokenizerError};
-    use std::convert::TryInto;
+    use crate::{AbstractInput, AbstractInputItem, GResult, GenericNomError, TokenizerError};
+    use std::marker::PhantomData;
 
-    //TODO: convert that to TryFrom, remove the need to parse utf8
-    impl<'a> TryInto<Transport> for Tokenizer<'a> {
-        type Error = Error;
+    #[derive(Debug, PartialEq, Eq, Clone)]
+    pub struct Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        pub value: T,
+        phantom1: PhantomData<&'a T>,
+        phantom2: PhantomData<I>,
+    }
 
-        fn try_into(self) -> Result<Transport, Error> {
-            use std::str::from_utf8;
-
-            match from_utf8(self.value)? {
-                part if part.eq_ignore_ascii_case("UDP") => Ok(Transport::Udp),
-                part if part.eq_ignore_ascii_case("TCP") => Ok(Transport::Tcp),
-                part if part.eq_ignore_ascii_case("TLS") => Ok(Transport::Tls),
-                part if part.eq_ignore_ascii_case("SCTP") => Ok(Transport::Sctp),
-                part if part.eq_ignore_ascii_case("TLS-SCTP") => Ok(Transport::TlsSctp),
-                part if part.eq_ignore_ascii_case("WS") => Ok(Transport::Ws),
-                part if part.eq_ignore_ascii_case("WSS") => Ok(Transport::Wss),
-                part => Err(Error::ParseError(format!("unknown transport: {}", part))),
+    impl<'a, T, I> From<T> for Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        fn from(value: T) -> Self {
+            Self {
+                value,
+                phantom1: Default::default(),
+                phantom2: Default::default(),
             }
         }
     }
 
-    #[derive(Debug, PartialEq, Eq, Clone)]
-    pub struct Tokenizer<'a> {
-        pub value: &'a [u8],
-    }
-
-    impl<'a> From<&'a [u8]> for Tokenizer<'a> {
-        fn from(value: &'a [u8]) -> Self {
-            Self { value }
-        }
-    }
-
-    impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
+    impl<'a, T, I> Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        pub fn tokenize(part: T) -> GResult<T, Self> {
             use nom::{branch::alt, bytes::complete::take_until1, combinator::rest};
 
-            let (rem, transport) = alt((take_until1(" "), rest))(part)
-                .map_err(|_: NomError<'a>| TokenizerError::from(("transport", part)).into())?;
+            let (rem, transport) =
+                alt((take_until1(" "), rest))(part).map_err(|_: GenericNomError<'a, T>| {
+                    TokenizerError::from(("transport", part)).into()
+                })?;
 
-            Ok((rem, transport.into()))
+            Ok((rem, Tokenizer::from(transport)))
         }
     }
 }

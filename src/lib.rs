@@ -292,6 +292,7 @@ pub(crate) type GenericNomError<'a, T> = nom::Err<nom::error::VerboseError<T>>;
 pub(crate) type IResult<'a, T> = Result<(&'a [u8], T), nom::Err<TokenizerError>>;
 pub(crate) type GResult<I, T> = Result<(I, T), nom::Err<TokenizerError>>;
 
+//need to include &str or &[u8] in definition
 pub trait AbstractInput<'a, I>:
     nom::InputTakeAtPosition<Item = I>
     + nom::InputTake
@@ -304,8 +305,15 @@ pub trait AbstractInput<'a, I>:
     + nom::Compare<&'a str>
     + std::fmt::Debug
     + Into<&'a bstr::BStr>
+    + Default
 {
     fn is_empty(&self) -> bool;
+}
+
+pub trait AbstractInputItem<I>: nom::AsChar + std::cmp::PartialEq<I> + From<u8> {
+    fn is_alphabetic(c: I) -> bool;
+    fn is_alphanumeric(c: I) -> bool;
+    fn is_token(c: I) -> bool;
 }
 
 impl<'a> AbstractInput<'a, char> for &'a str {
@@ -314,9 +322,38 @@ impl<'a> AbstractInput<'a, char> for &'a str {
     }
 }
 
+impl AbstractInputItem<char> for char {
+    fn is_alphabetic(c: char) -> bool {
+        c.is_ascii_alphabetic()
+    }
+
+    fn is_alphanumeric(c: char) -> bool {
+        c.is_ascii_alphanumeric()
+    }
+
+    fn is_token(c: char) -> bool {
+        Self::is_alphanumeric(c) || "-.!%*_+`'~".contains(c)
+    }
+}
+
 impl<'a> AbstractInput<'a, u8> for &'a [u8] {
     fn is_empty(&self) -> bool {
         <[u8]>::is_empty(self)
+    }
+}
+impl AbstractInputItem<u8> for u8 {
+    fn is_alphabetic(c: u8) -> bool {
+        nom::character::is_alphabetic(c)
+    }
+
+    fn is_alphanumeric(c: u8) -> bool {
+        nom::character::is_alphanumeric(c)
+    }
+
+    fn is_token(c: u8) -> bool {
+        use nom::character::is_alphanumeric;
+
+        is_alphanumeric(c) || "-.!%*_+`'~".contains(char::from(c))
     }
 }
 
@@ -333,12 +370,11 @@ pub(crate) mod utils {
 
 pub(crate) mod parser_utils {
     use crate::TokenizerError;
-    use nom::{error::VerboseError, IResult};
 
-    pub fn opt_sp(input: &[u8]) -> IResult<&[u8], Option<&[u8]>, VerboseError<&[u8]>> {
-        use nom::{bytes::complete::tag, combinator::opt};
+    pub fn is_token(c: u8) -> bool {
+        use nom::character::is_alphanumeric;
 
-        opt(tag(" "))(input)
+        is_alphanumeric(c) || "-.!%*_+`'~".contains(char::from(c))
     }
 
     pub fn is_empty_or_fail_with<'a, I, T: crate::AbstractInput<'a, I>, S: Into<&'a bstr::BStr>>(
@@ -362,11 +398,6 @@ pub(crate) mod parser_utils {
     }
     */
 
-    pub fn is_token(chr: u8) -> bool {
-        use nom::character::is_alphanumeric;
-
-        is_alphanumeric(chr) || "-.!%*_+`'~".contains(char::from(chr))
-    }
     /*
         pub fn is_unreserved(chr: u8) -> bool {
             use nom::character::is_alphanumeric;

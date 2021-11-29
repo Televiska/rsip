@@ -222,7 +222,8 @@ mod tokenizer {
                         auth: None,
                         host_with_port: ("server.com".as_bytes(), None).into(),
                         params: vec![],
-                        headers: None
+                        headers: None,
+                        ..Default::default()
                     },
                     version: ("2".as_bytes(), "0".as_bytes()).into(),
                     headers: vec![].into(),
@@ -258,7 +259,8 @@ mod tokenizer {
                     auth: None,
                     host_with_port: ("ss2.biloxi.example.com".as_bytes(), None).into(),
                     params: vec![],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 },
                 version: ("2".as_bytes(), "0".as_bytes()).into(),
                 headers: vec![
