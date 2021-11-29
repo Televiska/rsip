@@ -10,10 +10,10 @@ use crate::{
 
 #[derive(Eq, PartialEq, Debug)]
 pub struct Tokenizer<'a> {
-    pub version: version::Tokenizer<'a, &'a [u8], u8>,
-    pub transport: transport::Tokenizer<'a>,
-    pub uri: uri::Tokenizer<'a>,
-    pub params: Vec<param::Tokenizer<'a>>,
+    pub version: version::Tokenizer<'a, &'a str, char>,
+    pub transport: transport::Tokenizer<'a, &'a str, char>,
+    pub uri: uri::Tokenizer<'a, &'a str, char>,
+    pub params: Vec<uri::param::Tokenizer<'a, &'a str, char>>,
 }
 
 impl<'a> Tokenize<'a> for Tokenizer<'a> {
@@ -29,7 +29,7 @@ impl<'a> Tokenize<'a> for Tokenizer<'a> {
             space1,
             uri::Tokenizer::tokenize_without_params,
             many0(param::Tokenizer::tokenize),
-        ))(part.as_bytes())
+        ))(part)
         .map_err(|_| Error::tokenizer(("via (typed) header", part)))?;
 
         Ok(Self {

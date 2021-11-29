@@ -48,9 +48,9 @@ mod tokenizer {
     use super::*;
 
     #[test]
-    fn tokenizer1() {
+    fn tokenizer1_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"user:password@server2.com something"),
+            Tokenizer::tokenize("user:password@server2.com something".as_bytes()),
             Ok((
                 "server2.com something".as_bytes(),
                 ("user".as_bytes(), Some("password".as_bytes())).into()
@@ -59,9 +59,17 @@ mod tokenizer {
     }
 
     #[test]
+    fn tokenizer1_str() {
+        assert_eq!(
+            Tokenizer::tokenize("user:password@server2.com something"),
+            Ok(("server2.com something", ("user", Some("password")).into())),
+        );
+    }
+
+    #[test]
     fn errors1() {
         assert_eq!(
-            Tokenizer::tokenize(b"server2.com something"),
+            Tokenizer::tokenize("server2.com something".as_bytes()),
             Err(nom::Err::Error(rsip::TokenizerError::from(
                 "failed to tokenize auth user: server2.com something"
             ))),

@@ -3,8 +3,8 @@ use crate::{common::uri, headers::typed::Tokenize, Error};
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Tokenizer<'a> {
     pub display_name: Option<&'a str>,
-    pub uri: uri::Tokenizer<'a>,
-    pub params: Vec<uri::param::Tokenizer<'a>>,
+    pub uri: uri::Tokenizer<'a, &'a str, char>,
+    pub params: Vec<uri::param::Tokenizer<'a, &'a str, char>>,
 }
 
 impl<'a> Tokenize<'a> for Tokenizer<'a> {
@@ -28,19 +28,22 @@ impl<'a> Tokenize<'a> for Tokenizer<'a> {
             ))(part)
             .map_err(|_| Error::tokenizer(("contact header", part)))?;
 
-            let (rem, params) = many0(uri::param::Tokenizer::tokenize)(params.as_bytes())?;
+            let (rem, params) = many0(uri::param::Tokenizer::tokenize)(params)
+                .map_err(|_| Error::tokenizer(("params of Contact header", part)))?;
             is_empty_or_fail_with(rem, ("contact params", part))?;
 
             Ok(Self {
                 display_name: crate::utils::opt_trim(display_name),
-                uri: uri::Tokenizer::tokenize(uri.as_bytes())?.1,
+                uri: uri::Tokenizer::tokenize(uri)
+                    .map_err(|_| Error::tokenizer(("URI in Contact header", part)))?
+                    .1,
                 params,
             })
         } else {
             let (_, (uri, params)) = tuple((
                 uri::Tokenizer::tokenize_without_params,
                 many0(uri::param::Tokenizer::tokenize),
-            ))(part.as_bytes())?;
+            ))(part)?;
 
             Ok(Self {
                 display_name: None,

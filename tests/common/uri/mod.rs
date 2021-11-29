@@ -99,7 +99,8 @@ mod parser {
                 auth: None,
                 host_with_port: ("server2.com".as_bytes(), None).into(),
                 params: vec![],
-                headers: None
+                headers: None,
+                ..Default::default()
             }
             .try_into(),
             Ok(Uri {
@@ -120,7 +121,8 @@ mod parser {
                 auth: Some(("user".as_bytes(), None).into()),
                 host_with_port: ("server2.com".as_bytes(), None).into(),
                 params: vec![],
-                headers: None
+                headers: None,
+                ..Default::default()
             }
             .try_into(),
             Ok(Uri {
@@ -141,7 +143,8 @@ mod parser {
                 auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
                 host_with_port: ("server2.com".as_bytes(), None).into(),
                 params: vec![],
-                headers: None
+                headers: None,
+                ..Default::default()
             }
             .try_into(),
             Ok(Uri {
@@ -162,7 +165,8 @@ mod parser {
                 auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
                 host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
                 params: vec![],
-                headers: None
+                headers: None,
+                ..Default::default()
             }
             .try_into(),
             Ok(Uri {
@@ -183,7 +187,8 @@ mod parser {
                 auth: Some(("user".as_bytes(), None).into()),
                 host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
                 params: vec![],
-                headers: None
+                headers: None,
+                ..Default::default()
             }
             .try_into(),
             Ok(Uri {
@@ -204,7 +209,8 @@ mod parser {
                 auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
                 host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
                 params: vec![],
-                headers: None
+                headers: None,
+                ..Default::default()
             }
             .try_into(),
             Ok(Uri {
@@ -232,7 +238,8 @@ mod parser {
                     ("maddr".as_bytes(), Some("255.255.255.0".as_bytes())).into(),
                     ("foo".as_bytes(), Some("192.0.2.201".as_bytes())).into()
                 ],
-                headers: None
+                headers: None,
+                ..Default::default()
             }
             .try_into(),
             Ok(Uri {
@@ -253,9 +260,9 @@ mod tokenizer {
     use super::*;
 
     #[test]
-    fn tokenizer1() {
+    fn tokenizer1_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"server2.com something"),
+            Tokenizer::tokenize("server2.com something".as_bytes()),
             Ok((
                 " something".as_bytes(),
                 Tokenizer {
@@ -263,16 +270,35 @@ mod tokenizer {
                     auth: None,
                     host_with_port: ("server2.com".as_bytes(), None).into(),
                     params: vec![],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 }
             )),
         );
     }
 
     #[test]
-    fn tokenizer2() {
+    fn tokenizer1_str() {
         assert_eq!(
-            Tokenizer::tokenize(b"user@server2.com something"),
+            Tokenizer::tokenize("server2.com something"),
+            Ok((
+                " something",
+                Tokenizer {
+                    scheme: None,
+                    auth: None,
+                    host_with_port: ("server2.com", None).into(),
+                    params: vec![],
+                    headers: None,
+                    ..Default::default()
+                }
+            )),
+        );
+    }
+
+    #[test]
+    fn tokenizer2_u8() {
+        assert_eq!(
+            Tokenizer::tokenize("user@server2.com something".as_bytes()),
             Ok((
                 " something".as_bytes(),
                 Tokenizer {
@@ -280,16 +306,17 @@ mod tokenizer {
                     auth: Some(("user".as_bytes(), None).into()),
                     host_with_port: ("server2.com".as_bytes(), None).into(),
                     params: vec![],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 }
             )),
         );
     }
 
     #[test]
-    fn tokenizer3() {
+    fn tokenizer3_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"user:password@server2.com something"),
+            Tokenizer::tokenize("user:password@server2.com something".as_bytes()),
             Ok((
                 " something".as_bytes(),
                 Tokenizer {
@@ -297,16 +324,17 @@ mod tokenizer {
                     auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
                     host_with_port: ("server2.com".as_bytes(), None).into(),
                     params: vec![],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 }
             )),
         );
     }
 
     #[test]
-    fn tokenizer4() {
+    fn tokenizer4_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"user:password@server2.com:5060 something"),
+            Tokenizer::tokenize("user:password@server2.com:5060 something".as_bytes()),
             Ok((
                 " something".as_bytes(),
                 Tokenizer {
@@ -314,16 +342,17 @@ mod tokenizer {
                     auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
                     host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
                     params: vec![],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 }
             )),
         );
     }
 
     #[test]
-    fn tokenizer5() {
+    fn tokenizer5_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"sip:user@server2.com:5060 something"),
+            Tokenizer::tokenize("sip:user@server2.com:5060 something".as_bytes()),
             Ok((
                 " something".as_bytes(),
                 Tokenizer {
@@ -331,16 +360,17 @@ mod tokenizer {
                     auth: Some(("user".as_bytes(), None).into()),
                     host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
                     params: vec![],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 }
             )),
         );
     }
 
     #[test]
-    fn tokenizer6() {
+    fn tokenizer6_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"sip:user:password@server2.com:5060 something"),
+            Tokenizer::tokenize("sip:user:password@server2.com:5060 something".as_bytes()),
             Ok((
                 " something".as_bytes(),
                 Tokenizer {
@@ -348,16 +378,17 @@ mod tokenizer {
                     auth: Some(("user".as_bytes(), Some("password".as_bytes())).into()),
                     host_with_port: ("server2.com".as_bytes(), Some("5060".as_bytes())).into(),
                     params: vec![],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 }
             )),
         );
     }
 
     #[test]
-    fn tokenizer7() {
+    fn tokenizer7_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"sips:ss2.biloxi.example.com something"),
+            Tokenizer::tokenize("sips:ss2.biloxi.example.com something".as_bytes()),
             Ok((
                 " something".as_bytes(),
                 Tokenizer {
@@ -365,16 +396,19 @@ mod tokenizer {
                     auth: None,
                     host_with_port: ("ss2.biloxi.example.com".as_bytes(), None).into(),
                     params: vec![],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 }
             )),
         );
     }
 
     #[test]
-    fn tokenizer8() {
+    fn tokenizer8_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"sips:ss2.biloxi.example.com;maddr=255.255.255.0 something"),
+            Tokenizer::tokenize(
+                "sips:ss2.biloxi.example.com;maddr=255.255.255.0 something".as_bytes()
+            ),
             Ok((
                 " something".as_bytes(),
                 Tokenizer {
@@ -382,16 +416,17 @@ mod tokenizer {
                     auth: None,
                     host_with_port: ("ss2.biloxi.example.com".as_bytes(), None).into(),
                     params: vec![("maddr".as_bytes(), Some("255.255.255.0".as_bytes())).into()],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 }
             )),
         );
     }
 
     #[test]
-    fn tokenizer9() {
+    fn tokenizer9_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"sips:client.biloxi.example.com:5061 something"),
+            Tokenizer::tokenize("sips:client.biloxi.example.com:5061 something".as_bytes()),
             Ok((
                 " something".as_bytes(),
                 Tokenizer {
@@ -403,17 +438,19 @@ mod tokenizer {
                     )
                         .into(),
                     params: vec![],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 }
             )),
         );
     }
 
     #[test]
-    fn tokenizer10() {
+    fn tokenizer10_u8() {
         assert_eq!(
             Tokenizer::tokenize(
-                b"sips:client.biloxi.example.com:5061;maddr=255.255.255.0;foo=192.0.2.201 something"
+                "sips:client.biloxi.example.com:5061;maddr=255.255.255.0;foo=192.0.2.201 something"
+                    .as_bytes()
             ),
             Ok((
                 " something".as_bytes(),
@@ -429,17 +466,18 @@ mod tokenizer {
                         ("maddr".as_bytes(), Some("255.255.255.0".as_bytes())).into(),
                         ("foo".as_bytes(), Some("192.0.2.201".as_bytes())).into()
                     ],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 }
             )),
         );
     }
 
     #[test]
-    fn tokenizer11() {
+    fn tokenizer11_u8() {
         assert_eq!(
             Tokenizer::tokenize(
-                b"sips:client.biloxi.example.com:5061;maddr=255.255.255.0;foo=192.0.2.201;lr something"
+                "sips:client.biloxi.example.com:5061;maddr=255.255.255.0;foo=192.0.2.201;lr something".as_bytes()
             ),
             Ok((
                 " something".as_bytes(),
@@ -456,7 +494,8 @@ mod tokenizer {
                         ("foo".as_bytes(), Some("192.0.2.201".as_bytes())).into(),
                         ("lr".as_bytes(), None).into()
                     ],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 }
             )),
         );

@@ -1,3 +1,4 @@
+pub use crate::Error;
 #[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
@@ -30,75 +31,100 @@ where
     }
 }
 
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for Auth {
+    type Error = Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
+        Ok(Auth {
+            user: tokenizer.user.into(),
+            password: tokenizer.password.map(Into::into),
+        })
+    }
+}
+
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8], u8>> for Auth {
+    type Error = Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8], u8>) -> Result<Self, Self::Error> {
+        use std::str::from_utf8;
+
+        Self::try_from(Tokenizer::from((
+            from_utf8(tokenizer.user)?,
+            tokenizer.password.map(from_utf8).transpose()?,
+        )))
+    }
+}
+
 #[doc(hidden)]
 pub mod tokenizer {
-    use super::Auth;
-    use crate::{Error, IResult, NomError, TokenizerError};
-    use std::convert::TryInto;
-
-    impl<'a> TryInto<Auth> for Tokenizer<'a> {
-        type Error = Error;
-
-        fn try_into(self) -> Result<Auth, Error> {
-            use std::str::from_utf8;
-
-            Ok(Auth {
-                user: from_utf8(self.user)?.into(),
-                password: self
-                    .password
-                    .map(|p| from_utf8(p))
-                    .transpose()?
-                    .map(Into::into),
-            })
-        }
-    }
+    use crate::{AbstractInput, AbstractInputItem, GResult, GenericNomError, TokenizerError};
+    use std::marker::PhantomData;
 
     #[derive(Debug, PartialEq, Eq, Clone)]
-    pub struct Tokenizer<'a> {
-        pub user: &'a [u8],
-        pub password: Option<&'a [u8]>,
+    pub struct Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        pub user: T,
+        pub password: Option<T>,
+        phantom1: PhantomData<&'a T>,
+        phantom2: PhantomData<I>,
     }
 
-    impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
-        fn from(value: (&'a [u8], Option<&'a [u8]>)) -> Self {
+    impl<'a, T, I> From<(T, Option<T>)> for Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        fn from(from: (T, Option<T>)) -> Self {
             Self {
-                user: value.0,
-                password: value.1,
+                user: from.0,
+                password: from.1,
+                phantom1: PhantomData,
+                phantom2: PhantomData,
             }
         }
     }
 
-    #[allow(clippy::type_complexity)]
-    impl<'a> Tokenizer<'a> {
-        //we alt with take_until(".") and then tag("@") to make sure we fail early
-        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
+    impl<'a, T, I> Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        pub fn tokenize(part: T) -> GResult<T, Self> {
             use nom::{
                 bytes::complete::{tag, take_till, take_until},
                 combinator::rest,
-                error::VerboseError,
                 sequence::tuple,
             };
 
-            let (rem, (auth, _)) =
-                tuple((take_till(|c| c == b'.' || c == b'@'), tag("@")))(part)
-                    .map_err(|_: NomError<'a>| TokenizerError::from(("auth user", part)).into())?;
+            let (rem, (auth, _)) = tuple((
+                take_till(|c| c == Into::<I>::into(b'.') || c == Into::<I>::into(b'@')),
+                tag("@"),
+            ))(part)
+            .map_err(|_: GenericNomError<'a, T>| {
+                TokenizerError::from(("auth user", part)).into()
+            })?;
 
-            let (user, password) =
-                match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(
-                    auth,
-                ) {
-                    Ok((_, (user, _, password))) => (user, Some(password)),
-                    Err(_) => {
-                        //this is not going to ever fail actually, since rest never returns an
-                        //error
-                        let (_, user) = rest(auth).map_err(|_: crate::NomError<'a>| {
-                            TokenizerError::from(("auth user (no password)", auth)).into()
-                        })?;
-                        (user, None)
-                    }
-                };
+            let (user, password) = match tuple::<_, _, nom::error::VerboseError<T>, _>((
+                take_until(":"),
+                tag(":"),
+                rest,
+            ))(auth)
+            {
+                Ok((_, (user, _, password))) => (user, Some(password)),
+                Err(_) => {
+                    //this is not going to ever fail actually, since rest never returns an
+                    //error
+                    let (_, user) = rest(auth).map_err(|_: GenericNomError<'a, T>| {
+                        TokenizerError::from(("auth user (no password)", auth)).into()
+                    })?;
+                    (user, None)
+                }
+            };
 
-            Ok((rem, Tokenizer { user, password }))
+            Ok((rem, Tokenizer::from((user, password))))
         }
     }
 }

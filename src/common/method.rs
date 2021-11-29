@@ -35,22 +35,17 @@ macro_rules! create_methods {
             }
         }
 
-        fn match_from<'a>(value: &'a [u8]) -> Result<Method, Error> {
-            use nom::{
-                branch::alt,
-                bytes::complete::{tag_no_case},
-                combinator::{rest, map},
-            };
-            use bstr::ByteSlice;
+        impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for Method {
+            type Error = Error;
 
-            let (_, method) = alt((
-                $(
-                    map(tag_no_case(stringify!($name)), |_| Ok(Method::$name)),
-                )*
-                map(rest, |_| Err(Error::ParseError(format!("invalid method `{}`", value.as_bstr()))))
-            ))(value)?;
-
-            method
+            fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
+                match tokenizer.value {
+                    $(
+                        part if part.eq_ignore_ascii_case(stringify!($name)) => Ok(Method::$name),
+                    )*
+                    part => Err(Error::ParseError(format!("invalid method: {}", part))),
+                }
+            }
         }
     }
 }
@@ -65,53 +60,71 @@ impl std::str::FromStr for Method {
     type Err = crate::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use std::convert::TryInto;
-
-        tokenizer::Tokenizer {
-            value: s.as_bytes(),
-        }
-        .try_into()
+        Self::try_from(Tokenizer::from(s))
     }
 }
 
-impl<'a> TryFrom<Tokenizer<'a>> for Method {
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8], u8>> for Method {
     type Error = Error;
 
-    fn try_from(from: Tokenizer<'a>) -> Result<Self, Self::Error> {
-        match_from(from.value)
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8], u8>) -> Result<Self, Self::Error> {
+        use std::str::from_utf8;
+
+        let value = from_utf8(tokenizer.value)?;
+
+        Method::try_from(Tokenizer::from(value))
     }
 }
 
 #[doc(hidden)]
 pub mod tokenizer {
-    use crate::{IResult, TokenizerError};
+    use crate::{AbstractInput, AbstractInputItem, GResult, GenericNomError, TokenizerError};
+    use std::marker::PhantomData;
 
     #[derive(Debug, PartialEq, Eq, Clone)]
-    pub struct Tokenizer<'a> {
-        pub value: &'a [u8],
+    pub struct Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        pub value: T,
+        phantom1: PhantomData<&'a T>,
+        phantom2: PhantomData<I>,
     }
 
-    impl<'a> From<&'a [u8]> for Tokenizer<'a> {
-        fn from(value: &'a [u8]) -> Self {
-            Self { value }
+    impl<'a, T, I> From<T> for Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        fn from(value: T) -> Self {
+            Self {
+                value,
+                phantom1: Default::default(),
+                phantom2: Default::default(),
+            }
         }
     }
 
-    impl<'a> Tokenizer<'a> {
+    impl<'a, T, I> Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
         //works for request line
-        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
-            use crate::parser_utils::{is_token, opt_sp};
-            use nom::{bytes::complete::take_while1, sequence::tuple};
+        pub fn tokenize(part: T) -> GResult<T, Self> {
+            use nom::bytes::complete::{tag, take_while1};
 
-            let (rem, (method, _)) = tuple((take_while1(is_token), opt_sp))(part)
-                .map_err(|_| TokenizerError::from(("method", part)).into())?;
+            let (rem, method) =
+                take_while1(I::is_token)(part).map_err(|_: GenericNomError<'a, T>| {
+                    TokenizerError::from(("method", part)).into()
+                })?;
             //TODO: helpful to return early in case we parse a response but maybe it should not
             //be checked here though
-            if method.starts_with(b"SIP/") {
-                return TokenizerError::from(("method", part)).into();
+            match tag::<_, _, nom::error::VerboseError<T>>("SIP/")(method) {
+                Err(_) => Ok((rem, Self::from(method))),
+                Ok(_) => Err(TokenizerError::from(("method", part)).into()),
             }
-
-            Ok((rem, method.into()))
         }
     }
 }

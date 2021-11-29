@@ -45,16 +45,14 @@ mod try_from_tokenizer {
             Tokenizer {
                 display_name: Some("Alice"),
                 uri: uri::Tokenizer {
-                    scheme: Some("sip".as_bytes().into()),
-                    auth: Some(uri::auth::Tokenizer {
-                        user: "alice".as_bytes(),
-                        password: None
-                    }),
-                    host_with_port: ("atlanta.example.com".as_bytes(), None).into(),
+                    scheme: Some("sip".into()),
+                    auth: Some(uri::auth::Tokenizer::from(("alice", None,))),
+                    host_with_port: ("atlanta.example.com", None).into(),
                     params: vec![],
-                    headers: None
+                    headers: None,
+                    ..Default::default()
                 },
-                params: vec![("tag".as_bytes(), Some("9fxced76sl".as_bytes())).into()],
+                params: vec![("tag", Some("9fxced76sl")).into()],
             }
             .try_into(),
             Ok(From {

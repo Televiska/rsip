@@ -59,9 +59,9 @@ mod tokenizer {
     use super::*;
 
     #[test]
-    fn tokenizer1() {
+    fn tokenizer1_u8() {
         assert_eq!(
-            Tokenizer::tokenize(b"server2.com something"),
+            Tokenizer::tokenize("server2.com something".as_bytes()),
             Ok((
                 " something".as_bytes(),
                 ("server2.com".as_bytes(), None).into()
@@ -70,9 +70,17 @@ mod tokenizer {
     }
 
     #[test]
-    fn tokenizer2() {
+    fn tokenizer1_str() {
         assert_eq!(
-            Tokenizer::tokenize(b"server2.com:5060 something"),
+            Tokenizer::tokenize("server2.com something"),
+            Ok((" something", ("server2.com", None).into())),
+        );
+    }
+
+    #[test]
+    fn tokenizer2_u8() {
+        assert_eq!(
+            Tokenizer::tokenize("server2.com:5060 something".as_bytes()),
             Ok((
                 " something".as_bytes(),
                 ("server2.com".as_bytes(), Some("5060".as_bytes())).into()
@@ -83,7 +91,7 @@ mod tokenizer {
     #[test]
     fn errors1() {
         assert_eq!(
-            Tokenizer::tokenize(b";"),
+            Tokenizer::tokenize(";".as_bytes()),
             Err(nom::Err::Error(rsip::TokenizerError::from(
                 "failed to tokenize host with port: ;"
             ))),

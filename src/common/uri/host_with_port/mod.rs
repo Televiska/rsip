@@ -136,77 +136,105 @@ where
     }
 }
 
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for HostWithPort {
+    type Error = Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
+        use std::str::FromStr;
+
+        let host = match IpAddr::from_str(tokenizer.host) {
+            Ok(ip_addr) => Host::IpAddr(ip_addr),
+            Err(_) => Host::Domain(tokenizer.host.into()),
+        };
+
+        let port = match tokenizer.port {
+            Some(port) => Some(port.parse::<u16>()?).map(Into::into),
+            None => None,
+        };
+
+        Ok(Self { host, port })
+    }
+}
+
+impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8], u8>> for HostWithPort {
+    type Error = Error;
+
+    fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8], u8>) -> Result<Self, Self::Error> {
+        use std::str::from_utf8;
+
+        Self::try_from(Tokenizer::from((
+            from_utf8(tokenizer.host)?,
+            tokenizer.port.map(from_utf8).transpose()?,
+        )))
+    }
+}
+
 #[doc(hidden)]
 pub mod tokenizer {
-    use super::{Host, HostWithPort};
-    use crate::{Error, IResult, NomError, TokenizerError};
-    use nom::error::VerboseError;
-    use std::convert::TryInto;
+    use crate::{AbstractInput, AbstractInputItem, GResult, GenericNomError, TokenizerError};
+    use std::marker::PhantomData;
 
-    impl<'a> TryInto<HostWithPort> for Tokenizer<'a> {
-        type Error = Error;
-
-        fn try_into(self) -> Result<HostWithPort, Error> {
-            use std::net::IpAddr;
-            use std::str::{from_utf8, FromStr};
-
-            let host = from_utf8(self.host)?;
-            let host = match IpAddr::from_str(host) {
-                Ok(ip_addr) => Host::IpAddr(ip_addr),
-                Err(_) => Host::Domain(host.into()),
-            };
-
-            let port = match self.port {
-                Some(port) => Some(from_utf8(port)?.parse::<u16>()?).map(Into::into),
-                None => None,
-            };
-
-            Ok(HostWithPort { host, port })
-        }
+    #[derive(Debug, PartialEq, Eq, Clone, Default)]
+    pub struct Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        pub host: T,
+        pub port: Option<T>,
+        phantom1: PhantomData<&'a T>,
+        phantom2: PhantomData<I>,
     }
 
-    #[derive(Debug, PartialEq, Eq, Clone)]
-    pub struct Tokenizer<'a> {
-        pub host: &'a [u8],
-        pub port: Option<&'a [u8]>,
-    }
-
-    impl<'a> From<(&'a [u8], Option<&'a [u8]>)> for Tokenizer<'a> {
-        fn from(value: (&'a [u8], Option<&'a [u8]>)) -> Self {
+    impl<'a, T, I> From<(T, Option<T>)> for Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        fn from(from: (T, Option<T>)) -> Self {
             Self {
-                host: value.0,
-                port: value.1,
+                host: from.0,
+                port: from.1,
+                phantom1: PhantomData,
+                phantom2: PhantomData,
             }
         }
     }
 
-    #[allow(clippy::type_complexity)]
-    impl<'a> Tokenizer<'a> {
-        pub fn tokenize(part: &'a [u8]) -> IResult<Self> {
+    impl<'a, T, I> Tokenizer<'a, T, I>
+    where
+        T: AbstractInput<'a, I>,
+        I: AbstractInputItem<I>,
+    {
+        pub fn tokenize(part: T) -> GResult<T, Self> {
             use nom::{
                 bytes::complete::{tag, take_till1, take_until},
                 combinator::rest,
                 sequence::tuple,
             };
 
-            let (rem, host_with_port) = take_till1(|c| c == b';' || c == b' ')(part)
-                .map_err(|_: NomError<'a>| TokenizerError::from(("host with port", part)).into())?;
+            let (rem, host_with_port) =
+                take_till1(|c| c == Into::<I>::into(b';') || c == Into::<I>::into(b' '))(part)
+                    .map_err(|_: GenericNomError<'a, T>| {
+                        TokenizerError::from(("host with port", part)).into()
+                    })?;
 
-            let (host, port) =
-                match tuple::<_, _, VerboseError<&'a [u8]>, _>((take_until(":"), tag(":"), rest))(
-                    host_with_port,
-                ) {
-                    Ok((_, (host, _, port))) => (host, Some(port)),
-                    Err(_) => {
-                        //this is not going to ever fail actually, since rest never returns an
-                        //error
-                        let (_, host) = rest(host_with_port).map_err(|_: NomError<'a>| {
-                            TokenizerError::from(("host with port (no port)", host_with_port))
-                                .into()
-                        })?;
-                        (host, None)
-                    }
-                };
+            let (host, port) = match tuple::<_, _, nom::error::VerboseError<T>, _>((
+                take_until(":"),
+                tag(":"),
+                rest,
+            ))(host_with_port)
+            {
+                Ok((_, (host, _, port))) => (host, Some(port)),
+                Err(_) => {
+                    //this is not going to ever fail actually, since rest never returns an
+                    //error
+                    let (_, host) = rest(host_with_port).map_err(|_: GenericNomError<'a, T>| {
+                        TokenizerError::from(("host with port (no port)", host_with_port)).into()
+                    })?;
+                    (host, None)
+                }
+            };
 
             Ok((rem, (host, port).into()))
         }

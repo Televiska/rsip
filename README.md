@@ -32,7 +32,7 @@ For locating SIP servers ([RFC3263](https://datatracker.ietf.org/doc/html/rfc326
 ## Features
 * This thing is _fast_, uses nom for basic message parsing and headers are parsed
   only when needed, on-demand. Intentions are to make it even faster by providing
-  a non-owning variant (everything is an &str underneath)
+  non-owning variants (`&str` and `&[u8]`)
 * Strong (new)types everywhere. Even if underlying type is String, everything is
   a NewType for better type safety.
 * Provides typed headers on demand, like `From`, `To`, `Contact`, `Via` etc
@@ -47,6 +47,20 @@ For locating SIP servers ([RFC3263](https://datatracker.ietf.org/doc/html/rfc326
   many typed headers of latest RFCs like [PASSporT](https://datatracker.ietf.org/doc/html/rfc8224), [SHAKEN](https://datatracker.ietf.org/doc/html/rfc8588), [push notifications](https://datatracker.ietf.org/doc/html/rfc8599) etc
 * Provides some extra services like Digest auth generator/validator etc
   Intention is to add many helper services.
+
+## Architecture
+Each type in rsip has a tokenizer attached.
+This is not enforced by the type system yet, however very soon this will be the case.
+In brief, for every rsip type we have: 
+* Tokenizing: in the lowest level we have the `Tokenizer` which is capable of tokenizing the input.
+All common tokenizers accept abstract input, either `&str` or `&[u8]` so it can be reused when
+the input is plain bytes, or when the input has already been parsed and it's a `String`/`&str`,
+like the headers.
+* Parsing: once the input has been tokenized, then there are `TryFrom` impls from the relevant type
+tokenizer to the actual type.
+This is the parsing step where tokens (in the form of `&str` or `&[u8]`) are transformed to
+integers, strings and rsip types.
+* each rsip type implements the `Display` trait and hence has a representation.
 
 ## Examples
 For instance, generating the Register request found in [section 2.1 of RFC3665](https://datatracker.ietf.org/doc/html/rfc3665#section-2.1)

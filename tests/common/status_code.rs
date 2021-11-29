@@ -50,21 +50,21 @@ pub mod tokenizer {
     use super::*;
 
     #[test]
-    fn with_str_input() {
-        assert_eq!(
-            Tokenizer::tokenize("200 OK\r\nsomething"),
-            Ok(("\r\nsomething", ("200", "OK").into())),
-        );
-    }
-
-    #[test]
-    fn with_bytes_input() {
+    fn tokenizer1_u8() {
         assert_eq!(
             Tokenizer::tokenize("200 OK\r\nsomething".as_bytes()),
             Ok((
                 "\r\nsomething".as_bytes(),
                 ("200".as_bytes(), "OK".as_bytes()).into()
             )),
+        );
+    }
+
+    #[test]
+    fn tokenizer1_str() {
+        assert_eq!(
+            Tokenizer::tokenize("200 OK\r\nsomething"),
+            Ok(("\r\nsomething", ("200", "OK").into())),
         );
     }
 
