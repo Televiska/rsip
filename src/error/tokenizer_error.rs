@@ -1,4 +1,3 @@
-use bstr::ByteSlice;
 use std::{error::Error as StdError, fmt};
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -47,54 +46,26 @@ impl fmt::Display for TokenizerError {
 
 impl StdError for TokenizerError {}
 
-impl nom::error::ParseError<&[u8]> for TokenizerError {
-    fn from_error_kind(input: &[u8], kind: nom::error::ErrorKind) -> Self {
+impl<'a, T: Into<&'a bstr::BStr>> nom::error::ParseError<T> for TokenizerError {
+    fn from_error_kind(input: T, kind: nom::error::ErrorKind) -> Self {
         Self {
-            context: format!("could not tokenize: {} ({:?})", input.as_bstr(), kind),
+            context: format!("could not tokenize ({:?}): {}", kind, input.into()),
         }
     }
-    fn append(input: &[u8], kind: nom::error::ErrorKind, other: Self) -> Self {
+    fn append(input: T, kind: nom::error::ErrorKind, other: Self) -> Self {
         Self {
             context: format!(
-                "{}. Also, could not tokenize: {} ({:?})",
+                "{}. Also, could not tokenize ({:?}): {}",
                 other,
-                input.as_bstr(),
-                kind
+                kind,
+                input.into(),
             ),
         }
     }
 
-    fn from_char(input: &[u8], c: char) -> Self {
+    fn from_char(input: T, c: char) -> Self {
         Self {
-            context: format!("was expecting char {} in: {}", c, input.as_bstr()),
-        }
-    }
-
-    fn or(self, other: Self) -> Self {
-        Self {
-            context: format!("tokenizer error: {} or {}", self, other.context),
-        }
-    }
-}
-
-impl nom::error::ParseError<&str> for TokenizerError {
-    fn from_error_kind(input: &str, kind: nom::error::ErrorKind) -> Self {
-        Self {
-            context: format!("could not tokenize: {} ({:?})", input, kind),
-        }
-    }
-    fn append(input: &str, kind: nom::error::ErrorKind, other: Self) -> Self {
-        Self {
-            context: format!(
-                "{}. Also, could not tokenize: {} ({:?})",
-                other, input, kind
-            ),
-        }
-    }
-
-    fn from_char(input: &str, c: char) -> Self {
-        Self {
-            context: format!("was expecting char {} in: {}", c, input),
+            context: format!("was expecting char {} in: {}", c, input.into()),
         }
     }
 

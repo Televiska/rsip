@@ -9,6 +9,7 @@ pub struct Tokenizer<'a> {
 
 impl<'a> Tokenize<'a> for Tokenizer<'a> {
     fn tokenize(part: &'a str) -> Result<Self, Error> {
+        use crate::parser_utils::is_empty_or_fail_with;
         use nom::{
             bytes::complete::{tag, take_until},
             combinator::rest,
@@ -25,16 +26,18 @@ impl<'a> Tokenize<'a> for Tokenizer<'a> {
                 tag(">"),
                 rest,
             ))(part)
-            .map_err(|_| Error::tokenizer(("from header", part)))?;
+            .map_err(|_| Error::tokenizer(("header parts", part)))?;
+
+            let (rem, params) = many0(uri::param::Tokenizer::tokenize)(params)
+                .map_err(|_| Error::tokenizer(("params", part)))?;
+            is_empty_or_fail_with(rem, ("params tokenizing left trailing input", part))?;
 
             Ok(Self {
                 display_name: crate::utils::opt_trim(display_name),
                 uri: uri::Tokenizer::tokenize(uri)
-                    .map_err(|_| Error::tokenizer(("URI in name-addr of From header", part)))?
+                    .map_err(|_| Error::tokenizer(("URI in addr-spec", part)))?
                     .1,
-                params: many0(uri::param::Tokenizer::tokenize)(params)
-                    .map_err(|_| Error::tokenizer(("params in name-addr of From header", part)))?
-                    .1,
+                params,
             })
         } else {
             let (_, (uri, params)) = tuple((
