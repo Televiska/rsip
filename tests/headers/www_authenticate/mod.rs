@@ -1,4 +1,3 @@
-pub mod tokenizer;
 pub mod typed;
 
 use rsip::headers::WwwAuthenticate;

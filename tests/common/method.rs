@@ -22,12 +22,20 @@ mod parser {
     }
 
     #[test]
+    fn parser2() {
+        assert_eq!(
+            Tokenizer::from("  REGISTER  ".as_bytes()).try_into(),
+            Ok(Method::Register),
+        );
+    }
+
+    #[test]
     fn errors1() {
         use std::convert::TryFrom;
 
         assert_eq!(
-            Method::try_from(Tokenizer::from("REGISTE".as_bytes())),
-            Err(rsip::Error::ParseError("invalid method: REGISTE".into())),
+            Method::try_from(Tokenizer::from("REGI STER".as_bytes())),
+            Err(rsip::Error::ParseError("invalid method: REGI STER".into())),
         );
     }
 }

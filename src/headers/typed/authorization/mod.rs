@@ -1,8 +1,5 @@
 #[doc(hidden)]
-pub mod tokenizer;
-
-#[doc(hidden)]
-pub use tokenizer::Tokenizer;
+pub use super::tokenizers::AuthTokenizer as Tokenizer;
 
 use crate::{
     common::Uri,

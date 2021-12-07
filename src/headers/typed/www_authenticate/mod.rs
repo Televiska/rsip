@@ -1,8 +1,5 @@
 #[doc(hidden)]
-pub mod tokenizer;
-
-#[doc(hidden)]
-pub use tokenizer::Tokenizer;
+pub use super::tokenizers::AuthTokenizer as Tokenizer;
 
 use crate::headers::auth::{Algorithm, Qop};
 use crate::{headers::auth, Error};
