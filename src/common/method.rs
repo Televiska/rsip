@@ -41,7 +41,7 @@ macro_rules! create_methods {
             fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
                 match tokenizer.value {
                     $(
-                        part if part.eq_ignore_ascii_case(stringify!($name)) => Ok(Method::$name),
+                        part if part.trim().eq_ignore_ascii_case(stringify!($name)) => Ok(Method::$name),
                     )*
                     part => Err(Error::ParseError(format!("invalid method: {}", part))),
                 }

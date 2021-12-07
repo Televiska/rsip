@@ -5,13 +5,14 @@ pub struct TokenizerError {
     pub context: String,
 }
 
-impl<'a, T> From<(&'static str, T)> for TokenizerError
+impl<'a, S, T> From<(S, T)> for TokenizerError
 where
+    S: Into<String>,
     T: Into<&'a bstr::BStr>,
 {
-    fn from(from: (&'static str, T)) -> Self {
+    fn from(from: (S, T)) -> Self {
         Self {
-            context: format!("failed to tokenize {}: {}", from.0, from.1.into()),
+            context: format!("failed to tokenize {}: {}", from.0.into(), from.1.into()),
         }
     }
 }

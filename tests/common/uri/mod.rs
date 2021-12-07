@@ -2,6 +2,8 @@ pub mod auth;
 pub mod host_with_port;
 pub mod params;
 pub mod scheme;
+pub mod uri_with_params;
+pub mod uri_with_params_list;
 
 use rsip::common::uri::{param::Maddr, Param, Scheme, Tokenizer, Uri};
 use std::convert::TryInto;

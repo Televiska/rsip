@@ -4,12 +4,12 @@ use crate::{
 };
 
 #[derive(Eq, PartialEq, Clone, Debug)]
-pub struct Tokenizer<'a> {
+pub struct AuthTokenizer<'a> {
     pub scheme: auth::scheme::Tokenizer<'a, &'a str, char>,
     pub params: Vec<(&'a str, &'a str)>,
 }
 
-impl<'a> Tokenize<'a> for Tokenizer<'a> {
+impl<'a> Tokenize<'a> for AuthTokenizer<'a> {
     fn tokenize(part: &'a str) -> Result<Self, Error> {
         use crate::parser_utils::is_empty_or_fail_with;
         use crate::NomStrError;

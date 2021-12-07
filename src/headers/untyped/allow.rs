@@ -1,7 +1,7 @@
-use rsip_derives::UntypedHeader;
+use rsip_derives::{ToTypedHeader, UntypedHeader};
 
 /// The `Allow` header in its [untyped](super) form.
-#[derive(UntypedHeader, Debug, PartialEq, Eq, Clone)]
+#[derive(UntypedHeader, ToTypedHeader, Debug, PartialEq, Eq, Clone)]
 pub struct Allow(String);
 
 impl Default for Allow {
@@ -11,7 +11,7 @@ impl Default for Allow {
                 .into_iter()
                 .map(|s| s.to_string())
                 .collect::<Vec<_>>()
-                .join(","),
+                .join(", "),
         )
     }
 }

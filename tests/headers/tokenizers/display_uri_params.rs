@@ -1,13 +1,13 @@
 use rsip::{
     common::uri,
-    headers::typed::{to::Tokenizer, Tokenize},
+    headers::typed::{tokenizers::DisplayUriParamsTokenizer, Tokenize},
 };
 
 #[test]
 fn tokenizer1() {
     assert_eq!(
-        Tokenizer::tokenize("Alice <sip:alice@atlanta.example.com>;tag=9fxced76sl"),
-        Ok(Tokenizer {
+        DisplayUriParamsTokenizer::tokenize("Alice <sip:alice@atlanta.example.com>;tag=9fxced76sl"),
+        Ok(DisplayUriParamsTokenizer {
             display_name: Some("Alice"),
             uri: uri::Tokenizer {
                 scheme: Some("sip".into()),
@@ -25,8 +25,8 @@ fn tokenizer1() {
 #[test]
 fn tokenizer2() {
     assert_eq!(
-        Tokenizer::tokenize("<sip:alice@atlanta.example.com>;tag=9fxced76sl"),
-        Ok(Tokenizer {
+        DisplayUriParamsTokenizer::tokenize("<sip:alice@atlanta.example.com>;tag=9fxced76sl"),
+        Ok(DisplayUriParamsTokenizer {
             display_name: None,
             uri: uri::Tokenizer {
                 scheme: Some("sip".into()),
@@ -44,8 +44,8 @@ fn tokenizer2() {
 #[test]
 fn tokenizer3() {
     assert_eq!(
-        Tokenizer::tokenize("sip:alice@atlanta.example.com;tag=9fxced76sl"),
-        Ok(Tokenizer {
+        DisplayUriParamsTokenizer::tokenize("sip:alice@atlanta.example.com;tag=9fxced76sl"),
+        Ok(DisplayUriParamsTokenizer {
             display_name: None,
             uri: uri::Tokenizer {
                 scheme: Some("sip".into()),
@@ -56,6 +56,25 @@ fn tokenizer3() {
                 ..Default::default()
             },
             params: vec![("tag", Some("9fxced76sl")).into()],
+        })
+    );
+}
+
+#[test]
+fn tokenizer4() {
+    assert_eq!(
+        DisplayUriParamsTokenizer::tokenize("<sip:alice@atlanta.example.com>;expires=360"),
+        Ok(DisplayUriParamsTokenizer {
+            display_name: None,
+            uri: uri::Tokenizer {
+                scheme: Some("sip".into()),
+                auth: Some(uri::auth::Tokenizer::from(("alice", None,))),
+                host_with_port: ("atlanta.example.com", None).into(),
+                params: vec![],
+                headers: None,
+                ..Default::default()
+            },
+            params: vec![("expires", Some("360")).into()],
         })
     );
 }

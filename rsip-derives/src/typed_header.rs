@@ -64,7 +64,8 @@ pub fn try_from_untyped(struct_name: &syn::Ident) -> proc_macro2::TokenStream {
                 use crate::headers::UntypedHeader;
                 use crate::headers::typed::Tokenize;
 
-                std::convert::TryInto::try_into(Tokenizer::tokenize(untyped.value())?)
+                let tokenizer: Tokenizer = Tokenize::tokenize(untyped.value())?;
+                std::convert::TryInto::try_into(tokenizer)
             }
         }
     }

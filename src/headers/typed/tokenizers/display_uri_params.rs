@@ -1,13 +1,13 @@
 use crate::{common::uri, headers::typed::Tokenize, Error};
 
 #[derive(Eq, PartialEq, Clone, Debug)]
-pub struct Tokenizer<'a> {
+pub struct DisplayUriParamsTokenizer<'a> {
     pub display_name: Option<&'a str>,
     pub uri: uri::Tokenizer<'a, &'a str, char>,
     pub params: Vec<uri::param::Tokenizer<'a, &'a str, char>>,
 }
 
-impl<'a> Tokenize<'a> for Tokenizer<'a> {
+impl<'a> Tokenize<'a> for DisplayUriParamsTokenizer<'a> {
     fn tokenize(part: &'a str) -> Result<Self, Error> {
         use crate::parser_utils::is_empty_or_fail_with;
         use nom::{

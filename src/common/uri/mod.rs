@@ -2,6 +2,8 @@ pub mod auth;
 pub mod host_with_port;
 pub mod param;
 pub mod scheme;
+pub mod uri_with_params;
+pub mod uri_with_params_list;
 
 #[doc(hidden)]
 pub use tokenizer::Tokenizer;
@@ -10,6 +12,8 @@ pub use auth::Auth;
 pub use host_with_port::{Domain, Host, HostWithPort, Port};
 pub use param::Param;
 pub use scheme::Scheme;
+pub use uri_with_params::UriWithParams;
+pub use uri_with_params_list::UriWithParamsList;
 
 use crate::{Error, Transport};
 use std::convert::{TryFrom, TryInto};
@@ -20,7 +24,7 @@ use std::convert::{TryFrom, TryInto};
 /// is specified then port 5060 is assumed. But rsip is not acting smart here and delegates that
 /// responsibility to you because you might want 5061 (TLS) as default etc.
 /// Similarly on generation, if no port is specified, no port is set at all in the final string.
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct Uri {
     pub scheme: Option<Scheme>,
     pub auth: Option<Auth>,
@@ -50,7 +54,6 @@ impl Uri {
     }
 }
 
-//TODO: improve impl here to remove clones
 impl std::fmt::Display for Uri {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let scheme = match &self.scheme {
@@ -90,18 +93,6 @@ impl TryFrom<&str> for Uri {
 
     fn try_from(from: &str) -> Result<Self, Self::Error> {
         Tokenizer::tokenize(from.as_bytes())?.1.try_into()
-    }
-}
-
-impl Default for Uri {
-    fn default() -> Self {
-        Self {
-            scheme: Default::default(),
-            host_with_port: Default::default(),
-            auth: None,
-            params: Default::default(),
-            headers: Default::default(),
-        }
     }
 }
 
@@ -185,7 +176,7 @@ impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for Uri 
     type Error = Error;
 
     fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
-        Ok(Uri {
+        Ok(Self {
             scheme: tokenizer.scheme.map(TryInto::try_into).transpose()?,
             auth: tokenizer.auth.map(TryInto::try_into).transpose()?,
             host_with_port: tokenizer.host_with_port.try_into()?,
@@ -203,7 +194,7 @@ impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a [u8], u8>> for Uri {
     type Error = Error;
 
     fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a [u8], u8>) -> Result<Self, Self::Error> {
-        Ok(Uri {
+        Ok(Self {
             scheme: tokenizer.scheme.map(TryInto::try_into).transpose()?,
             auth: tokenizer.auth.map(TryInto::try_into).transpose()?,
             host_with_port: tokenizer.host_with_port.try_into()?,

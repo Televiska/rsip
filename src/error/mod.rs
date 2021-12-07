@@ -34,10 +34,14 @@ pub enum Error {
 }
 
 impl Error {
-    pub fn tokenizer<'a, T: Into<&'a bstr::BStr>>(tuple: (&'static str, T)) -> Self {
+    pub fn tokenizer<'a, S, T>(tuple: (S, T)) -> Self
+    where
+        S: Into<String>,
+        T: Into<&'a bstr::BStr>,
+    {
         Self::TokenizeError(format!(
             "failed to tokenize {}: {}",
-            tuple.0,
+            tuple.0.into(),
             tuple.1.into()
         ))
     }

@@ -290,6 +290,7 @@ pub(crate) type NomError<'a> = nom::Err<nom::error::VerboseError<&'a [u8]>>;
 pub(crate) type NomStrError<'a> = nom::Err<nom::error::VerboseError<&'a str>>;
 pub(crate) type GenericNomError<'a, T> = nom::Err<nom::error::VerboseError<T>>;
 pub(crate) type IResult<'a, T> = Result<(&'a [u8], T), nom::Err<TokenizerError>>;
+//pub(crate) type SResult<'a, T> = Result<(&'a str, T), nom::Err<TokenizerError>>;
 pub(crate) type GResult<I, T> = Result<(I, T), nom::Err<TokenizerError>>;
 
 //need to include &str or &[u8] in definition
@@ -310,7 +311,7 @@ pub trait AbstractInput<'a, I>:
     fn is_empty(&self) -> bool;
 }
 
-pub trait AbstractInputItem<I>: nom::AsChar + std::cmp::PartialEq<I> + From<u8> {
+pub trait AbstractInputItem<I>: nom::AsChar + std::cmp::PartialEq<I> + From<u8> + Clone {
     fn is_alphabetic(c: I) -> bool;
     fn is_alphanumeric(c: I) -> bool;
     fn is_token(c: I) -> bool;
