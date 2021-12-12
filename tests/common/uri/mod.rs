@@ -256,6 +256,19 @@ mod parser {
             })
         );
     }
+
+    #[cfg(feature = "test-utils")]
+    #[test]
+    fn parser_cycle() {
+        use testing_utils::Randomize;
+
+        let uri = Uri::random();
+        let uri_raw = uri.to_string();
+        assert_eq!(
+            Tokenizer::tokenize(uri_raw.as_str()).unwrap().1.try_into(),
+            Ok(uri)
+        );
+    }
 }
 
 mod tokenizer {

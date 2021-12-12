@@ -4,3 +4,10 @@ use rsip_derives::{IntoParam, NewType};
 /// header.
 #[derive(NewType, IntoParam, Debug, PartialEq, Eq, Clone)]
 pub struct Received(String);
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Received {
+    fn random() -> Self {
+        Self(std::net::IpAddr::random().to_string())
+    }
+}

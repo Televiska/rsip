@@ -196,3 +196,15 @@ pub mod tokenizer {
         }
     }
 }
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for UriWithParams {
+    fn random() -> Self {
+        use testing_utils::Randomize;
+
+        Self {
+            uri: Randomize::random(),
+            params: Randomize::rand_list0(3),
+        }
+    }
+}

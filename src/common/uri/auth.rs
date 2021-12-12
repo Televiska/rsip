@@ -128,3 +128,15 @@ pub mod tokenizer {
         }
     }
 }
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Auth {
+    fn random() -> Self {
+        use testing_utils::{rand_str_of, sample};
+
+        Self {
+            user: rand_str_of(7),
+            password: sample(&[Some(rand_str_of(10)), None]),
+        }
+    }
+}

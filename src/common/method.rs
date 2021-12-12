@@ -128,3 +128,10 @@ pub mod tokenizer {
         }
     }
 }
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Method {
+    fn random() -> Self {
+        testing_utils::sample_vec(&Self::all())
+    }
+}

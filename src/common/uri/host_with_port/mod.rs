@@ -231,3 +231,15 @@ pub mod tokenizer {
         }
     }
 }
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for HostWithPort {
+    fn random() -> Self {
+        use testing_utils::sample;
+
+        Self {
+            host: testing_utils::Randomize::random(),
+            port: sample(&[None, Some(testing_utils::Randomize::random())]),
+        }
+    }
+}
