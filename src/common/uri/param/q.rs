@@ -5,3 +5,10 @@ use rsip_derives::{IntoParam, NewType};
 //TODO: add typed + default
 #[derive(NewType, IntoParam, Debug, PartialEq, Eq, Clone)]
 pub struct Q(String);
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Q {
+    fn random() -> Self {
+        Self(format!("0.{}", testing_utils::rand_num_from(1..=9)))
+    }
+}

@@ -57,6 +57,7 @@ impl Uri {
 impl std::fmt::Display for Uri {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let scheme = match &self.scheme {
+            Some(Scheme::Other(scheme)) => format!("{}://", scheme),
             Some(scheme) => format!("{}:", scheme),
             None => format!(""),
         };
@@ -278,6 +279,21 @@ pub mod tokenizer {
                     phantom2: Default::default(),
                 },
             ))
+        }
+    }
+}
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Uri {
+    fn random() -> Self {
+        use testing_utils::{opt, Randomize};
+
+        Self {
+            scheme: opt(Randomize::random()),
+            auth: opt(Randomize::random()),
+            host_with_port: Randomize::random(),
+            params: Randomize::rand_list0(3),
+            headers: vec![],
         }
     }
 }

@@ -119,10 +119,11 @@ impl testing_utils::Randomize for Domain {
 #[cfg(feature = "test-utils")]
 impl testing_utils::Randomize for Host {
     fn random() -> Self {
-        if bool::random() {
-            Host::Domain(Domain::random())
-        } else {
-            Host::IpAddr(IpAddr::random())
-        }
+        use testing_utils::sample;
+
+        sample(&[
+            Host::Domain(Domain::random()),
+            Host::IpAddr(IpAddr::random()),
+        ])
     }
 }

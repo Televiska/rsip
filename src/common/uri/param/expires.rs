@@ -11,3 +11,10 @@ impl Expires {
         Ok(self.value().parse::<u32>()?)
     }
 }
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Expires {
+    fn random() -> Self {
+        Self(testing_utils::rand_num_from(0..10000).to_string())
+    }
+}

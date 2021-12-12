@@ -108,3 +108,11 @@ mod tokenizer {
         }
     }
 }
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Version {
+    fn random() -> Self {
+        //is anyone using V1 ?!
+        Self::V2
+    }
+}

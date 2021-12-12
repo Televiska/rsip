@@ -127,10 +127,11 @@ pub mod tokenizer {
 #[cfg(feature = "test-utils")]
 impl testing_utils::Randomize for Scheme {
     fn random() -> Self {
-        testing_utils::sample(&[
+        use testing_utils::sample;
+        sample(&[
             Scheme::Sip,
             Scheme::Sips,
-            Scheme::Other(testing_utils::rand_str_of(3)),
+            Scheme::Other(sample(&["http", "https", &testing_utils::rand_str_of(3)]).into()),
         ])
     }
 }

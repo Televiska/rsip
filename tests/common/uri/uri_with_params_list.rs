@@ -42,7 +42,7 @@ mod display {
             String::from(concat!(
                 "<sips:client.biloxi.example.com:5061;s=2>;maddr=255.255.255.0;foo=192.0.2.201;lr",
                 ",",
-                "<https:www.example.com;foo=bar>;test",
+                "<https://www.example.com;foo=bar>;test",
             ))
         );
     }

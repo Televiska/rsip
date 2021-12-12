@@ -1,3 +1,4 @@
+#[cfg(feature = "test-utils")]
 pub mod typed;
 
 use rsip::headers::AlertInfo;

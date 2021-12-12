@@ -4,7 +4,6 @@ pub use tokenizer::Tokenizer;
 pub mod branch;
 pub mod expires;
 pub mod maddr;
-pub mod method;
 pub mod q;
 pub mod received;
 pub mod tag;
@@ -14,14 +13,13 @@ pub mod user;
 pub use branch::Branch;
 pub use expires::Expires;
 pub use maddr::Maddr;
-pub use method::Method;
 pub use q::Q;
 pub use received::Received;
 pub use tag::Tag;
 pub use ttl::Ttl;
 pub use user::User;
 
-use crate::{Error, Transport};
+use crate::{Error, Method, Transport};
 use rsip_derives::NewType;
 use std::convert::TryInto;
 
@@ -35,7 +33,6 @@ use std::convert::TryInto;
 pub enum Param {
     Transport(Transport),
     User(User),
-    //TODO: should use regular method here
     Method(Method),
     Ttl(Ttl),
     Maddr(Maddr),
@@ -105,7 +102,9 @@ impl<'a> std::convert::TryFrom<(&'a str, Option<&'a str>)> for Param {
                 Ok(Param::Transport(Transport::from_str(v)?))
             }
             (s, Some(v)) if s.eq_ignore_ascii_case("user") => Ok(Param::User(User::new(v))),
-            (s, Some(v)) if s.eq_ignore_ascii_case("method") => Ok(Param::Method(Method::new(v))),
+            (s, Some(v)) if s.eq_ignore_ascii_case("method") => {
+                Ok(Param::Method(Method::from_str(v)?))
+            }
             (s, Some(v)) if s.eq_ignore_ascii_case("ttl") => Ok(Param::Ttl(Ttl::new(v))),
             (s, Some(v)) if s.eq_ignore_ascii_case("maddr") => Ok(Param::Maddr(Maddr::new(v))),
             (s, Some(v)) if s.eq_ignore_ascii_case("branch") => Ok(Param::Branch(Branch::new(v))),
@@ -169,7 +168,7 @@ pub mod tokenizer {
 
             let (rem, (_, name, value)) = tuple((
                 tag(";"),
-                take_while(I::is_alphabetic),
+                take_while(I::is_token), //rfc3261 includes other chars as well, needs fixing..
                 opt(map(tuple((tag("="), take_while(I::is_token))), |t| t.1)),
             ))(part)
             .map_err(|_: GenericNomError<'a, T>| {
@@ -178,5 +177,29 @@ pub mod tokenizer {
 
             Ok((rem, (name, value).into()))
         }
+    }
+}
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Param {
+    fn random() -> Self {
+        use testing_utils::{rand_str_of, sample, Randomize};
+        sample(&[
+            Param::Transport(Randomize::random()),
+            Param::Method(Randomize::random()),
+            Param::User(Randomize::random()),
+            Param::Ttl(Randomize::random()),
+            Param::Maddr(Randomize::random()),
+            Param::Lr,
+            Param::Branch(Randomize::random()),
+            Param::Received(Randomize::random()),
+            Param::Tag(Randomize::random()),
+            Param::Expires(Randomize::random()),
+            Param::Q(Randomize::random()),
+            Param::Other(
+                rand_str_of(3).into(),
+                sample(&[None, Some(rand_str_of(5).into())]),
+            ),
+        ])
     }
 }

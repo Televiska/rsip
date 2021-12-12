@@ -11,3 +11,10 @@ impl<'a> Default for Tag {
         Self::new(format!("viska-{}", Uuid::new_v4()))
     }
 }
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Tag {
+    fn random() -> Self {
+        Self::default()
+    }
+}

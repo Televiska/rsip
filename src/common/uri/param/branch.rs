@@ -14,3 +14,10 @@ impl<'a> Default for Branch {
         Self::new(format!("z9hG4bK-rsip-{}", Uuid::new_v4()))
     }
 }
+
+#[cfg(feature = "test-utils")]
+impl testing_utils::Randomize for Branch {
+    fn random() -> Self {
+        Self::default()
+    }
+}
