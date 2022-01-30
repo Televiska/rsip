@@ -1,4 +1,3 @@
-pub mod content_type;
 pub mod language;
 pub mod method;
 pub mod status_code;
@@ -6,7 +5,6 @@ pub mod transport;
 pub mod uri;
 pub mod version;
 
-pub use content_type::ContentType;
 pub use language::Language;
 pub use method::Method;
 pub use status_code::{StatusCode, StatusCodeKind};

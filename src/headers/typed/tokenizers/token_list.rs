@@ -1,5 +1,6 @@
 use crate::{headers::typed::Tokenize, Error};
 
+//trims spaces on each token as well
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct TokenListTokenizer<'a> {
     pub tokens: Vec<&'a str>,
@@ -17,7 +18,9 @@ impl<'a> Tokenize<'a> for TokenListTokenizer<'a> {
 
         let (last_token, mut tokens) = many0(stopbreak)(part)?;
 
-        tokens.push(last_token);
+        tokens = tokens.into_iter().map(|s| s.trim()).collect::<Vec<_>>();
+
+        tokens.push(last_token.trim());
 
         Ok(Self { tokens })
     }

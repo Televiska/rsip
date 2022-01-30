@@ -1,5 +1,5 @@
-use rsip_derives::UntypedHeader;
+use rsip_derives::{ToTypedHeader, UntypedHeader};
 
 /// The `Proxy-Authorization` header in its [untyped](super) form.
-#[derive(UntypedHeader, Debug, PartialEq, Eq, Clone)]
+#[derive(UntypedHeader, ToTypedHeader, Debug, PartialEq, Eq, Clone)]
 pub struct ProxyAuthorization(String);
