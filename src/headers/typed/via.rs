@@ -1,8 +1,5 @@
 #[doc(hidden)]
-pub mod tokenizer;
-
-#[doc(hidden)]
-pub use tokenizer::Tokenizer;
+pub use super::tokenizers::ViaTokenizer as Tokenizer;
 
 use crate::common::{
     uri::{self, param::Branch, Param, Uri},

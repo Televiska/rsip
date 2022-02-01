@@ -1,8 +1,5 @@
 #[doc(hidden)]
-pub mod tokenizer;
-
-#[doc(hidden)]
-pub use tokenizer::Tokenizer;
+pub use super::tokenizers::CseqTokenizer as Tokenizer;
 
 use crate::common::Method;
 use rsip_derives::TypedHeader;

@@ -9,14 +9,14 @@ use crate::{
 };
 
 #[derive(Eq, PartialEq, Debug)]
-pub struct Tokenizer<'a> {
+pub struct ViaTokenizer<'a> {
     pub version: version::Tokenizer<'a, &'a str, char>,
     pub transport: transport::Tokenizer<'a, &'a str, char>,
     pub uri: uri::Tokenizer<'a, &'a str, char>,
     pub params: Vec<uri::param::Tokenizer<'a, &'a str, char>>,
 }
 
-impl<'a> Tokenize<'a> for Tokenizer<'a> {
+impl<'a> Tokenize<'a> for ViaTokenizer<'a> {
     fn tokenize(part: &'a str) -> Result<Self, Error> {
         use nom::{
             bytes::complete::tag, character::complete::space1, multi::many0, sequence::tuple,

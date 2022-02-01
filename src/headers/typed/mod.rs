@@ -6,6 +6,10 @@
 //! [push notifications](https://datatracker.ietf.org/doc/html/rfc8599) etc
 //!
 
+//This is not a header but a common helper
+pub mod media_type;
+pub use media_type::MediaType;
+
 pub mod alert_info;
 pub mod allow;
 pub mod authentication_info;
@@ -17,7 +21,6 @@ pub mod cseq;
 pub mod error_info;
 pub mod from;
 pub mod in_reply_to;
-pub mod media_type;
 pub mod priority;
 pub mod proxy_authenticate;
 pub mod proxy_authorization;
@@ -41,7 +44,6 @@ pub use cseq::CSeq;
 pub use error_info::ErrorInfo;
 pub use from::From;
 pub use in_reply_to::InReplyTo;
-pub use media_type::MediaType;
 pub use priority::Priority;
 pub use proxy_authenticate::ProxyAuthenticate;
 pub use proxy_authorization::ProxyAuthorization;
