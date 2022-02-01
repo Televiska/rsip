@@ -15,7 +15,7 @@ fn tokenizer2() {
     assert_eq!(
         TokenListTokenizer::tokenize(" ACK "),
         Ok(TokenListTokenizer {
-            tokens: vec![" ACK "],
+            tokens: vec!["ACK"],
         })
     );
 }
@@ -25,7 +25,7 @@ fn tokenizer3() {
     assert_eq!(
         TokenListTokenizer::tokenize("foo, ACK "),
         Ok(TokenListTokenizer {
-            tokens: vec!["foo", " ACK "],
+            tokens: vec!["foo", "ACK"],
         })
     );
 }
@@ -35,7 +35,7 @@ fn tokenizer4() {
     assert_eq!(
         TokenListTokenizer::tokenize(" foo , ACK "),
         Ok(TokenListTokenizer {
-            tokens: vec![" foo ", " ACK "],
+            tokens: vec!["foo", "ACK"],
         })
     );
 }

@@ -6,6 +6,12 @@ pub use tokenizer::Tokenizer;
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct UriWithParamsList(pub Vec<UriWithParams>);
 
+impl From<Vec<UriWithParams>> for UriWithParamsList {
+    fn from(from: Vec<UriWithParams>) -> Self {
+        Self(from)
+    }
+}
+
 impl std::fmt::Display for UriWithParamsList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
