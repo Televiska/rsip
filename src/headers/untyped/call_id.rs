@@ -8,6 +8,6 @@ pub struct CallId(String);
 
 impl Default for CallId {
     fn default() -> Self {
-        Self(format!("{}@example.com", Uuid::new_v4().to_string()))
+        Self(format!("{}@example.com", Uuid::new_v4()))
     }
 }

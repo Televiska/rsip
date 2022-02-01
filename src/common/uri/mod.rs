@@ -59,11 +59,11 @@ impl std::fmt::Display for Uri {
         let scheme = match &self.scheme {
             Some(Scheme::Other(scheme)) => format!("{}://", scheme),
             Some(scheme) => format!("{}:", scheme),
-            None => format!(""),
+            None => String::new(),
         };
         let auth = match &self.auth {
             Some(auth) => format!("{}@", auth),
-            None => format!(""),
+            None => String::new(),
         };
 
         write!(
