@@ -44,7 +44,7 @@ impl TryFrom<&str> for HostWithPort {
     type Error = Error;
 
     fn try_from(from: &str) -> Result<Self, Self::Error> {
-        match from.rsplit_once(":") {
+        match from.rsplit_once(':') {
             None => Ok(Host::from(from).into()),
             Some((host, port)) => Ok((
                 Host::from(String::from(host)),
