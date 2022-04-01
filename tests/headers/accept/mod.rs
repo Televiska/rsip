@@ -1,15 +1,6 @@
-use rsip::headers::*;
+pub mod typed;
+
+use rsip::headers::Accept;
 
 validate_untyped_header_trait!(Accept);
-
-mod display {
-    use super::*;
-
-    #[test]
-    fn display() {
-        assert_eq!(
-            Accept::new("REGISTER, INVITE").to_string(),
-            String::from("Accept: REGISTER, INVITE")
-        );
-    }
-}
+validate_to_typed_header_trait!(Accept);

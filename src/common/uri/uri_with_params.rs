@@ -13,6 +13,12 @@ pub struct UriWithParams {
     pub params: Vec<Param>,
 }
 
+impl UriWithParams {
+    pub fn is_sips(&self) -> Result<bool, Error> {
+        self.uri.is_sips()
+    }
+}
+
 impl std::fmt::Display for UriWithParams {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

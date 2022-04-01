@@ -23,7 +23,7 @@ impl Scheme {
         }
     }
 
-    pub fn is_sip_secure(&self) -> Result<bool, Error> {
+    pub fn is_sips(&self) -> Result<bool, Error> {
         match self {
             Self::Sip => Ok(false),
             Self::Sips => Ok(true),

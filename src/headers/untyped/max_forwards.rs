@@ -1,3 +1,4 @@
+use crate::Error;
 use rsip_derives::UntypedHeader;
 
 /// The `Max-Forwards` header in its [untyped](super) form.
@@ -21,5 +22,13 @@ impl MaxForwards {
 impl From<u32> for MaxForwards {
     fn from(from: u32) -> Self {
         Self(from.to_string())
+    }
+}
+
+impl std::convert::TryFrom<MaxForwards> for u32 {
+    type Error = Error;
+
+    fn try_from(from: MaxForwards) -> Result<Self, Self::Error> {
+        from.num()
     }
 }

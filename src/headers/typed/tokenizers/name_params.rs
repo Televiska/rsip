@@ -1,17 +1,15 @@
 use crate::{headers::typed::Tokenize, Error};
 
-//TODO: the RFC nomenclature is to use type & subtype
-//so name here is not correct
 #[derive(Eq, PartialEq, Clone, Debug)]
-pub struct MediaTypeTokenizer<'a> {
+pub struct NameParamsTokenizer<'a> {
     pub name: &'a str,
     pub params: Vec<(&'a str, &'a str)>,
 }
 
 #[derive(Eq, PartialEq, Clone, Debug)]
-pub struct MediaTypeListTokenizer<'a>(pub Vec<MediaTypeTokenizer<'a>>);
+pub struct NameParamsListTokenizer<'a>(pub Vec<NameParamsTokenizer<'a>>);
 
-impl<'a> Tokenize<'a> for MediaTypeTokenizer<'a> {
+impl<'a> Tokenize<'a> for NameParamsTokenizer<'a> {
     fn tokenize(part: &'a str) -> Result<Self, Error> {
         use crate::parser_utils::is_empty_or_fail_with;
         use crate::NomStrError;
@@ -51,7 +49,7 @@ impl<'a> Tokenize<'a> for MediaTypeTokenizer<'a> {
     }
 }
 
-impl<'a> Tokenize<'a> for MediaTypeListTokenizer<'a> {
+impl<'a> Tokenize<'a> for NameParamsListTokenizer<'a> {
     fn tokenize(part: &'a str) -> Result<Self, Error> {
         use crate::NomStrError;
         use nom::{
@@ -67,10 +65,10 @@ impl<'a> Tokenize<'a> for MediaTypeListTokenizer<'a> {
             .map_err(|_: NomStrError<'a>| Error::tokenizer(("list media type params", part)))?;
         let mut media_types = media_types
             .into_iter()
-            .map(MediaTypeTokenizer::tokenize)
-            .collect::<Result<Vec<MediaTypeTokenizer>, Error>>()?;
+            .map(NameParamsTokenizer::tokenize)
+            .collect::<Result<Vec<NameParamsTokenizer>, Error>>()?;
         if !rem.is_empty() {
-            media_types.push(MediaTypeTokenizer::tokenize(rem)?)
+            media_types.push(NameParamsTokenizer::tokenize(rem)?)
         }
 
         Ok(Self(media_types))

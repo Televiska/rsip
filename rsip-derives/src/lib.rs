@@ -93,9 +93,15 @@ pub fn uri_and_params_helpers_signature(item: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(item as DeriveInput);
     let struct_name = &ast.ident;
 
+    //TODO: instead of mut_ use replace_
     let expanded = quote! {
         impl #struct_name {
             pub fn with_uri(mut self, uri: Uri) -> Self {
+                self.uri = uri;
+                self
+            }
+
+            pub fn mut_uri(&mut self, uri: Uri) -> &mut Self {
                 self.uri = uri;
                 self
             }
@@ -105,12 +111,27 @@ pub fn uri_and_params_helpers_signature(item: TokenStream) -> TokenStream {
                 self
             }
 
+            pub fn mut_uri_param(&mut self, param: Param) -> &mut Self {
+                self.uri.params.push(param);
+                self
+            }
+
             pub fn with_param(mut self, param: Param) -> Self {
                 self.params.push(param);
                 self
             }
 
+            pub fn mut_param(&mut self, param: Param) -> &mut Self {
+                self.params.push(param);
+                self
+            }
+
             pub fn with_params(mut self, params: Vec<Param>) -> Self {
+                self.params = params;
+                self
+            }
+
+            pub fn mut_params(&mut self, params: Vec<Param>) -> &mut Self {
                 self.params = params;
                 self
             }

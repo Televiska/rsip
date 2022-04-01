@@ -6,9 +6,21 @@ pub use tokenizer::Tokenizer;
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct UriWithParamsList(pub Vec<UriWithParams>);
 
+impl UriWithParamsList {
+    pub fn uris(&self) -> &[UriWithParams] {
+        &self.0
+    }
+}
+
 impl From<Vec<UriWithParams>> for UriWithParamsList {
     fn from(from: Vec<UriWithParams>) -> Self {
         Self(from)
+    }
+}
+
+impl From<UriWithParamsList> for Vec<UriWithParams> {
+    fn from(from: UriWithParamsList) -> Self {
+        from.0
     }
 }
 

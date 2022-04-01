@@ -77,8 +77,8 @@ pub fn create_unauthorized_from(request: rsip::Request) -> Result<rsip::SipMessa
     let mut headers: rsip::Headers = Default::default();
     headers.push(request.via_header()?.clone().into());
     headers.push(request.from_header()?.clone().into());
-    let mut to = request.to_header()?.typed()?;
-    to.with_tag("1410948204".into());
+    let to = request.to_header()?.typed()?;
+    let to = to.with_tag("1410948204".into());
     headers.push(to.into());
     headers.push(request.call_id_header()?.clone().into());
     headers.push(request.cseq_header()?.clone().into());

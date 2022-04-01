@@ -1,13 +1,19 @@
 #[doc(hidden)]
 pub use super::tokenizers::UriWithParamsListTokenizer as Tokenizer;
 
-use crate::common::uri::UriWithParamsList;
+use crate::common::uri::{UriWithParams, UriWithParamsList};
 use rsip_derives::TypedHeader;
 use std::convert::TryFrom;
 
 /// The `Record-Route` header in its [typed](super) form.
 #[derive(TypedHeader, Eq, PartialEq, Clone, Debug)]
 pub struct RecordRoute(pub UriWithParamsList);
+
+impl RecordRoute {
+    pub fn uris(&self) -> &[UriWithParams] {
+        self.0.uris()
+    }
+}
 
 impl From<UriWithParamsList> for RecordRoute {
     fn from(uri_with_params_list: UriWithParamsList) -> Self {

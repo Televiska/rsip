@@ -37,6 +37,14 @@ impl From {
             _ => None,
         })
     }
+
+    pub fn with_tag(mut self, tag: Tag) -> Self {
+        self.params
+            .retain(|param| !matches!(param, Param::Tag(Tag { .. })));
+
+        self.params.push(Tag::new(tag).into());
+        self
+    }
 }
 
 impl std::fmt::Display for From {

@@ -1,5 +1,6 @@
 use crate::{
     headers::{self, Header},
+    param::Branch,
     Error,
 };
 
@@ -17,7 +18,6 @@ pub trait HeadersExt: super::HasHeaders {
         )
     }
 
-    #[allow(clippy::wrong_self_convention)]
     fn to_header_mut(&mut self) -> Result<&mut headers::To, Error> {
         header!(
             self.headers_mut().iter_mut(),
@@ -108,6 +108,7 @@ pub trait HeadersExt: super::HasHeaders {
             Error::missing_header("Contact")
         )
     }
+
     fn contact_header_mut(&mut self) -> Result<&mut headers::Contact, Error> {
         header!(
             self.headers_mut().iter_mut(),
@@ -115,16 +116,21 @@ pub trait HeadersExt: super::HasHeaders {
             Error::missing_header("Contact")
         )
     }
+
     fn contact_headers(&self) -> Vec<&headers::Contact> {
         all_headers!(self.headers().iter(), Header::Contact)
     }
 
-    fn user_agent_header(&self) -> Result<&headers::UserAgent, Error> {
-        header!(
-            self.headers().iter(),
-            Header::UserAgent,
-            Error::missing_header("User-Agent")
-        )
+    fn record_route_header(&self) -> Option<&headers::RecordRoute> {
+        header_opt!(self.headers().iter(), Header::RecordRoute)
+    }
+
+    fn route_header(&self) -> Option<&headers::Route> {
+        header_opt!(self.headers().iter(), Header::Route)
+    }
+
+    fn user_agent_header(&self) -> Option<&headers::UserAgent> {
+        header_opt!(self.headers().iter(), Header::UserAgent)
     }
 
     fn authorization_header(&self) -> Option<&headers::Authorization> {
@@ -139,52 +145,14 @@ pub trait HeadersExt: super::HasHeaders {
         header_opt!(self.headers().iter(), Header::Expires)
     }
 
-    fn min_expires_header(&self) -> Result<&headers::MinExpires, Error> {
-        header!(
-            self.headers().iter(),
-            Header::MinExpires,
-            Error::missing_header("Min-Expires")
-        )
+    fn min_expires_header(&self) -> Option<&headers::MinExpires> {
+        header_opt!(self.headers().iter(), Header::MinExpires)
     }
 
-    fn transaction_id(&self) -> Result<String, Error> {
+    fn transaction_id(&self) -> Result<Option<Branch>, Error> {
         use crate::headers::ToTypedHeader;
 
-        Ok(format!(
-            "{}",
-            self.via_header()?
-                .clone()
-                .typed()?
-                .branch()
-                .ok_or_else(|| Error::Unexpected("missing branch in via header!".into()))?
-        ))
-    }
-
-    fn dialog_id(&self) -> Result<Option<String>, Error> {
-        //use crate::common::uri::param::Tag;
-        /*
-                let (call_id, from_tag, to_tag): (Option<String>, Option<Tag>, Option<Tag>) = (
-                    self.call_id_header().ok().cloned().map(Into::into),
-                    self.from_header()
-                        .ok()
-                        .cloned()
-                        .map(|h| h.typed().map(|h| h.tag().cloned()))
-                        .transpose()?
-                        .flatten(),
-                    self.to_header()
-                        .ok()
-                        .cloned()
-                        .map(|h| h.typed().map(|h| h.tag().cloned()))
-                        .transpose()?
-                        .flatten(),
-                );
-
-                Ok(match (call_id, from_tag, to_tag) {
-                    (Some(call_id), Some(from), Some(to)) => Some(format!("{}-{}-{}", call_id, from, to)),
-                    _ => None,
-                })
-        */
-        Ok(None)
+        Ok(self.via_header()?.clone().typed()?.branch().cloned())
     }
 }
 

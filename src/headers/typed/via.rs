@@ -6,13 +6,17 @@ use crate::common::{
     Transport, Version,
 };
 use rsip_derives::{TypedHeader, UriAndParamsHelpers};
-use std::convert::{TryFrom, TryInto};
+use std::{
+    convert::{TryFrom, TryInto},
+    net::IpAddr,
+};
 
 /// The `Via` header in its [typed](super) form.
 #[derive(TypedHeader, UriAndParamsHelpers, Eq, PartialEq, Clone, Debug)]
 pub struct Via {
     pub version: Version,
     pub transport: Transport,
+    //TODO: rename to sent-by ?
     pub uri: Uri,
     pub params: Vec<uri::Param>,
 }
@@ -23,6 +27,24 @@ impl Via {
             Param::Branch(branch) => Some(branch),
             _ => None,
         })
+    }
+
+    pub fn received(&self) -> Result<Option<IpAddr>, std::net::AddrParseError> {
+        self.params
+            .iter()
+            .find_map(|param| match param {
+                Param::Received(received) => Some(received.parse()),
+                _ => None,
+            })
+            .transpose()
+    }
+
+    pub fn sent_by(&self) -> &Uri {
+        &self.uri
+    }
+
+    pub fn sent_protocol(&self) -> &Transport {
+        &self.transport
     }
 }
 

@@ -38,11 +38,12 @@ impl To {
         })
     }
 
-    pub fn with_tag(&mut self, tag: Tag) {
+    pub fn with_tag(mut self, tag: Tag) -> Self {
         self.params
             .retain(|param| !matches!(param, Param::Tag(Tag { .. })));
 
         self.params.push(Tag::new(tag).into());
+        self
     }
 }
 

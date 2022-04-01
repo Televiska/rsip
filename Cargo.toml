@@ -1,6 +1,6 @@
 [package]
 name = "rsip"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Filippos Vasilakis <vasilakisfil@gmail.com>"]
 edition = "2018"
 description = "SIP Rust library, parser & generator of SIP"
