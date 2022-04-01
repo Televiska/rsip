@@ -52,6 +52,15 @@ impl Uri {
             _ => None,
         })
     }
+
+    pub fn is_sips(&self) -> Result<bool, Error> {
+        Ok(self
+            .scheme
+            .as_ref()
+            .map(|s| s.is_sips())
+            .transpose()?
+            .unwrap_or(false))
+    }
 }
 
 impl std::fmt::Display for Uri {

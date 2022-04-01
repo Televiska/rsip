@@ -1,15 +1,15 @@
 use rsip::headers::typed::{
-    tokenizers::{MediaTypeListTokenizer, MediaTypeTokenizer},
+    tokenizers::{NameParamsListTokenizer, NameParamsTokenizer},
     Tokenize,
 };
 
 #[test]
 fn tokenizer1() {
     assert_eq!(
-        MediaTypeListTokenizer::tokenize(
+        NameParamsListTokenizer::tokenize(
             "application/vnd.api+json; pagination=simple-spec; querying=graphql"
         ),
-        Ok(MediaTypeListTokenizer(vec![MediaTypeTokenizer {
+        Ok(NameParamsListTokenizer(vec![NameParamsTokenizer {
             name: "application/vnd.api+json",
             params: vec![("pagination", "simple-spec"), ("querying", "graphql")]
         }]))
@@ -19,16 +19,16 @@ fn tokenizer1() {
 #[test]
 fn tokenizer2() {
     assert_eq!(
-        MediaTypeListTokenizer::tokenize(concat!(
+        NameParamsListTokenizer::tokenize(concat!(
             "application/vnd.api+json; pagination=simple-spec; querying=graphql, ",
             "application/sdp; charset=ISO-8859-4"
         )),
-        Ok(MediaTypeListTokenizer(vec![
-            MediaTypeTokenizer {
+        Ok(NameParamsListTokenizer(vec![
+            NameParamsTokenizer {
                 name: "application/vnd.api+json",
                 params: vec![("pagination", "simple-spec"), ("querying", "graphql")]
             },
-            MediaTypeTokenizer {
+            NameParamsTokenizer {
                 name: "application/sdp",
                 params: vec![("charset", "ISO-8859-4")]
             }
@@ -39,16 +39,16 @@ fn tokenizer2() {
 #[test]
 fn tokenizer3() {
     assert_eq!(
-        MediaTypeListTokenizer::tokenize(concat!(
+        NameParamsListTokenizer::tokenize(concat!(
             "application/vnd.api+json; pagination=simple-spec; querying=graphql,", //without space
             "application/sdp; charset=ISO-8859-4"
         )),
-        Ok(MediaTypeListTokenizer(vec![
-            MediaTypeTokenizer {
+        Ok(NameParamsListTokenizer(vec![
+            NameParamsTokenizer {
                 name: "application/vnd.api+json",
                 params: vec![("pagination", "simple-spec"), ("querying", "graphql")]
             },
-            MediaTypeTokenizer {
+            NameParamsTokenizer {
                 name: "application/sdp",
                 params: vec![("charset", "ISO-8859-4")]
             }
@@ -60,21 +60,21 @@ fn tokenizer3() {
 #[test]
 fn tokenizer4() {
     assert_eq!(
-        MediaTypeListTokenizer::tokenize(concat!(
+        NameParamsListTokenizer::tokenize(concat!(
             "application/sdp;level=1, ",
             "application/x-private, ",
             "text/html"
         )),
-        Ok(MediaTypeListTokenizer(vec![
-            MediaTypeTokenizer {
+        Ok(NameParamsListTokenizer(vec![
+            NameParamsTokenizer {
                 name: "application/sdp",
                 params: vec![("level", "1")]
             },
-            MediaTypeTokenizer {
+            NameParamsTokenizer {
                 name: "application/x-private",
                 params: vec![]
             },
-            MediaTypeTokenizer {
+            NameParamsTokenizer {
                 name: "text/html",
                 params: vec![]
             }

@@ -1,5 +1,5 @@
 #[doc(hidden)]
-pub use super::tokenizers::MediaTypeTokenizer as Tokenizer;
+pub use super::tokenizers::NameParamsTokenizer as Tokenizer;
 
 use super::MediaType;
 use rsip_derives::TypedHeader;

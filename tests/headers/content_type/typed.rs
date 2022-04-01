@@ -1,4 +1,4 @@
-use rsip::headers::typed::{tokenizers::MediaTypeTokenizer, ContentType, MediaType};
+use rsip::headers::typed::{tokenizers::NameParamsTokenizer, ContentType, MediaType};
 use std::convert::TryInto;
 
 validate_typed_header_trait!(ContentType);
@@ -53,7 +53,7 @@ mod try_from_tokenizer {
     #[test]
     fn try_from_1() {
         assert_eq!(
-            MediaTypeTokenizer {
+            NameParamsTokenizer {
                 name: "application/sdp",
                 params: vec![("charset", "ISO-8859-4")]
             }

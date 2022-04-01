@@ -10,12 +10,14 @@
 pub mod media_type;
 pub use media_type::MediaType;
 
+pub mod accept;
 pub mod alert_info;
 pub mod allow;
 pub mod authentication_info;
 pub mod authorization;
 pub mod call_info;
 pub mod contact;
+pub mod content_disposition;
 pub mod content_type;
 pub mod cseq;
 pub mod error_info;
@@ -33,12 +35,14 @@ pub mod via;
 pub mod warning;
 pub mod www_authenticate;
 
+pub use accept::Accept;
 pub use alert_info::AlertInfo;
 pub use allow::Allow;
 pub use authentication_info::AuthenticationInfo;
 pub use authorization::Authorization;
 pub use call_info::CallInfo;
 pub use contact::Contact;
+pub use content_disposition::ContentDisposition;
 pub use content_type::ContentType;
 pub use cseq::CSeq;
 pub use error_info::ErrorInfo;

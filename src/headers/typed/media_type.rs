@@ -1,5 +1,5 @@
 #[doc(hidden)]
-pub use super::tokenizers::MediaTypeTokenizer as Tokenizer;
+pub use super::tokenizers::NameParamsTokenizer as Tokenizer;
 
 use std::convert::TryFrom;
 
@@ -10,7 +10,7 @@ pub enum MediaType {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct MediaTypeParam(String, String);
+pub struct MediaTypeParam(pub String, pub String);
 
 impl<S, T> From<(S, T)> for MediaTypeParam
 where
