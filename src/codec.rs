@@ -1,12 +1,11 @@
 use std::convert::TryInto;
 use std::{convert::TryFrom, io::Write};
 
-use bytes::{BytesMut, Bytes, BufMut};
+use bytes::{BufMut, Bytes, BytesMut};
 use tokio_util::codec;
 
-use crate::{SipMessage, error, Request};
 use crate::message::request::Tokenizer;
-
+use crate::{error, Request, SipMessage};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SipServer();
@@ -29,8 +28,10 @@ impl From<std::io::Error> for MessageError {
     }
 }
 
-impl<E> From<E> for MessageError 
-    where E : Into<error::Error> {
+impl<E> From<E> for MessageError
+where
+    E: Into<error::Error>,
+{
     fn from(err: E) -> Self {
         MessageError::SipDecodeError(err.into())
     }
@@ -43,7 +44,8 @@ impl codec::Decoder for SipServer {
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
         let bytes = src.clone().freeze();
-        { // debugging
+        {
+            // debugging
             let s = String::from_utf8_lossy(&bytes[..]);
             println!("recv bytes:");
             println!("  -----");
@@ -55,31 +57,29 @@ impl codec::Decoder for SipServer {
         if bytes.is_empty() {
             // println!("msg is empty");
             src.clear();
-            return Ok(None)
+            return Ok(None);
         }
         if bytes == "\r\n\r\n".as_bytes() {
-            // something weird has happened: 
+            // something weird has happened:
             // somehow the end sequence was received even though no message preceded it.
             // This happens with some clients that send this sequence to keep a (tcp) connection alive
             // => clear the end sequence and tell tokio that we did not receive a full message
             src.clear();
-            return Ok(None)
+            return Ok(None);
         }
         // println!("msg is not empty");
         let res = match Tokenizer::tokenize(&bytes) {
             Ok((empty_rem_tokens, tok)) => {
                 assert_eq!(empty_rem_tokens, []);
                 src.clear();
-                let req : Request = tok.try_into()?;
+                let req: Request = tok.try_into()?;
                 Ok(Some(req))
-            },
+            }
             Err(nom::Err::Incomplete(_)) => {
                 println!("nom says 'incomplete!'");
                 Ok(None)
-            },
-            Err(err)=> {
-                Err(err.into())
-            },
+            }
+            Err(err) => Err(err.into()),
         };
         // println!("parsed into: {:?}", res);
         res
@@ -90,7 +90,7 @@ impl codec::Decoder for SipServer {
 mod tests {
     use std::io::Write;
 
-    use bytes::{BytesMut, BufMut};
+    use bytes::{BufMut, BytesMut};
     use tokio_util::codec::Decoder;
 
     use super::SipServer;
@@ -111,7 +111,7 @@ mod tests {
         let mut codec = SipServer::new();
         let res = codec.decode(&mut buffer);
         println!("{:?}", res);
-        
+
         let msg2 = "REGISTER second.com SIP/2.0\r\nSND-MY-HEADER: my-snd-value\r\n\r\n";
         let mut buffer2 = msg2.into();
         let res = codec.decode(&mut buffer2);
