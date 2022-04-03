@@ -264,6 +264,8 @@ mod error;
 pub mod headers;
 pub mod message;
 pub mod services;
+#[cfg(feature = "tokio-codec")]
+pub mod codec;
 
 pub use error::{Error, TokenizerError};
 
