@@ -1,5 +1,8 @@
 use crate::{
-    common::{param::Param, Transport, Uri, Version},
+    common::{
+        param::{Branch, Param},
+        Transport, Uri, Version,
+    },
     headers::untyped::ToTypedHeader,
     Error,
 };
@@ -20,6 +23,10 @@ impl Via {
 
     pub fn uri(&self) -> Result<Uri, Error> {
         self.typed().map(|s| s.uri)
+    }
+
+    pub fn branch(&self) -> Result<Branch, Error> {
+        Ok(self.typed()?.branch()?.clone())
     }
 
     pub fn params(&self) -> Result<Vec<Param>, Error> {

@@ -1,9 +1,12 @@
 #[doc(hidden)]
 pub use super::tokenizers::ViaTokenizer as Tokenizer;
 
-use crate::common::{
-    uri::{self, param::Branch, Param, Uri},
-    Transport, Version,
+use crate::{
+    common::{
+        uri::{self, param::Branch, Param, Uri},
+        Transport, Version,
+    },
+    Error,
 };
 use rsip_derives::{TypedHeader, UriAndParamsHelpers};
 use std::{
@@ -22,11 +25,14 @@ pub struct Via {
 }
 
 impl Via {
-    pub fn branch(&self) -> Option<&Branch> {
-        self.params.iter().find_map(|param| match param {
-            Param::Branch(branch) => Some(branch),
-            _ => None,
-        })
+    pub fn branch(&self) -> Result<&Branch, Error> {
+        self.params
+            .iter()
+            .find_map(|param| match param {
+                Param::Branch(branch) => Some(branch),
+                _ => None,
+            })
+            .ok_or_else(|| Error::missing_param("branch"))
     }
 
     pub fn received(&self) -> Result<Option<IpAddr>, std::net::AddrParseError> {

@@ -5,7 +5,7 @@ use rsip_derives::{IntoParam, NewType};
 ///
 /// Provides a simple default implementation that uses a `Uuid` for genearting a unique branch
 /// across space & time.
-#[derive(NewType, IntoParam, Debug, PartialEq, Eq, Clone)]
+#[derive(NewType, IntoParam, Debug, PartialEq, Eq, Clone, Ord, PartialOrd, Hash)]
 pub struct Branch(String);
 
 impl<'a> Default for Branch {

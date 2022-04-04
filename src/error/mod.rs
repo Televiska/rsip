@@ -26,6 +26,7 @@ use std::{error::Error as StdError, fmt};
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Error {
     MissingHeader(String),
+    MissingParam(String),
     InvalidParam(String),
     ParseError(String),
     TokenizeError(String),
@@ -49,6 +50,10 @@ impl Error {
     pub fn missing_header(header: &'static str) -> Self {
         Self::MissingHeader(header.into())
     }
+
+    pub fn missing_param(header: &'static str) -> Self {
+        Self::MissingParam(header.into())
+    }
 }
 
 impl From<TokenizerError> for Error {
@@ -71,6 +76,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::MissingHeader(inner) => write!(f, "rsip error: missing header: {}", inner),
+            Self::MissingParam(inner) => write!(f, "rsip error: missing param: {}", inner),
             Self::InvalidParam(inner) => write!(f, "rsip error: invalid header param: {}", inner),
             Self::ParseError(inner) => write!(f, "rsip error: could not parse part: {}", inner),
             Self::TokenizeError(inner) => write!(f, "Tokenizer error: {}", inner),

@@ -149,10 +149,10 @@ pub trait HeadersExt: super::HasHeaders {
         header_opt!(self.headers().iter(), Header::MinExpires)
     }
 
-    fn transaction_id(&self) -> Result<Option<Branch>, Error> {
-        use crate::headers::ToTypedHeader;
-
-        Ok(self.via_header()?.clone().typed()?.branch().cloned())
+    //TODO: this is not correct? this is just the branch id
+    //however RFC3261 states clear ways on how transactions should be matched
+    fn transaction_id(&self) -> Result<Branch, Error> {
+        self.via_header()?.branch()
     }
 }
 
