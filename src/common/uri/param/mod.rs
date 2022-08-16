@@ -161,15 +161,25 @@ pub mod tokenizer {
     {
         pub fn tokenize(part: T) -> GResult<T, Self> {
             use nom::{
-                bytes::complete::{tag, take_while},
-                combinator::{map, opt},
-                sequence::tuple,
+                branch::alt,
+                bytes::complete::{tag, take_until, take_while},
+                combinator::{map, opt, recognize},
+                sequence::{delimited, tuple},
             };
 
             let (rem, (_, name, value)) = tuple((
                 tag(";"),
                 take_while(I::is_token), //rfc3261 includes other chars as well, needs fixing..
-                opt(map(tuple((tag("="), take_while(I::is_token))), |t| t.1)),
+                opt(map(
+                    tuple((
+                        tag("="),
+                        alt((
+                            recognize(delimited(tag("\""), take_until("\""), tag("\""))),
+                            take_while(I::is_token),
+                        )),
+                    )),
+                    |t| t.1,
+                )),
             ))(part)
             .map_err(|_: GenericNomError<'a, T>| {
                 TokenizerError::from(("uri param", part)).into()
