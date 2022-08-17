@@ -33,6 +33,14 @@ mod parser {
             Ok(Scheme::Sips)
         );
     }
+
+    #[test]
+    fn parser3() {
+        assert_eq!(
+            Tokenizer::from("tel".as_bytes()).try_into(),
+            Ok(Scheme::Tel)
+        )
+    }
 }
 
 mod tokenizer {
@@ -66,6 +74,14 @@ mod tokenizer {
                 "sips".as_bytes().into()
             )),
         );
+    }
+
+    #[test]
+    fn tokenizer3_str() {
+        assert_eq!(
+            Tokenizer::tokenize("tel:+12124567890"),
+            Ok(("+12124567890", "tel".into())),
+        )
     }
 
     #[test]

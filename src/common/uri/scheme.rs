@@ -9,6 +9,8 @@ use crate::Error;
 pub enum Scheme {
     Sip,
     Sips,
+    // A tel scheme from RFC 2806.
+    Tel,
     Other(String),
 }
 
@@ -43,6 +45,7 @@ impl std::fmt::Display for Scheme {
         match self {
             Self::Sip => write!(f, "sip"),
             Self::Sips => write!(f, "sips"),
+            Self::Tel => write!(f, "tel"),
             Self::Other(inner) => write!(f, "{}", inner),
         }
     }
@@ -55,6 +58,7 @@ impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for Sche
         match tokenizer.value {
             part if part.eq_ignore_ascii_case("sip") => Ok(Scheme::Sip),
             part if part.eq_ignore_ascii_case("sips") => Ok(Scheme::Sips),
+            part if part.eq_ignore_ascii_case("tel") => Ok(Scheme::Tel),
             part => Ok(Scheme::Other(part.into())),
         }
     }
@@ -115,6 +119,7 @@ pub mod tokenizer {
             let (rem, (scheme, _)) = alt((
                 tuple((tag_no_case("sip"), tag(":"))),
                 tuple((tag_no_case("sips"), tag(":"))),
+                tuple((tag_no_case("tel"), tag(":"))),
                 tuple((take_until("://"), tag("://"))),
             ))(part)
             .map_err(|_: GenericNomError<'a, T>| TokenizerError::from(("scheme", part)).into())?;
