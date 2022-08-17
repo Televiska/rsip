@@ -1,6 +1,6 @@
 use rsip::common::uri::{
     self,
-    param::{Maddr, Param},
+    param::{Maddr, Param, Tag},
     uri_with_params::{Tokenizer, UriWithParams},
     Scheme, Uri,
 };
@@ -49,6 +49,25 @@ mod display {
             .to_string(),
             String::from("<sips:client.biloxi.example.com:5061;s=2>")
         );
+    }
+
+    #[test]
+    fn display3() {
+        let tag = Tag::default();
+        assert_eq!(
+            UriWithParams {
+                uri: Uri {
+                    scheme: Some(Scheme::Tel),
+                    auth: None,
+                    host_with_port: "+12124567890".try_into().unwrap(),
+                    params: Default::default(),
+                    headers: Default::default()
+                },
+                params: vec![Param::Tag(tag.clone())],
+            }
+            .to_string(),
+            format!("<tel:+12124567890>;tag={}", tag)
+        )
     }
 }
 
@@ -239,6 +258,30 @@ mod tokenizer {
                     ..Default::default()
                 }
             )),
+        );
+    }
+
+    #[test]
+    fn tokenizer3_str() {
+        let tag: String = Tag::default().into();
+        let input = format!("<tel:+12124567890>;tag={}", tag);
+        assert_eq!(
+            Tokenizer::tokenize(input.as_str()),
+            Ok((
+                "",
+                Tokenizer {
+                    uri: uri::Tokenizer {
+                        scheme: Some("tel".into()),
+                        auth: None,
+                        host_with_port: ("+12124567890", None).into(),
+                        params: vec![],
+                        headers: None,
+                        ..Default::default()
+                    },
+                    params: vec![("tag", Some(tag.as_str())).into()],
+                    ..Default::default()
+                }
+            ))
         );
     }
 }
