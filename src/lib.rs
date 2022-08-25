@@ -304,6 +304,8 @@ pub trait AbstractInput<'a, I>:
     + nom::InputLength
     + nom::InputIter
     + nom::Compare<&'a str>
+    + nom::Offset
+    + nom::Slice<core::ops::RangeTo<usize>>
     + std::fmt::Debug
     + Into<&'a bstr::BStr>
     + Default

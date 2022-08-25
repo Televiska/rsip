@@ -78,3 +78,30 @@ fn tokenizer4() {
         })
     );
 }
+
+// Used "+sip.instance" Contact param as an example for double-quote-enclosed param value
+// for +sip.instance specification, see RFC 5626.
+#[test]
+fn tokenizer_with_instance() {
+    assert_eq!(
+        DisplayUriParamsTokenizer::tokenize(
+            r#"<sip:alice@atlanta.example.com>;+sip.instance="<urn:uuid:9e397c26-8f87-4b02-9df1-987ddfe135c3>""#
+        ),
+        Ok(DisplayUriParamsTokenizer {
+            display_name: None,
+            uri: uri::Tokenizer {
+                scheme: Some("sip".into()),
+                auth: Some(uri::auth::Tokenizer::from(("alice", None,))),
+                host_with_port: ("atlanta.example.com", None).into(),
+                params: vec![],
+                headers: None,
+                ..Default::default()
+            },
+            params: vec![(
+                "+sip.instance",
+                Some(r#""<urn:uuid:9e397c26-8f87-4b02-9df1-987ddfe135c3>""#)
+            )
+                .into()],
+        })
+    );
+}
