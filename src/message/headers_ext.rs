@@ -26,6 +26,7 @@ pub trait HeadersExt: super::HasHeaders {
         )
     }
 
+    #[allow(clippy::wrong_self_convention)]
     fn from_header(&self) -> Result<&headers::From, Error> {
         header!(
             self.headers().iter(),
@@ -33,6 +34,8 @@ pub trait HeadersExt: super::HasHeaders {
             Error::missing_header("From")
         )
     }
+
+    #[allow(clippy::wrong_self_convention)]
     fn from_header_mut(&mut self) -> Result<&mut headers::From, Error> {
         header!(
             self.headers_mut().iter_mut(),

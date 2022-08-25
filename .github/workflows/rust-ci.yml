@@ -60,7 +60,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: 1.60.0
           override: true
       - run: rustup component add clippy
       - uses: actions-rs/cargo@v1
