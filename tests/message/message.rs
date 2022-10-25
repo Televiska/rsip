@@ -154,6 +154,121 @@ mod parser {
     }
 
     #[test]
+    fn parser_compact_mode() {
+        assert_eq!(
+        SipMessage::try_from(
+            concat!(
+                "REGISTER sips:ss2.biloxi.example.com SIP/2.0\r\n",
+                "v: SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashd92\r\n",
+                "Max-Forwards: 70\r\n",
+                "f: Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH\r\n",
+                "t: Bob <sips:bob@biloxi.example.com>\r\n",
+                "i: 1j9FpLxk3uxtm8tn@biloxi.example.com\r\n",
+                "CSeq: 2 REGISTER\r\n",
+                "m: <sips:bob@client.biloxi.example.com>\r\n",
+                "Authorization: Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"\r\n",
+                "l: 0\r\n\r\n",
+                "a simple body\r\n",
+                "and some complex: characters\r\n",
+                "Ok?"
+            ).as_bytes()
+        ),
+        Ok(SipMessage::Request(Request {
+            method: common::method::Method::Register,
+            uri: uri::Uri {
+                scheme: Some(uri::scheme::Scheme::Sips),
+                auth: None,
+                host_with_port: uri::HostWithPort {
+                    host: uri::Host::Domain("ss2.biloxi.example.com".into()),
+                    port: None
+                },
+                params: vec![],
+                headers: vec![]
+            },
+            version: common::version::Version::V2,
+            headers: vec![
+                Via::new("SIP/2.0/TLS client.biloxi.example.com:5061;branch=z9hG4bKnashd92").into(),
+                MaxForwards::new("70").into(),
+                From::new("Bob <sips:bob@biloxi.example.com>;tag=ja743ks76zlflH").into(),
+                To::new("Bob <sips:bob@biloxi.example.com>").into(),
+                CallId::new("1j9FpLxk3uxtm8tn@biloxi.example.com").into(),
+                CSeq::new("2 REGISTER").into(),
+                Contact::new("<sips:bob@client.biloxi.example.com>").into(),
+                Authorization::new("Digest username=\"bob\", realm=\"atlanta.example.com\" nonce=\"ea9c8e88df84f1cec4341ae6cbe5a359\", opaque=\"\" uri=\"sips:ss2.biloxi.example.com\", response=\"dfe56131d1958046689d83306477ecc\"").into(),
+                ContentLength::new("0").into(),
+            ].into(),
+            body: concat!(
+                "a simple body\r\n",
+                "and some complex: characters\r\n",
+                "Ok?"
+            ).as_bytes().to_vec()
+        })),
+    );
+    }
+
+    #[test]
+    fn parser_compact_mode_all() {
+        assert_eq!(
+            SipMessage::try_from(
+                concat!(
+                    "REGISTER sips:ss2.biloxi.example.com SIP/2.0\r\n",
+                    "a: Accept-Contact\r\n",
+                    "b: Referred-By\r\n",
+                    "c: Content-Type\r\n",
+                    "e: Content-Encoding\r\n",
+                    "f: From\r\n",
+                    "i: Call-ID\r\n",
+                    "k: Supported\r\n",
+                    "l: Content-Length\r\n",
+                    "m: Contact\r\n",
+                    "o: Event\r\n",
+                    "r: Refer-To\r\n",
+                    "s: Subject\r\n",
+                    "t: To\r\n",
+                    "u: Allow-Events\r\n",
+                    "v: Via\r\n",
+                    "\r\n",
+                    "Body",
+                )
+                .as_bytes()
+            ),
+            Ok(SipMessage::Request(Request {
+                method: common::method::Method::Register,
+                uri: uri::Uri {
+                    scheme: Some(uri::scheme::Scheme::Sips),
+                    auth: None,
+                    host_with_port: uri::HostWithPort {
+                        host: uri::Host::Domain("ss2.biloxi.example.com".into()),
+                        port: None
+                    },
+                    params: vec![],
+                    headers: vec![]
+                },
+                version: common::version::Version::V2,
+                headers: vec![
+                    Header::other("a", "Accept-Contact"),
+                    Header::other("b", "Referred-By"),
+                    ContentType::new("Content-Type").into(),
+                    ContentEncoding::new("Content-Encoding").into(),
+                    From::new("From").into(),
+                    CallId::new("Call-ID").into(),
+                    Supported::new("Supported").into(),
+                    ContentLength::new("Content-Length").into(),
+                    Contact::new("Contact").into(),
+                    Event::new("Event").into(),
+                    Header::other("r", "Refer-To"),
+                    Subject::new("Subject").into(),
+                    To::new("To").into(),
+                    Header::other("u", "Allow-Events"),
+                    Via::new("Via").into(),
+                ]
+                .into(),
+                body: b"Body".to_vec()
+            })),
+        );
+    }
+
+    #[test]
     fn parser3() {
         assert_eq!(
             SipMessage::try_from("SIP/2.0 401 Unauthorized\r\n\r\n".as_bytes()),
