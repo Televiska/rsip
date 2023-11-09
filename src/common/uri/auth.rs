@@ -1,4 +1,5 @@
 pub use crate::Error;
+use percent_encoding::{percent_decode_str, utf8_percent_encode, NON_ALPHANUMERIC};
 #[doc(hidden)]
 pub use tokenizer::Tokenizer;
 
@@ -12,8 +13,13 @@ pub struct Auth {
 impl std::fmt::Display for Auth {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.password {
-            Some(password) => write!(f, "{}:{}", self.user, password),
-            None => write!(f, "{}", self.user),
+            Some(password) => write!(
+                f,
+                "{}:{}",
+                utf8_percent_encode(&self.user, NON_ALPHANUMERIC),
+                utf8_percent_encode(password, NON_ALPHANUMERIC),
+            ),
+            None => write!(f, "{}", utf8_percent_encode(&self.user, NON_ALPHANUMERIC)),
         }
     }
 }
@@ -36,8 +42,14 @@ impl<'a> std::convert::TryFrom<tokenizer::Tokenizer<'a, &'a str, char>> for Auth
 
     fn try_from(tokenizer: tokenizer::Tokenizer<'a, &'a str, char>) -> Result<Self, Self::Error> {
         Ok(Auth {
-            user: tokenizer.user.into(),
-            password: tokenizer.password.map(Into::into),
+            user: percent_decode_str(tokenizer.user)
+                .decode_utf8_lossy()
+                .into_owned(),
+            password: tokenizer.password.map(|password| {
+                percent_decode_str(password)
+                    .decode_utf8_lossy()
+                    .into_owned()
+            }),
         })
     }
 }

@@ -12,6 +12,36 @@ mod display {
     use super::*;
 
     #[test]
+    fn special_characters() {
+        assert_eq!(
+            Uri {
+                scheme: None,
+                auth: Some(("user@localhost", Option::<String>::None).into()),
+                host_with_port: ("server2.com", Option::<u16>::None).into(),
+                params: Default::default(),
+                headers: Default::default()
+            }
+            .to_string(),
+            String::from("user%40localhost@server2.com")
+        );
+    }
+
+    #[test]
+    fn special_characters_with_pass() {
+        assert_eq!(
+            Uri {
+                scheme: None,
+                auth: Some(("user@localhost", Some("pass word")).into()),
+                host_with_port: ("server2.com", Option::<u16>::None).into(),
+                params: Default::default(),
+                headers: Default::default()
+            }
+            .to_string(),
+            String::from("user%40localhost:pass%20word@server2.com")
+        );
+    }
+
+    #[test]
     fn display1() {
         assert_eq!(
             Uri {
@@ -92,6 +122,34 @@ mod display {
 
 mod parser {
     use super::*;
+
+    #[test]
+    fn parser_special_characters() {
+        assert_eq!(
+            Tokenizer {
+                scheme: None,
+                auth: Some(
+                    (
+                        "user%40localhost".as_bytes(),
+                        Some("pass%20word".as_bytes())
+                    )
+                        .into()
+                ),
+                host_with_port: ("server2.com".as_bytes(), None).into(),
+                params: vec![],
+                headers: None,
+                ..Default::default()
+            }
+            .try_into(),
+            Ok(Uri {
+                scheme: None,
+                auth: Some(("user@localhost", Some("pass word")).into()),
+                host_with_port: ("server2.com", Option::<u16>::None).into(),
+                params: Default::default(),
+                headers: Default::default()
+            })
+        )
+    }
 
     #[test]
     fn parser1() {
