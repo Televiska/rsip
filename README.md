@@ -5,8 +5,6 @@
 [![Crates.io Version](https://img.shields.io/crates/v/rsip.svg)](https://crates.io/crates/rsip)
 [![Minimum rustc version](https://img.shields.io/badge/rustc-1.44.0+-lightgray.svg)](#rust-version-requirements)
 
-testing123/added branch
-
 
 A common general purpose library for SIP. It can parse and generate all SIP
 structures.  This new repo will accomadate next-gen communications for terrestial and spacial communication.  
