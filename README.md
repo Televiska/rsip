@@ -6,7 +6,7 @@
 [![Minimum rustc version](https://img.shields.io/badge/rustc-1.44.0+-lightgray.svg)](#rust-version-requirements)
 
 A common general purpose library for SIP. It can parse and generate all SIP
-structures.
+structures.  This new repo will accomadate next-gen communications for terrestial and spacial communication.  
 
 Like [HTTP](https://github.com/hyperium/http), this crate is a general purpose library for common types found when
 working with the SIP protocol.
