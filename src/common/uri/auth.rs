@@ -94,38 +94,57 @@ pub mod tokenizer {
     {
         pub fn tokenize(part: T) -> GResult<T, Self> {
             use nom::{
-                bytes::complete::{tag, take_till, take_until},
-                combinator::rest,
+                bytes::complete::{tag, take_while},
+                combinator::opt,
                 sequence::tuple,
             };
 
-            let (rem, (auth, _)) = tuple((
-                take_till(|c| c == Into::<I>::into(b'.') || c == Into::<I>::into(b'@')),
-                tag("@"),
-            ))(part)
-            .map_err(|_: GenericNomError<'a, T>| {
-                TokenizerError::from(("auth user", part)).into()
+            let (rem, user) =
+                take_while(grammar_user)(part).map_err(|_: GenericNomError<'a, T>| {
+                    TokenizerError::from(("auth user", part)).into()
+                })?;
+
+            let (rem, password) = opt(tuple((tag(":"), take_while(grammar_password))))(rem)
+                .map_err(|_: GenericNomError<'a, T>| {
+                    TokenizerError::from(("auth user password", part)).into()
+                })?;
+
+            let (rem, _) = tag("@")(rem).map_err(|_: GenericNomError<'a, T>| {
+                TokenizerError::from(("auth user password at", part)).into()
             })?;
 
-            let (user, password) = match tuple::<_, _, nom::error::VerboseError<T>, _>((
-                take_until(":"),
-                tag(":"),
-                rest,
-            ))(auth)
-            {
-                Ok((_, (user, _, password))) => (user, Some(password)),
-                Err(_) => {
-                    //this is not going to ever fail actually, since rest never returns an
-                    //error
-                    let (_, user) = rest(auth).map_err(|_: GenericNomError<'a, T>| {
-                        TokenizerError::from(("auth user (no password)", auth)).into()
-                    })?;
-                    (user, None)
-                }
-            };
+            let password = password.map(|(_tag, password)| password);
 
             Ok((rem, Tokenizer::from((user, password))))
         }
+    }
+
+    fn grammar_user<I: AbstractInputItem<I>>(c: I) -> bool {
+        grammar_unreserved(&c) || grammar_escaped(&c) || grammar_user_unreserved(&c)
+    }
+
+    fn grammar_password<I: AbstractInputItem<I>>(c: I) -> bool {
+        grammar_unreserved(&c) || grammar_escaped(&c) || grammar_password_unreserved(&c)
+    }
+
+    fn grammar_unreserved<I: AbstractInputItem<I>>(c: &I) -> bool {
+        b"-_.!~*'()".iter().any(|mark| &I::from(*mark) == c) || c.clone().is_alphanum()
+    }
+
+    fn grammar_escaped<I: AbstractInputItem<I>>(c: &I) -> bool {
+        &I::from(b'%') == c
+    }
+
+    fn grammar_user_unreserved<I: AbstractInputItem<I>>(c: &I) -> bool {
+        b"&=+$,;?/"
+            .iter()
+            .any(|user_unreserved| &I::from(*user_unreserved) == c)
+    }
+
+    fn grammar_password_unreserved<I: AbstractInputItem<I>>(c: &I) -> bool {
+        b"&=+$,"
+            .iter()
+            .any(|password_unreserved| &I::from(*password_unreserved) == c)
     }
 }
 

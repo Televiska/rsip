@@ -104,4 +104,110 @@ mod tokenizer {
             )),
         );
     }
+
+    #[test]
+    fn tokenizer2_u8() {
+        assert_eq!(
+            Tokenizer::tokenize(
+                concat!(
+                    "sips:client.biloxi.example.com:5061;maddr=255.255.255.0;foo=192.0.2.201;lr",
+                    ",",
+                    "<sip:alice.smith@atlanta.example.com;s=2>;level=low"
+                )
+                .as_bytes()
+            ),
+            Ok((
+                "".as_bytes(),
+                Tokenizer {
+                    values: vec![
+                        uri_with_params::Tokenizer {
+                            uri: uri::Tokenizer {
+                                scheme: Some("sips".as_bytes().into()),
+                                auth: None,
+                                host_with_port: (
+                                    "client.biloxi.example.com".as_bytes(),
+                                    Some("5061".as_bytes())
+                                )
+                                    .into(),
+                                params: vec![],
+                                headers: None,
+                                ..Default::default()
+                            },
+                            params: vec![
+                                ("maddr".as_bytes(), Some("255.255.255.0".as_bytes())).into(),
+                                ("foo".as_bytes(), Some("192.0.2.201".as_bytes())).into(),
+                                ("lr".as_bytes(), None).into()
+                            ],
+                            ..Default::default()
+                        },
+                        uri_with_params::Tokenizer {
+                            uri: uri::Tokenizer {
+                                scheme: Some("sip".as_bytes().into()),
+                                auth: Some(("alice.smith".as_bytes(), None).into()),
+                                host_with_port: ("atlanta.example.com".as_bytes(), None).into(),
+                                params: vec![("s".as_bytes(), Some("2".as_bytes())).into()],
+                                headers: None,
+                                ..Default::default()
+                            },
+                            params: vec![("level".as_bytes(), Some("low".as_bytes())).into()],
+                            ..Default::default()
+                        }
+                    ],
+                    ..Default::default()
+                }
+            )),
+        );
+    }
+
+    #[test]
+    fn tokenizer3_u8() {
+        assert_eq!(
+            Tokenizer::tokenize(
+                concat!(
+                    "sips:localhost:5061;lr",
+                    ",",
+                    "<sip:alice@atlanta.example.com;s=2>;level=low"
+                )
+                .as_bytes()
+            ),
+            Ok((
+                "".as_bytes(),
+                Tokenizer {
+                    values: vec![
+                        uri_with_params::Tokenizer {
+                            uri: uri::Tokenizer {
+                                scheme: Some("sips".as_bytes().into()),
+                                auth: None,
+                                host_with_port: (
+                                    "localhost".as_bytes(),
+                                    Some("5061".as_bytes())
+                                )
+                                    .into(),
+                                params: vec![],
+                                headers: None,
+                                ..Default::default()
+                            },
+                            params: vec![
+                                ("lr".as_bytes(), None).into()
+                            ],
+                            ..Default::default()
+                        },
+                        uri_with_params::Tokenizer {
+                            uri: uri::Tokenizer {
+                                scheme: Some("sip".as_bytes().into()),
+                                auth: Some(("alice".as_bytes(), None).into()),
+                                host_with_port: ("atlanta.example.com".as_bytes(), None).into(),
+                                params: vec![("s".as_bytes(), Some("2".as_bytes())).into()],
+                                headers: None,
+                                ..Default::default()
+                            },
+                            params: vec![("level".as_bytes(), Some("low".as_bytes())).into()],
+                            ..Default::default()
+                        }
+                    ],
+                    ..Default::default()
+                }
+            )),
+        );
+    }
 }

@@ -71,7 +71,7 @@ mod tokenizer {
         assert_eq!(
             Tokenizer::tokenize("server2.com something".as_bytes()),
             Err(nom::Err::Error(rsip::TokenizerError::from(
-                "failed to tokenize auth user: server2.com something"
+                "failed to tokenize auth user password at: server2.com something"
             ))),
         );
     }
